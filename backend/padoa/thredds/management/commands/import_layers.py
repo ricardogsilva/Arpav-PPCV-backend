@@ -77,7 +77,7 @@ class Command(BaseCommand):
                 'anomaly': {
                     'unit': '°C',
                     'palette': 'seq-YlOrRd',
-                    'minmax': [-1,7]
+                    'minmax': [0,6]
                 },
                 'absolute': {
                     'unit': '°C',
@@ -89,7 +89,7 @@ class Command(BaseCommand):
                 'anomaly': {
                     'unit': '°C',
                     'palette': 'seq-YlOrRd',
-                    'minmax': [-1,7]
+                    'minmax': [0,6]
                 },
                 'absolute': {
                     'unit': '°C',
@@ -101,7 +101,7 @@ class Command(BaseCommand):
                 'anomaly': {
                     'unit': '°C',
                     'palette': 'seq-YlOrRd',
-                    'minmax': [-1,7]
+                    'minmax': [0,6]
                 },
                 'absolute': {
                     'unit': '°C',
@@ -146,7 +146,7 @@ class Command(BaseCommand):
             'FD': {
                 'anomaly': {
                     'unit': 'gg',
-                    'palette': 'seq-YlOrRd',
+                    'palette': 'seq-YlOrRd-inv',
                     'minmax': [-85,5]
                 },
                 'absolute': {
