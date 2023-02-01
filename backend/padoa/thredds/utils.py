@@ -207,7 +207,7 @@ class NCSSQuery:
         column_headers = list(df.columns.values)
         latitude = df[column_headers[2]][0]
         longitude = df[column_headers[3]][0]
-        unit = column_headers[4].replace(self.layer, '').replace('unit=', '')[2:-2]
+        # unit = column_headers[4].replace(self.layer, '').replace('unit=', '')[2:-2]
 
         df = df.drop(['station', column_headers[2], column_headers[3]], axis=1).rename(columns={column_headers[4]: 'value'})
         res = json.loads(df.to_json(orient='records'))
@@ -216,7 +216,7 @@ class NCSSQuery:
                 **extraDict,
                 'lat': latitude,
                 'lng': longitude,
-                'unit': unit,
+                # 'unit': unit,
                 'dataset': self.dataset,
                 'layer': self.layer,
             },
