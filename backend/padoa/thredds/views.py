@@ -90,7 +90,7 @@ class NCSSTimeserie(APIView, BaseRouter):
         end = request.data.get('end')
         results = [{
             'data': NCSSQuery(m.path, m.layer_id, m.time_start, m.time_end, latitude=latitude, longitude=longitude).getRawTimeseries(start=start, end=end),
-            'filename': m.forecast_model_id +  '_' + m.scenario_id + '.csv'
+            'filename': m.path.replace('/','_') + '.csv'
         } for m in maps]
         variable_id = maps[0].variable_id
         buffer = io.BytesIO()
