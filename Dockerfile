@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.10
 
 ENV DJANGO_PROJECT_NAME djangoapp
 ENV WORK_DIR /opt/api
@@ -52,6 +52,7 @@ RUN chmod +x ${WORK_DIR}/check_db.py
 
 # install python dependencies
 ADD docker/backend/project_requirements.txt $WORK_DIR/project_requirements.txt
+ENV PIP_DEFAULT_TIMEOUT=100
 RUN apt install -y postgresql-client && pip install --upgrade pip && pip install -r $WORK_DIR/project_requirements.txt && chmod +x $WORK_DIR/docker-entrypoint.sh
 # copy default django folder
 

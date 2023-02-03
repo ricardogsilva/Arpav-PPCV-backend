@@ -33,11 +33,13 @@ services:
     #    user: ${UID:-1000}
     environment:
       GUNICORN_WORKERS: 15
-    ports:
-      - 8000:8000
+    expose:
+      - 8000
+#    ports:
+#      - 8000:8000
     depends_on:
       - postgis
-      - proxy
+#      - proxy
     volumes:
       - ./backend/djangoapp:/opt/api/app/djangoapp
       - ./backend/padoa:/opt/api/app/padoa
@@ -49,8 +51,10 @@ services:
     image: maplibre/martin
     container_name: martin
     restart: unless-stopped
-    ports:
-      - "3001:3000"
+    expose:
+      - 3000
+#    ports:
+#      - "3001:3000"
     environment:
       - DATABASE_URL=postgres://${POSTGRES_USER}:${PGPASSWORD}@postgis/${POSTGRES_DB_NAME}
       - RUST_LOG=actix_web=info,martin=debug,tokio_postgres=debug
@@ -62,19 +66,33 @@ services:
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+    expose:
+      - 80
     ports:
-     - "8089:80"
+      - 80:80
     environment:
      - NGINX_HOST=proxy
      - NGINX_PORT=80
+    depends_on:
+      - backend
+      - thredds
+      - martin
   thredds:
-    build: ./proxy
+    build:
+      context: ./thredds_helper
 #    ports:
 #     - "8089:8089"
+    expose:
+      - 8089
     restart: always
     environment:
      - THREDDS_PASSWORD=${THREDDS_PASSWORD}
-     - PROXY_URL=${PROXY_URL}
+
+  frontend:
+    image: ppcv_frontend:latest
+    expose:
+      - 80
+    restart: always
 
 volumes:
   redisdata:

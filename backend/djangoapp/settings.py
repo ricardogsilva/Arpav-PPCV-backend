@@ -20,16 +20,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY", 'q$q8^24^=^!p52s*fx_(ni65-)skn==9qiv^)d1jsi#scb!1p4')
+SECRET_KEY = os.environ.get("SECRET_KEY", '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.environ.get("DEBUG", "False"))
 
 ALLOWED_HOSTS = [
-    os.environ.get("HOST_NAME", 'djangoapp.app'),
-    '127.0.0.1',
-    '0.0.0.0',
-    'localhost',
+    '*'
 ]
 
 STATICFILES_FINDERS = (
@@ -319,8 +316,6 @@ THREDDS = {
     'port': os.environ.get('THREDDS_PORT', 8080),
     'user': os.environ.get('THREDDS_USER', 'admin'),
     'password': os.environ.get('THREDDS_PASSWORD', 'admin'),
-    # 'catalogs': os.environ.get('THREDDS_CATALOGS', '').split('|||'),
-    'dataset_directories': os.environ.get('THREDDS_DATASETS', '').split('|||'),
     'proxy': 'http://proxy:8089/thredds/',
 }
 
