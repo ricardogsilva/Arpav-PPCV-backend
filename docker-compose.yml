@@ -63,6 +63,7 @@ services:
 
   proxy:
     image: nginx
+    container_name: proxy
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
@@ -78,6 +79,7 @@ services:
       - thredds
       - martin
   thredds:
+    container_name: thredds
     build:
       context: ./thredds_helper
 #    ports:
@@ -89,7 +91,10 @@ services:
      - THREDDS_PASSWORD=${THREDDS_PASSWORD}
 
   frontend:
+    container_name: frontend
     image: ppcv_frontend:latest
+    build:
+      context: ./Arpav-PPCV
     expose:
       - 80
     restart: always

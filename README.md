@@ -15,51 +15,65 @@ No need for a Python virtual environment, the project runs using Docker
 
 You need Docker or Docker-compose, get the latest stable official release for your platform.
 
-Prepare the Environment
+## Procedure
 
-    git clone https://repositories.inkode.it/arpav/padoa-backend.git -b <your_branch>
+1) Prepare the Environment
 
-Copy env.example in .evn and customize it with your local settings
 
-Run docker-compose to start it up
+    git clone https://github.com/inkode-it/Arpav-PPCV-backend`
 
+
+2) Copy `env.example` in `.env` and customize it with your local settings
+
+
+3) Clone the Frontend repository inside this project and follow the instructions in the README.md file to start the frontend
+
+
+    `git clone https://github.com/inkode-it/Arpav-PPCV`
+
+
+4) Run docker-compose to start it up
+
+    ```shell
     docker-compose build --no-cache
     docker-compose up -d
+    ```    
 
-Preparation of the image:
+5) Build images & start containers:
 
-    docker-compose up --build -d
+    `docker-compose up --build -d`
 
-Stop the Docker Images:
 
-    docker-compose stop
+6) Make django migrations: 
 
-Fully Wipe-out the Docker Images
-WARNING: This will wipe out all the repositories created until now.
-NOTE: The images must be stopped first
+    `docker exec -ti backend.api python manage.py makemigrations`
 
-    docker system prune -a
 
-Create a Super User to access the Django Admin interface:
+7) Migrate database:
 
-    docker exec -ti backend.api python manage.py import_super_user
+    `docker exec -ti backend.api python manage.py migrate`
 
-To create base layer attributes as Variables, Forecast models, Scenario e etc. Run:
 
-    docker exec -ti backend.api python manage.py import_attributes
+8) Create a Super User to access the Django Admin interface:
 
-To collect all Municipalities (from the geojson) and define geographical boundaries:
+    `docker exec -ti backend.api python manage.py import_super_user`
 
-    docker exec -ti backend.api python manage.py import_regions
 
-Scanning selected Threeds folders and copying metadata:
+9) To create base layer attributes as Variables, Forecast models, Scenario e etc. Run:
 
-    docker exec -ti backend.api python manage.py import_layers
+    `docker exec -ti backend.api python manage.py import_attributes`
 
-Make migrations: 
 
-    docker exec -ti backend.api python manage.py makemigrations
+10) To collect all Municipalities (from the geojson) and define geographical boundaries:
 
-Migrate:
+     `docker exec -ti backend.api python manage.py import_regions`
 
-    docker exec -ti backend.api python manage.py migrate
+
+11) Scanning selected Threeds folders and copying metadata:
+
+    `docker exec -ti backend.api python manage.py import_layers`
+
+
+12) Stop & destroy containers (note using `-v` will remove the volumes)
+
+    `docker-compose down`
