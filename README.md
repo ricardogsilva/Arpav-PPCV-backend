@@ -3,7 +3,7 @@ Backend structure for suppot future climates indicators and models outputs web s
 
 # Structure
 
-- Docker services:
+Docker services:
 Django, PostGIS, Redis, Threeds.
 
 # Create a custom project
@@ -11,7 +11,7 @@ Follow the naming conventions for python packages, generally lower case with und
 In the examples below, replace padoa-backend with whatever you would like to name your project.
 No need for a Python virtual environment, the project runs using Docker 
 
-# How to start your server using Docker
+- How to start your server using Docker
 
 You need Docker or Docker-compose, get the latest stable official release for your platform.
 
