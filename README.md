@@ -1,25 +1,25 @@
 # Project
 Backend structure for suppot future climates indicators and models outputs web service pllatform.
 
-# struture
+# Structure
+
 - Docker services:
-python, django, postgis, 
+Django, PostGIS, Redis, Threeds.
 
-
-Create a custom project
-Follow the naming conventions for python packages (generally lower case with underscores (_).
+# Create a custom project
+Follow the naming conventions for python packages, generally lower case with underscores (_).
 In the examples below, replace padoa-backend with whatever you would like to name your project.
-
 No need for a Python virtual environment, the project runs using Docker 
 
 # How to start your server using Docker
 
-You need Docker or Docker-compose XXXXXversion or higher, get the latest stable official release for your platform.
+You need Docker or Docker-compose, get the latest stable official release for your platform.
 
 Prepare the Environment
-git clone https://repositories.inkode.it/arpav/padoa-backend.git -b <your_branch>
-copy env.example and customize it
 
+    git clone https://repositories.inkode.it/arpav/padoa-backend.git -b <your_branch>
+
+Copy env.example in .evn and customize it with your local settings
 
 Run docker-compose to start it up
 
@@ -40,6 +40,22 @@ NOTE: The images must be stopped first
 
     docker system prune -a
 
+Create a Super User to access the Django Admin interface:
+
+    docker exec -ti backend.api python manage.py import_super_user
+
+To create base layer attributes as Variables, Forecast models, Scenario e etc. Run:
+
+    docker exec -ti backend.api python manage.py import_attributes
+
+To collect all Municipalities (from the geojson) and define geographical boundaries:
+
+    docker exec -ti backend.api python manage.py import_regions
+
+Scanning selected Threeds folders and copying metadata:
+
+    docker exec -ti backend.api python manage.py import_layers
+
 Make migrations: 
 
     docker exec -ti backend.api python manage.py makemigrations
@@ -47,6 +63,3 @@ Make migrations:
 Migrate:
 
     docker exec -ti backend.api python manage.py migrate
-
-
-
