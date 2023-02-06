@@ -45,6 +45,7 @@ services:
       - ./backend/padoa:/opt/api/app/padoa
       - ./backend/storage:/opt/api/app/storage
       - ./backend/resources:/opt/api/app/resources
+      - ./backend/templates:/opt/api/app/templates
       - .env:/opt/api/app/.env
 
   martin:
@@ -67,10 +68,14 @@ services:
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+#      - /etc/ssl/cert_arpav/wildcard.arpa.veneto.it-bundle.crt:/etc/ssl/cert.crt
+#      - /etc/ssl/private/wildcard.arpa.veneto.it.key:/etc/ssl/private/cert.key
     expose:
       - 80
+      - 443
     ports:
       - 80:80
+      - 443:443
     environment:
      - NGINX_HOST=proxy
      - NGINX_PORT=80
@@ -78,6 +83,7 @@ services:
       - backend
       - thredds
       - martin
+
   thredds:
     container_name: thredds
     build:
