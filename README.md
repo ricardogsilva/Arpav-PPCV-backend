@@ -73,6 +73,8 @@ You need Docker or Docker-compose, get the latest stable official release for yo
 
     `docker exec -ti backend.api python manage.py import_layers`
 
+    NOTE: to update already imported layers, run the command with the `--refresh` flag
+
 
 12) Stop & destroy containers (note using `-v` will remove the volumes)
 
