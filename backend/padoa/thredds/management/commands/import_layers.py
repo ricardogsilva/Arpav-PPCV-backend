@@ -20,6 +20,11 @@ class Command(BaseCommand):
             action='store_true',
             help='Complete refresh of the layers',
         )
+        parser.add_argument(
+            '--destroy',
+            action='store_true',
+            help='Complete remove previous imported layers',
+        )
     skipping_models = [
         # 'ecafdan',
         # 'ecasuan',
@@ -49,26 +54,26 @@ class Command(BaseCommand):
         'Serie annuali e stagionali': {
             'DataSeries': 'yes',
             'directories': {
-                'Ensemble 5rcm': 'ens5ym',
-                'Ensemble 5rcm BC': 'ensymbc',
-                'EC-EARTH_CCLM4-8-17': 'EC-EARTH_CCLM4-8-17ym',
-                'EC-EARTH_CCLM4-8-17bc': 'EC-EARTH_CCLM4-8-17ymbc',
-                'EC-EARTH_RACMO22E': 'EC-EARTH_RACMO22Eym',
-                'EC-EARTH_RACMO22Ebc': 'EC-EARTH_RACMO22Eymbc',
-                'EC-EARTH_RCA4': 'EC-EARTH_RCA4ym',
-                'EC-EARTH_RCA4bc': 'EC-EARTH_RCA4ymbc',
-                'HadGEM2-ES_RACMO22E': 'HadGEM2-ES_RACMO22Eym',
-                'HadGEM2-ES_RACMO22Ebc': 'HadGEM2-ES_RACMO22Eymbc',
-                'MPI-ESM-LR_REMO2009': 'MPI-ESM-LR_REMO2009ym',
-                'MPI-ESM-LR_REMO2009bc': 'MPI-ESM-LR_REMO2009ymbc',
+                'Ensemble 5rcm': 'ens5ym/clipped',
+                'Ensemble 5rcm BC': 'ensymbc/clipped',
+                'EC-EARTH_CCLM4-8-17': 'EC-EARTH_CCLM4-8-17ym/clipped',
+                'EC-EARTH_CCLM4-8-17bc': 'EC-EARTH_CCLM4-8-17ymbc/clipped',
+                'EC-EARTH_RACMO22E': 'EC-EARTH_RACMO22Eym/clipped',
+                'EC-EARTH_RACMO22Ebc': 'EC-EARTH_RACMO22Eymbc/clipped',
+                'EC-EARTH_RCA4': 'EC-EARTH_RCA4ym/clipped',
+                'EC-EARTH_RCA4bc': 'EC-EARTH_RCA4ymbc/clipped',
+                'HadGEM2-ES_RACMO22E': 'HadGEM2-ES_RACMO22Eym/clipped',
+                'HadGEM2-ES_RACMO22Ebc': 'HadGEM2-ES_RACMO22Eymbc/clipped',
+                'MPI-ESM-LR_REMO2009': 'MPI-ESM-LR_REMO2009ym/clipped',
+                'MPI-ESM-LR_REMO2009bc': 'MPI-ESM-LR_REMO2009ymbc/clipped',
             }
         },
          'Anomalie trentennali': {
             'DataSeries': 'no',
             'directories': {
-                'Ensemble 5rcm BC': 'ensembletwbc',
-                'Temperatura e precipitazione 5rcm': 'taspr5rcm',
-                'Indici climatici 5rcm': 'indici5rcm',
+                'Ensemble 5rcm BC': 'ensembletwbc/clipped',
+                'Temperatura e precipitazione 5rcm': 'taspr5rcm/clipped',
+                'Indici climatici 5rcm': 'indici5rcm/clipped',
              }
         },
     }
@@ -209,6 +214,8 @@ class Command(BaseCommand):
         self.variables = list(map(lambda x: x.id, Variable.objects.only('id').all()))
         self.year_periods = list(map(lambda x: x.id, YearPeriod.objects.only('id').all()))
         self.timewindows = list(map(lambda x: x.id, TimeWindow.objects.only('id').all()))
+        if options['destroy']:
+            Map.objects.all().delete()
 
         # path = 'ensembletwbc/eca_cdd_an_avg_tw1_rcp85_MAM_ls.nc'
         # wmscap = getLayerAttributes(path)
@@ -233,6 +240,9 @@ class Command(BaseCommand):
                                 continue
                             print('    L__________________________ '+dataset.url_path)
                             if len([m for m in self.skipping_models if m.lower() in dataset.url_path.lower()]) > 0:
+                                print('    *** Skipping model ' + dataset.url_path)
+                                continue
+                            if '_vfvg' not in dataset.url_path.lower():
                                 print('    *** Skipping model ' + dataset.url_path)
                                 continue
 
@@ -298,7 +308,7 @@ class Command(BaseCommand):
             else:
                 timedimension = layer['Dimension']
                 time_start = time_end = timedimension['@default']
-            tw_id = [m for m in self.timewindows if m.lower() in url_path.split('/')[1].lower()]
+            tw_id = [m for m in self.timewindows if m.lower() in url_path.split('/')[-1].lower()]
             if len(tw_id) == 0:
                 print("tw_id NOT FOUND " + url_path)
                 raise Exception("tw_id NOT FOUND " + url_path)
@@ -333,7 +343,7 @@ class Command(BaseCommand):
                 # raise Exception("variable_id NOT FOUND " + url_path)
             elif len(variable_id) > 1:
                 # print("TOO MANY variable_id FOUND " + url_path)
-                looking_for_exact_var = [m for m in self.variables if m.lower() == url_path.split('/')[1].split('_')[0].lower()]
+                looking_for_exact_var = [m for m in self.variables if m.lower() == url_path.split('/')[-1].split('_')[0].lower()]
                 if len(looking_for_exact_var) != 1:
                     print(looking_for_exact_var)
                     print("    *** Skipping model for TOO MANY variable_id FOUND " + url_path)
