@@ -88,8 +88,8 @@ class MapSerializer(ModelSerializer):
 
 class UserDownloadSerializer(serializers.Serializer):
     reason = serializers.CharField(required=False)
-    place = serializers.CharField(required=False)
-    membership = serializers.CharField(required=False)
+    place = serializers.CharField(required=False, allow_blank=True)
+    membership = serializers.CharField(required=False, allow_blank=True)
     public = serializers.BooleanField(default=False)
     accept_disclaimer = serializers.BooleanField(default=False)
     date = serializers.DateField(required=False)
