@@ -123,6 +123,7 @@ case "$1" in
             --name $DJANGO_PROJECT_NAME \
             --bind ${BIND_HOST}:${PORT} \
             --workers ${GUNICORN_WORKERS} \
+            --timeout ${GUNICORN_WORKER_TIMEOUT:-120} \
             --log-level=${GUNICORN_LOG_LEVEL} \
             --log-file=${GUNICORN_LOG_FILE} \
             --access-logfile=${GUNICORN_ACCESS_LOG_FILE}

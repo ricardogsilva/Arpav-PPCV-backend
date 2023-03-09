@@ -33,6 +33,7 @@ services:
     #    user: ${UID:-1000}
     environment:
       GUNICORN_WORKERS: 15
+      GUNICORN_WORKER_TIMEOUT: 120
     expose:
       - 8000
 #    ports:
