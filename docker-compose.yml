@@ -47,6 +47,7 @@ services:
       - ./backend/storage:/opt/api/app/storage
       - ./backend/resources:/opt/api/app/resources
       - ./backend/templates:/opt/api/app/templates
+      - ./docker/backend/docker-entrypoint.sh:/opt/api/docker-entrypoint.sh
       - .env:/opt/api/app/.env
 
   martin:
