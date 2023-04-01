@@ -198,4 +198,4 @@ docker-compose -f docker-compose.dev.yml down
 
 #### SSL certificates
 
-SSL certificate are mounted in the nginx container as a volume. The certificate files and the private key should be placed in the folder listed on .env file (NGINX_SSL_CERTS_PATH) and named as specified in .env file `SSL_CERTIFICATE` and `SSL_KEY`, note that certificate needs to be bundled with the full chain.
+SSL certificate are mounted in the nginx container as a volume. The certificate files and the private key should be placed on paths listed on .env file by envars `SSL_CERTIFICATE` and `SSL_KEY`, note that certificate needs to be bundled with the full chain.
