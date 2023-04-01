@@ -51,7 +51,7 @@ services:
       - .env:/opt/api/app/.env
 
   martin:
-    image: maplibre/martin
+    image: 'maplibre/martin:v0.6'
     container_name: martin
     restart: unless-stopped
     expose:
