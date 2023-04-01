@@ -11,7 +11,7 @@ Commissioned by & Data credits to <br/>
 <a href="https://www.arpa.veneto.it/"><img src="https://github.com/inkode-it/Arpav-PPCV/raw/main/public/img/logo_arpav.png" alt="ARPAV" style="background-color:white;padding:4px"></a>
 
 Designed and developed in Italy by <br/>
-<a rel="author" href="https://inkode.it"><img src="https://avatars.githubusercontent.com/u/64135645" alt="INKODE soc coop"></a>
+<a rel="author" href="mailto:info@inkode.it"><img src="https://avatars.githubusercontent.com/u/64135645" alt="INKODE soc coop"></a>
 
 
 ## Structure: Docker services
