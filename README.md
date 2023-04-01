@@ -59,55 +59,55 @@ Martin Vector Tile Server is an open-source vector tile server that allows users
 
 #### Clean build & start containers
 
-    ```shell
+
     docker-compose build --no-cache
     docker-compose up -d
-    ```    
+
 
 #### Build images & start containers:
 
-    `docker-compose up --build -d`
+    docker-compose up --build -d
 
 
 #### Make django migrations: 
 
-    `docker exec -ti backend.api python manage.py makemigrations users groups forecastattributes places thredds`
+    docker exec -ti backend.api python manage.py makemigrations users groups forecastattributes places thredds
 
 
 #### Migrate database:
 
-    `docker exec -ti backend.api python manage.py migrate`
+    docker exec -ti backend.api python manage.py migrate
 
 
 #### Create a Super User to access the Django Admin interface:
 
-    `docker exec -ti backend.api python manage.py createsuperuser`
+    docker exec -ti backend.api python manage.py createsuperuser
 
-    NOTE: prompt for username, email, password
+NOTE: prompt for username, email, password
 
 
 #### To create base layer attributes as Variables, Forecast models, Scenario e etc. Run:
 
-    `docker exec -ti backend.api python manage.py import_attributes`
+    docker exec -ti backend.api python manage.py import_attributes
 
 
 #### To collect all Municipalities (from the geojson) and define geographical boundaries:
 
-     `docker exec -ti backend.api python manage.py import_regions`
+     docker exec -ti backend.api python manage.py import_regions
 
 
 #### Scanning selected Threeds folders and copying metadata:
 
-    `docker exec -ti backend.api python manage.py import_layers`
+    docker exec -ti backend.api python manage.py import_layers
 
-    NOTES:
-    - to update already imported layers, run the command with the `--refresh` flag
-    - to fully clean layers and & re-import them, run the command with the `--destroy` flag
+NOTES:
+- to update already imported layers, run the command with the `--refresh` flag
+- to fully clean layers and & re-import them, run the command with the `--destroy` flag
 
 
 #### Stop & destroy containers (note using `-v` will remove the volumes)
 
-    `docker-compose -f docker-compose.dev.yml down`
+docker-compose -f docker-compose.dev.yml down
 
 #### SSL certificates
 
@@ -128,7 +128,7 @@ For development on your local machine, you need to install the following tools:
 
 #### Prepare the Environment
     
-    Starting from the root of the project, clone the backend repository, move on `develop` branch and clone frontend repository inside this project
+Starting from the root of the project, clone the backend repository, move on `develop` branch and clone frontend repository inside this project
 
     
     git clone https://github.com/inkode-it/Arpav-PPCV-backend
@@ -138,61 +138,61 @@ For development on your local machine, you need to install the following tools:
 
 #### Copy `.env.example` in `.env` and **customize it with your local settings** both for the backend and the frontend.
 
-    NOTE: `.env`'s file are used to set the environment variables for the docker-compose -f docker-compose.dev.yml file and the running services, to configure the backend and frontend services, the PostGIS database, Nginx web server etc..
+NOTE: `.env`'s file are used to set the environment variables for the docker-compose -f docker-compose.dev.yml file and the running services, to configure the backend and frontend services, the PostGIS database, Nginx web server etc..
 
 
 #### For Frontend `Arpav-PPCV`, follow the instructions in the *frontend README.md file to start the frontend*
 
-    NOTE: Both `Arpav-PPCV-backend` & `Arpav-PPCV` (the frontend) have a different .env file configuration with different variables
+NOTE: Both `Arpav-PPCV-backend` & `Arpav-PPCV` (the frontend) have a different .env file configuration with different variables
 
 
 #### Run docker-compose to start it up
 
-    ```shell
+
     docker-compose -f docker-compose.dev.yml build --no-cache
     docker-compose -f docker-compose.dev.yml up -d
-    ```    
+
 
 #### Build images & start containers:
 
-    `docker-compose -f docker-compose.dev.yml up --build -d`
+    docker-compose -f docker-compose.dev.yml up --build -d
 
 
 #### Make django migrations: 
 
-    `docker exec -ti backend.api python manage.py makemigrations users groups forecastattributes places thredds`
+    docker exec -ti backend.api python manage.py makemigrations users groups forecastattributes places thredds
 
 #### Migrate database:
 
-    `docker exec -ti backend.api python manage.py migrate`
+    docker exec -ti backend.api python manage.py migrate
 
 
 #### Create a Super User to access the Django Admin interface:
 
-    `docker exec -ti backend.api python manage.py import_super_user`
+    docker exec -ti backend.api python manage.py import_super_user
 
-    NOTE: this super user is intended for development in local environment, default credential are:
-    - username: `info@inkode.it`
-    - password: `inkode`
+NOTE: this super user is intended for development in local environment, default credential are:
+- username: `info@inkode.it`
+- password: `inkode`
 
 
 #### To create base layer attributes as Variables, Forecast models, Scenario e etc. Run:
 
-    `docker exec -ti backend.api python manage.py import_attributes`
+    docker exec -ti backend.api python manage.py import_attributes
 
 
 #### To collect all Municipalities (from the geojson) and define geographical boundaries:
 
-     `docker exec -ti backend.api python manage.py import_regions`
+     docker exec -ti backend.api python manage.py import_regions
 
 
 #### Scanning selected Threeds folders and copying metadata:
 
-    `docker exec -ti backend.api python manage.py import_layers`
+    docker exec -ti backend.api python manage.py import_layers
 
-    NOTES:
-    - to update already imported layers, run the command with the `--refresh` flag
-    - to fully clean layers and & re-import them, run the command with the `--destroy` flag
+NOTES:
+- to update already imported layers, run the command with the `--refresh` flag
+- to fully clean layers and & re-import them, run the command with the `--destroy` flag
 
 
 If everything is ok and you followed also frontend README instructions, you should be able to access:
