@@ -55,64 +55,6 @@ Root directory: `backend`
 #### Martin
 Martin Vector Tile Server is an open-source vector tile server that allows users to serve vector tiles over the web. It is built for MapLibre, an open-source JavaScript library for interactive maps, and supports a variety of data sources, including GeoJSON, PostGIS, and Shapefile. 
 
-## PRODUCTION USAGE
-
-#### Clean build & start containers
-
-
-    docker-compose build --no-cache
-    docker-compose up -d
-
-
-#### Build images & start containers:
-
-    docker-compose up --build -d
-
-
-#### Make django migrations: 
-
-    docker exec -ti backend.api python manage.py makemigrations users groups forecastattributes places thredds
-
-
-#### Migrate database:
-
-    docker exec -ti backend.api python manage.py migrate
-
-
-#### Create a Super User to access the Django Admin interface:
-
-    docker exec -ti backend.api python manage.py createsuperuser
-
-NOTE: prompt for username, email, password
-
-
-#### To create base layer attributes as Variables, Forecast models, Scenario e etc. Run:
-
-    docker exec -ti backend.api python manage.py import_attributes
-
-
-#### To collect all Municipalities (from the geojson) and define geographical boundaries:
-
-     docker exec -ti backend.api python manage.py import_regions
-
-
-#### Scanning selected Threeds folders and copying metadata:
-
-    docker exec -ti backend.api python manage.py import_layers
-
-NOTES:
-- to update already imported layers, run the command with the `--refresh` flag
-- to fully clean layers and & re-import them, run the command with the `--destroy` flag
-
-
-#### Stop & destroy containers (note using `-v` will remove the volumes)
-
-docker-compose -f docker-compose.dev.yml down
-
-#### SSL certificates
-
-SSL certificate are mounted in the nginx container as a volume. The certificate files and the private key should be placed in the folder listed on .env file (NGINX_SSL_CERTS_PATH) and named as specified in .env file `SSL_CERTIFICATE` and `SSL_KEY`, note that certificate needs to be bundled with the full chain.
-
 # Development
 
 GIT BRANCH: `develop`
@@ -198,3 +140,62 @@ NOTES:
 If everything is ok and you followed also frontend README instructions, you should be able to access:
 - the frontend at http://localhost:3000
 - the backend administration at http://localhost/admin
+
+
+## PRODUCTION USAGE
+
+#### Clean build & start containers
+
+
+    docker-compose build --no-cache
+    docker-compose up -d
+
+
+#### Build images & start containers:
+
+    docker-compose up --build -d
+
+
+#### Make django migrations: 
+
+    docker exec -ti backend.api python manage.py makemigrations users groups forecastattributes places thredds
+
+
+#### Migrate database:
+
+    docker exec -ti backend.api python manage.py migrate
+
+
+#### Create a Super User to access the Django Admin interface:
+
+    docker exec -ti backend.api python manage.py createsuperuser
+
+NOTE: prompt for username, email, password
+
+
+#### To create base layer attributes as Variables, Forecast models, Scenario e etc. Run:
+
+    docker exec -ti backend.api python manage.py import_attributes
+
+
+#### To collect all Municipalities (from the geojson) and define geographical boundaries:
+
+     docker exec -ti backend.api python manage.py import_regions
+
+
+#### Scanning selected Threeds folders and copying metadata:
+
+    docker exec -ti backend.api python manage.py import_layers
+
+NOTES:
+- to update already imported layers, run the command with the `--refresh` flag
+- to fully clean layers and & re-import them, run the command with the `--destroy` flag
+
+
+#### Stop & destroy containers (note using `-v` will remove the volumes)
+
+docker-compose -f docker-compose.dev.yml down
+
+#### SSL certificates
+
+SSL certificate are mounted in the nginx container as a volume. The certificate files and the private key should be placed in the folder listed on .env file (NGINX_SSL_CERTS_PATH) and named as specified in .env file `SSL_CERTIFICATE` and `SSL_KEY`, note that certificate needs to be bundled with the full chain.
