@@ -45,7 +45,7 @@ class MapSerializer(ModelSerializer):
     def get_bbox(self, obj):
         ext = obj.spatialbounds.extent
         # return [[ext[2], ext[0]], [ext[3], ext[1]]]
-        return [[self.truncate(ext[2]), self.truncate(ext[0])], [self.truncate(ext[3]), self.truncate(ext[1])]]
+        return [[self.truncate(ext[2] + 0.001), self.truncate(ext[0] + 0.001)], [self.truncate(ext[3] - 0.001), self.truncate(ext[1] - 0.001)]]
 
 
     def get_legend(self, obj):
