@@ -187,6 +187,11 @@ NOTE: prompt for username, email, password
 
     docker exec -ti backend.api python manage.py import_layers
 
+
+#### Re-build & deploy frontend:
+
+    cd ~/Arpav-PPCV-backend/Arpav-PPCV/;git pull;cd ..;docker-compose build frontend;docker-compose up -d
+
 NOTES:
 - to update already imported layers, run the command with the `--refresh` flag
 - to fully clean layers and & re-import them, run the command with the `--destroy` flag
