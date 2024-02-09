@@ -139,3 +139,5 @@ backend/.env
 /proxy/node_modules/
 
 /Arpav-PPCV
+
+.venv
