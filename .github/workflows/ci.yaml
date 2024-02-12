@@ -20,7 +20,7 @@ jobs:
       - name: install dagger for python
         uses: insightsengineering/pip-action@v2
         with:
-          - packages: dagger-io==0.9.8
+          packages: dagger-io==0.9.8
       - name: run dagger
         uses: dagger/dagger-for-github@v5
         with:
