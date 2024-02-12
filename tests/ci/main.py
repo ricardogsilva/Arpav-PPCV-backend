@@ -1,9 +1,9 @@
+import asyncio
 import os
 import shlex
 import sys
 from pathlib import Path
 
-import anyio
 import dagger
 
 POSTGIS_IMAGE_VERSION = "postgis/postgis:16-3.4"
@@ -57,6 +57,7 @@ async def build_and_test():
 
         test_results = await (
             built_container.with_service_binding("db", postgis_service)
+            .with_mounted_directory("/opt/api/tests", client.host().directory("./tests"))
             .with_env_variable("DEBUG", env_variables["DEBUG"])
             .with_env_variable("POSTGRES_DB_NAME", env_variables["POSTGRES_DB_NAME"])
             .with_env_variable("POSTGRES_USER", env_variables["POSTGRES_USER"])
@@ -88,7 +89,7 @@ async def build_and_test():
             )
             .with_exec(shlex.split("python manage.py migrate"), skip_entrypoint=True)
             .with_exec(
-                shlex.split("pytest --verbose -x --reuse-db padoa/forecastattributes"),
+                shlex.split("pytest --verbose -x --reuse-db ../tests/test_padoa_forecastattributes_views.py"),
                 skip_entrypoint=True
             )
         ).stdout()
@@ -97,4 +98,4 @@ async def build_and_test():
 
 
 if __name__ == "__main__":
-    anyio.run(build_and_test)
+    asyncio.run(build_and_test())
