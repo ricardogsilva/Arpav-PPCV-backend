@@ -9,18 +9,22 @@ jobs:
   run-dagger-ci:
     runs-on: ubuntu-22.04
     steps:
+
       - name: grab code
         uses: actions/checkout@v4
+
       - name: setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           cache: pip
           cache-dependency-path: docker/backend/project_requirements.txt
+
       - name: install dagger for python
         uses: insightsengineering/pip-action@v2
         with:
           packages: dagger-io==0.9.8
+
       - name: run dagger
         uses: dagger/dagger-for-github@v5
         with:
