@@ -9,7 +9,7 @@ from padoa.forecastattributes.serializers import VariableSerializer, ForecastMod
 from djcore.djcore.core.mixins import OptionListModelMixin
 
 class CachedParametersList(OptionListModelMixin, ListAPIView, GenericViewSet):
-    @method_decorator(cache_page(3600*7*24))
+    # @method_decorator(cache_page(3600*7*24))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
