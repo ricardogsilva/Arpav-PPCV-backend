@@ -73,6 +73,7 @@ async def run_tests(
     )
     return await (
         built_container.with_service_binding("db", postgis_service)
+        .without_entrypoint()
         .with_mounted_directory("/opt/api/tests", client.host().directory("./tests"))
         .with_env_variable("DEBUG", env_variables["DEBUG"])
         .with_env_variable("POSTGRES_DB_NAME", env_variables["POSTGRES_DB_NAME"])
@@ -91,8 +92,7 @@ async def run_tests(
                 "pytest==8.0.0 "
                 "pytest-cov==4.1.0 "
                 "pytest-django==4.8.0"
-            ),
-            skip_entrypoint=True
+            )
         )
         .with_exec(
             shlex.split(
@@ -102,13 +102,11 @@ async def run_tests(
                 "forecastattributes "
                 "places "
                 "thredds"
-            ),
-            skip_entrypoint=True
+            )
         )
-        .with_exec(shlex.split("python manage.py migrate"), skip_entrypoint=True)
+        .with_exec(shlex.split("python manage.py migrate"))
         .with_exec(
-            shlex.split("pytest --verbose --cov -k 'padoa' -x --reuse-db ../tests"),
-            skip_entrypoint=True
+            shlex.split("pytest --verbose --cov -k 'padoa' -x --reuse-db ../tests")
         )
     ).stdout()
 
