@@ -1,8 +1,12 @@
 name: CI
 
 on:
-  - push
-  - pull_request
+  push:
+
+  pull_request:
+
+  schedule:
+    - cron: "30 12 * * *"  # runs everyday at 12h30
 
 
 jobs:
@@ -29,5 +33,14 @@ jobs:
         uses: dagger/dagger-for-github@v5
         with:
           verb: run
-          args: python tests/ci/main.py
+          args: python tests/ci/main.py --with-tests
+          version: 0.9.9
+
+      # Periodically scan built image for vulnerabilities
+      - name: run security scanning
+        if: ${{ github.event.schedule }}
+        uses: dagger/dagger-for-github@v5
+        with:
+          verb: run
+          args: python tests/ci/main.py --with-security-scan
           version: 0.9.9
