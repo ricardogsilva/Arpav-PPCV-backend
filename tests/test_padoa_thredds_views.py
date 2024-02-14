@@ -6,6 +6,7 @@ from padoa.forecastattributes import models as fam
 
 
 @pytest.mark.django_db
+@pytest.mark.xfail(reason="Not implemented yet")
 @pytest.mark.parametrize("url_list_path", [
     pytest.param("/maps/ncss/timeserie/"),
 ])

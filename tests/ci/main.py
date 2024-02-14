@@ -71,7 +71,9 @@ async def build_and_test():
             .with_exec(
                 shlex.split(
                     "pip install "
+                    "coverage==7.4.1 "
                     "pytest==8.0.0 "
+                    "pytest-cov==4.1.0 "
                     "pytest-django==4.8.0"
                 ),
                 skip_entrypoint=True
@@ -89,7 +91,7 @@ async def build_and_test():
             )
             .with_exec(shlex.split("python manage.py migrate"), skip_entrypoint=True)
             .with_exec(
-                shlex.split("pytest --verbose -x --reuse-db ../tests/test_padoa_forecastattributes_views.py"),
+                shlex.split("pytest --verbose --cov -k 'padoa' -x --reuse-db ../tests"),
                 skip_entrypoint=True
             )
         ).stdout()
