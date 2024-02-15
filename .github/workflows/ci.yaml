@@ -11,7 +11,7 @@ on:
 env:
   PUBLISH_IMAGE: ${{ (github.ref == 'main' || github.ref_type == 'branch') && 'TRUE' || 'FALSE'}}
   IMAGE_TAG: ${{ github.ref == 'main' && 'latest' || github.ref }}
-  IMAGE_NAME: ghcr.io/${{ github.repository }}/arpav-ppcv-backend:${{ IMAGE_TAG }}
+  IMAGE_NAME: ghcr.io/${{ github.repository }}/arpav-ppcv-backend:${{ env.IMAGE_TAG }}
 
 jobs:
   run-dagger-ci:
