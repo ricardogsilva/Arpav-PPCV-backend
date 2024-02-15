@@ -45,7 +45,7 @@ jobs:
         uses: dagger/dagger-for-github@v5
         with:
           verb: run
-          args: |
+          args: >-
              python tests/ci/main.py 
             --with-tests 
             ${{ if (env.PUBLISH_IMAGE == 'TRUE' && format('--image-registry {0}', env.IMAGE_NAME)  || ''}}
