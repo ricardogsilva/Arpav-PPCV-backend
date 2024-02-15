@@ -10,7 +10,7 @@ on:
 
 env:
   PUBLISH_IMAGE: ${{ if (github.ref == 'main' || github.ref_type == 'branch') && 'TRUE' || 'FALSE'}}
-  IMAGE_TAG: {{ if github.ref == 'main' && 'latest' || github.ref }}
+  IMAGE_TAG: ${{ if github.ref == 'main' && 'latest' || github.ref }}
   IMAGE_NAME: ghcr.io/${{ github.repository }}/arpav-ppcv-backend:${{ IMAGE_TAG }}
 
 jobs:
