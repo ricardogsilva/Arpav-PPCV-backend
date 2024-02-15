@@ -10,7 +10,7 @@ on:
 
 env:
   PUBLISH_IMAGE: ${{ if (github.ref == 'main' || github.ref_type == 'branch') && 'TRUE' || 'FALSE'}}
-  IMAGE_TAG: ${{ if github.ref == 'main' && 'latest' || github.ref }}
+  IMAGE_TAG: ${{ github.ref == 'main' && 'latest' || github.ref }}
   IMAGE_NAME: ghcr.io/${{ github.repository }}/arpav-ppcv-backend:${{ IMAGE_TAG }}
 
 jobs:
@@ -48,7 +48,7 @@ jobs:
           args: >-
             python tests/ci/main.py 
             --with-tests 
-            ${{ if (env.PUBLISH_IMAGE == 'TRUE' && format('--image-registry {0}', env.IMAGE_NAME)  || ''}}
+            ${{ env.PUBLISH_IMAGE == 'TRUE' && format('--image-registry {0}', env.IMAGE_NAME)  || ''}}
           version: 0.9.9
 
       # Periodically scan built image for vulnerabilities
