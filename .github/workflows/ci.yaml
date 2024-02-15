@@ -46,7 +46,7 @@ jobs:
         with:
           verb: run
           args: >-
-             python tests/ci/main.py 
+            python tests/ci/main.py 
             --with-tests 
             ${{ if (env.PUBLISH_IMAGE == 'TRUE' && format('--image-registry {0}', env.IMAGE_NAME)  || ''}}
           version: 0.9.9
