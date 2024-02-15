@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import os
 import shlex
@@ -28,24 +29,99 @@ def get_env_variables() -> dict[str, str | None]:
     }
 
 
-async def build_and_test():
+async def run_security_scan(built_container: dagger.Container):
+    return await (
+        built_container.with_user("root")
+        .without_entrypoint()
+        .with_exec(shlex.split("apt-get update"))
+        .with_exec(shlex.split("apt-get install --yes curl tar"))
+        .with_exec(
+            shlex.split(
+                "curl --silent --fail "
+                "--location https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh "
+                "--output install-trivy.sh"
+            )
+        )
+        .with_exec(
+            shlex.split("sh install-trivy.sh -b /usr/local/bin v0.49.1"))
+        .with_exec(
+            shlex.split(
+                "trivy rootfs "
+                "--ignore-unfixed "
+                "--severity HIGH,CRITICAL "
+                "--exit-code 1 "
+                "/"
+            )
+        )
+    ).stdout()
+
+
+async def run_tests(
+        client: dagger.Client,
+        built_container: dagger.Container,
+        env_variables: dict[str, str]
+):
+    postgis_service = (
+        client.container()
+        .from_(POSTGIS_IMAGE_VERSION)
+        .with_env_variable("PGDATA", "/var/lib/postgresql/data/pgdata")
+        .with_env_variable("POSTGRES_DB", env_variables["POSTGRES_DB_NAME"])
+        .with_env_variable("POSTGRES_PASSWORD", env_variables["PGPASSWORD"])
+        .with_env_variable("POSTGRES_USER", env_variables["POSTGRES_USER"])
+        .with_exposed_port(5432)
+        .as_service()
+    )
+    return await (
+        built_container.with_service_binding("db", postgis_service)
+        .without_entrypoint()
+        .with_mounted_directory("/opt/api/tests", client.host().directory("./tests"))
+        .with_env_variable("DEBUG", env_variables["DEBUG"])
+        .with_env_variable("POSTGRES_DB_NAME", env_variables["POSTGRES_DB_NAME"])
+        .with_env_variable("POSTGRES_USER", env_variables["POSTGRES_USER"])
+        .with_env_variable("PGPASSWORD", env_variables["PGPASSWORD"])
+        .with_env_variable("POSTGRES_PORT_5432_TCP_ADDR", "db")
+        .with_env_variable("REDIS_HOST", env_variables["REDIS_HOST"])
+        .with_env_variable("SECRET_KEY", env_variables["SECRET_KEY"])
+        .with_env_variable("THREDDS_HOST", env_variables["THREDDS_HOST"])
+        .with_env_variable("THREDDS_PASSWORD", env_variables["THREDDS_PASSWORD"])
+        .with_env_variable("THREDDS_USER", env_variables["THREDDS_USER"])
+        .with_exec(
+            shlex.split(
+                "pip install "
+                "coverage==7.4.1 "
+                "pytest==8.0.0 "
+                "pytest-cov==4.1.0 "
+                "pytest-django==4.8.0"
+            )
+        )
+        .with_exec(
+            shlex.split(
+                "python manage.py makemigrations "
+                "users "
+                "groups "
+                "forecastattributes "
+                "places "
+                "thredds"
+            )
+        )
+        .with_exec(shlex.split("python manage.py migrate"))
+        .with_exec(
+            shlex.split("pytest --verbose --cov -k 'padoa' -x --reuse-db ../tests")
+        )
+    ).stdout()
+
+
+async def run_pipeline(
+        *,
+        with_tests: bool,
+        with_security_scan: bool,
+):
     env_variables = get_env_variables()
     conf = dagger.Config(
         log_output=sys.stderr,
     )
     repo_root = Path(__file__).parents[2]
     async with dagger.Connection(conf) as client:
-        postgis_service = (
-            client.container()
-            .from_(POSTGIS_IMAGE_VERSION)
-            .with_env_variable("PGDATA", "/var/lib/postgresql/data/pgdata")
-            .with_env_variable("POSTGRES_DB", env_variables["POSTGRES_DB_NAME"])
-            .with_env_variable("POSTGRES_PASSWORD", env_variables["PGPASSWORD"])
-            .with_env_variable("POSTGRES_USER", env_variables["POSTGRES_USER"])
-            .with_exposed_port(5432)
-            .as_service()
-        )
-
         src = client.host().directory(str(repo_root))
         built_container = (
             client.container()
@@ -54,50 +130,21 @@ async def build_and_test():
                 dockerfile="Dockerfile"
             )
         )
-
-        test_results = await (
-            built_container.with_service_binding("db", postgis_service)
-            .with_mounted_directory("/opt/api/tests", client.host().directory("./tests"))
-            .with_env_variable("DEBUG", env_variables["DEBUG"])
-            .with_env_variable("POSTGRES_DB_NAME", env_variables["POSTGRES_DB_NAME"])
-            .with_env_variable("POSTGRES_USER", env_variables["POSTGRES_USER"])
-            .with_env_variable("PGPASSWORD", env_variables["PGPASSWORD"])
-            .with_env_variable("POSTGRES_PORT_5432_TCP_ADDR", "db")
-            .with_env_variable("REDIS_HOST", env_variables["REDIS_HOST"])
-            .with_env_variable("SECRET_KEY", env_variables["SECRET_KEY"])
-            .with_env_variable("THREDDS_HOST", env_variables["THREDDS_HOST"])
-            .with_env_variable("THREDDS_PASSWORD", env_variables["THREDDS_PASSWORD"])
-            .with_env_variable("THREDDS_USER", env_variables["THREDDS_USER"])
-            .with_exec(
-                shlex.split(
-                    "pip install "
-                    "coverage==7.4.1 "
-                    "pytest==8.0.0 "
-                    "pytest-cov==4.1.0 "
-                    "pytest-django==4.8.0"
-                ),
-                skip_entrypoint=True
-            )
-            .with_exec(
-                shlex.split(
-                    "python manage.py makemigrations "
-                    "users "
-                    "groups "
-                    "forecastattributes "
-                    "places "
-                    "thredds"
-                ),
-                skip_entrypoint=True
-            )
-            .with_exec(shlex.split("python manage.py migrate"), skip_entrypoint=True)
-            .with_exec(
-                shlex.split("pytest --verbose --cov -k 'padoa' -x --reuse-db ../tests"),
-                skip_entrypoint=True
-            )
-        ).stdout()
-        print("Done")
-        print(f"{test_results=}")
+        if with_security_scan:
+            await run_security_scan(built_container)
+        if with_tests:
+            await run_tests(client, built_container, env_variables)
+        print("Done!")
 
 
 if __name__ == "__main__":
-    asyncio.run(build_and_test())
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--with-security-scan", action="store_true")
+    parser.add_argument("--with-tests", action="store_true")
+    args = parser.parse_args()
+    asyncio.run(
+        run_pipeline(
+            with_tests=args.with_tests,
+            with_security_scan=args.with_security_scan
+        )
+    )
