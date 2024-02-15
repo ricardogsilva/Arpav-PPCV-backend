@@ -9,7 +9,7 @@ on:
     - cron: "30 12 * * *"  # runs everyday at 12h30
 
 env:
-  PUBLISH_IMAGE: ${{ if (github.ref == 'main' || github.ref_type == 'branch') && 'TRUE' || 'FALSE'}}
+  PUBLISH_IMAGE: ${{ (github.ref == 'main' || github.ref_type == 'branch') && 'TRUE' || 'FALSE'}}
   IMAGE_TAG: ${{ github.ref == 'main' && 'latest' || github.ref }}
   IMAGE_NAME: ghcr.io/${{ github.repository }}/arpav-ppcv-backend:${{ IMAGE_TAG }}
 
