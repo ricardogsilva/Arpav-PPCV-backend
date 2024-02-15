@@ -115,6 +115,7 @@ async def run_pipeline(
         *,
         with_tests: bool,
         with_security_scan: bool,
+        image_registry: str | None = None
 ):
     env_variables = get_env_variables()
     conf = dagger.Config(
@@ -129,22 +130,40 @@ async def run_pipeline(
                 context=src,
                 dockerfile="Dockerfile"
             )
+            .with_label(
+                "org.opencontainers.image.source",
+                "https://github.com/geobeyond/Arpav-PPCV-backend"
+            )
         )
         if with_security_scan:
             await run_security_scan(built_container)
         if with_tests:
             await run_tests(client, built_container, env_variables)
-        print("Done!")
+        if image_registry is not None:
+            await built_container.publish(image_registry)
+
+        print("Done")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--with-security-scan", action="store_true")
     parser.add_argument("--with-tests", action="store_true")
+    parser.add_argument(
+        "--image-registry",
+        help=(
+            "Full URL to an image registry where the built container image should be "
+            "published, including the image tag. This assumes that logging in to the "
+            "registry has already been made (for example by running the "
+            "`docker login` command beforehand)."
+            "Example: ghcr.io/geobeyond/arpav-ppcv-backend:latest"
+        )
+    )
     args = parser.parse_args()
     asyncio.run(
         run_pipeline(
             with_tests=args.with_tests,
-            with_security_scan=args.with_security_scan
+            with_security_scan=args.with_security_scan,
+            image_registry=args.image_registry,
         )
     )
