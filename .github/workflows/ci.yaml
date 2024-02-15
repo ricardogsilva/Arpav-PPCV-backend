@@ -9,8 +9,8 @@ on:
     - cron: "30 12 * * *"  # runs everyday at 12h30
 
 env:
-  PUBLISH_IMAGE: ${{ (github.ref == 'main' || github.ref_type == 'branch') && 'TRUE' || 'FALSE'}}
-  IMAGE_TAG: ${{ github.ref == 'main' && 'latest' || github.ref }}
+  PUBLISH_IMAGE: ${{ (github.ref == 'main' || github.ref_type == 'tag') && 'TRUE' || 'FALSE'}}
+  IMAGE_TAG: ${{ github.ref == 'main' && 'latest' || github.ref_name }}
   IMAGE_NAME: ghcr.io/${{ github.repository }}/arpav-ppcv-backend
 
 jobs:
