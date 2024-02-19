@@ -1,4 +1,4 @@
-name: CI
+name: ${{ github.event.schedule && 'Routine vulnerability scan' || 'Continuous Integration' }}
 
 on:
   push:

@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import logging
 import os
 import shlex
 import sys
@@ -7,7 +8,28 @@ from pathlib import Path
 
 import dagger
 
+logger = logging.getLogger(__name__)
 POSTGIS_IMAGE_VERSION = "postgis/postgis:16-3.4"
+
+
+def sanitize_docker_image_name(docker_image_name: str) -> str:
+    """Ensure input docker_image_name is valid.
+
+    This function sanitizes the input according to the rules described in
+    the docker docs at:
+
+    https://docs.docker.com/engine/reference/commandline/image_tag/#extended-description
+
+    Most notably, this will ensure the path portion of the image name is
+    lowercase, which may sometimes not be the case for images being pushed to
+    the github container registry.
+    """
+    host, rest = docker_image_name.partition("/")[::2]
+    path, tag = rest.partition(":")[::2]
+    if "_" in host:
+        logger.warning(
+            "Docker image name's host section cannot contain the '_' character.")
+    return f"{host}/{path.lower()}:{tag or 'latest'}"
 
 
 def get_env_variables() -> dict[str, str | None]:
@@ -115,7 +137,7 @@ async def run_pipeline(
         *,
         with_tests: bool,
         with_security_scan: bool,
-        image_registry: str | None = None
+        publish_docker_image: str | None = None
 ):
     env_variables = get_env_variables()
     conf = dagger.Config(
@@ -139,8 +161,9 @@ async def run_pipeline(
             await run_security_scan(built_container)
         if with_tests:
             await run_tests(client, built_container, env_variables)
-        if image_registry is not None:
-            await built_container.publish(image_registry)
+        if publish_docker_image is not None:
+            sanitized_name = sanitize_docker_image_name(publish_docker_image)
+            await built_container.publish(sanitized_name)
 
         print("Done")
 
@@ -165,7 +188,7 @@ if __name__ == "__main__":
         )
     )
     parser.add_argument(
-        "--image-registry",
+        "--publish-docker-image",
         help=(
             "Full URI to an image registry where the built container image should be "
             "published, including the image tag. This assumes that logging in to the "
@@ -175,10 +198,11 @@ if __name__ == "__main__":
         )
     )
     args = parser.parse_args()
+    logging.basicConfig(level=logging.INFO)
     asyncio.run(
         run_pipeline(
             with_tests=args.with_tests,
             with_security_scan=args.with_security_scan,
-            image_registry=args.image_registry,
+            publish_docker_image=args.publish_docker_image,
         )
     )
