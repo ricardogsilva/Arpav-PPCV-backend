@@ -50,7 +50,7 @@ jobs:
           args: >-
             python tests/ci/main.py 
             --with-tests 
-            ${{ env.PUBLISH_IMAGE == 'TRUE' && format('--image-registry {0}:{1}', env.IMAGE_NAME, env.IMAGE_TAG)  || ''}}
+            ${{ env.PUBLISH_IMAGE == 'TRUE' && format('--publish-docker-image {0}:{1}', env.IMAGE_NAME, env.IMAGE_TAG)  || ''}}
           version: 0.9.9
 
       # Periodically scan built image for vulnerabilities
