@@ -26,29 +26,19 @@ services:
   backend:
     env_file: .env
     container_name: backend.api
-    image: padoa_backend
-    build: .
-    command: ${API_COMMAND:-dev}
+    image: "ghcr.io/geobeyond/arpav_ppcv_backend:${CURRENT_GIT_BRANCH:-latest}"
     restart: unless-stopped
-    #    user: ${UID:-1000}
     environment:
       GUNICORN_WORKERS: 15
       GUNICORN_WORKER_TIMEOUT: 120
-    expose:
-      - 8000
 #    ports:
 #      - 8000:8000
     depends_on:
       - postgis
-#      - proxy
     volumes:
-      - ./backend/djangoapp:/opt/api/app/djangoapp
-      - ./backend/padoa:/opt/api/app/padoa
-      - ./backend/storage:/opt/api/app/storage
-      - ./backend/resources:/opt/api/app/resources
-      - ./backend/templates:/opt/api/app/templates
-      - ./docker/backend/docker-entrypoint.sh:/opt/api/docker-entrypoint.sh
-      - .env:/opt/api/app/.env
+      - type: bind
+        source: $PWD
+        target: /home/appuser/app
 
   martin:
     image: 'maplibre/martin:v0.6'
@@ -76,11 +66,11 @@ services:
       - 80
       - 443
     ports:
-      - 80:80
-      - 443:443
+      - 8000:80
+      - 4430:443
     environment:
      - NGINX_HOST=proxy
-     - NGINX_PORT=80
+     - NGINX_PORT=8000
     depends_on:
       - backend
       - thredds
@@ -98,14 +88,14 @@ services:
     environment:
      - THREDDS_PASSWORD=${THREDDS_PASSWORD}
 
-  frontend:
-    container_name: frontend
-    image: ppcv_frontend:latest
-    build:
-      context: ./Arpav-PPCV
-    expose:
-      - 80
-    restart: always
+#  frontend:
+#    container_name: frontend
+#    image: ppcv_frontend:latest
+#    build:
+#      context: ./Arpav-PPCV
+#    expose:
+#      - 80
+#    restart: always
 
 volumes:
   redisdata:

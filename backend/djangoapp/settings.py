@@ -99,7 +99,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = os.environ.get('WSGI_APPLICATION', 'djangoapp.wsgi.application')
-ASGI_APPLICATION = os.environ.get('ASGI_APPLICATION', 'djangoapp.asgi.channel_layer')
+ASGI_APPLICATION = os.environ.get('ASGI_APPLICATION', 'djangoapp.asgi.app')
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases

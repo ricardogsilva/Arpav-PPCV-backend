@@ -34,7 +34,6 @@ def sanitize_docker_image_name(docker_image_name: str) -> str:
 
 def get_env_variables() -> dict[str, str | None]:
     return {
-        "API_COMMAND": os.getenv("API_COMMAND", "daphne"),
         "DEBUG": os.getenv("DEBUG", "0"),
         "PGPASSWORD": os.getenv("PGPASSWORD", "postgres"),
         "POSTGRES_DB_NAME": os.getenv("POSTGRES_DB_NAME", "postgres"),
@@ -96,7 +95,7 @@ async def run_tests(
     return await (
         built_container.with_service_binding("db", postgis_service)
         .without_entrypoint()
-        .with_mounted_directory("/opt/api/tests", client.host().directory("./tests"))
+        # .with_mounted_directory("/opt/api/tests", client.host().directory("./tests"))
         .with_env_variable("DEBUG", env_variables["DEBUG"])
         .with_env_variable("POSTGRES_DB_NAME", env_variables["POSTGRES_DB_NAME"])
         .with_env_variable("POSTGRES_USER", env_variables["POSTGRES_USER"])
@@ -107,18 +106,10 @@ async def run_tests(
         .with_env_variable("THREDDS_HOST", env_variables["THREDDS_HOST"])
         .with_env_variable("THREDDS_PASSWORD", env_variables["THREDDS_PASSWORD"])
         .with_env_variable("THREDDS_USER", env_variables["THREDDS_USER"])
+        .with_exec(shlex.split("poetry install --with dev"))
         .with_exec(
             shlex.split(
-                "pip install "
-                "coverage==7.4.1 "
-                "pytest==8.0.0 "
-                "pytest-cov==4.1.0 "
-                "pytest-django==4.8.0"
-            )
-        )
-        .with_exec(
-            shlex.split(
-                "python manage.py makemigrations "
+                "poetry run django-admin makemigrations "
                 "users "
                 "groups "
                 "forecastattributes "
@@ -126,9 +117,10 @@ async def run_tests(
                 "thredds"
             )
         )
-        .with_exec(shlex.split("python manage.py migrate"))
+        .with_exec(shlex.split("poetry run django-admin migrate"))
         .with_exec(
-            shlex.split("pytest --verbose --cov -k 'padoa' -x --reuse-db ../tests")
+            shlex.split(
+                "poetry run pytest --verbose --cov --reuse-db tests")
         )
     ).stdout()
 
@@ -150,7 +142,7 @@ async def run_pipeline(
             client.container()
             .build(
                 context=src,
-                dockerfile="Dockerfile"
+                dockerfile="docker/Dockerfile"
             )
             .with_label(
                 "org.opencontainers.image.source",
