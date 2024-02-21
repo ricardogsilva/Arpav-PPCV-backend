@@ -51,7 +51,7 @@ jobs:
         with:
           verb: run
           args: >-
-            poetry run tests/ci/main.py 
+            poetry run python tests/ci/main.py 
             --with-tests 
             ${{ env.PUBLISH_IMAGE == 'TRUE' && format('--publish-docker-image {0}:{1}', env.IMAGE_NAME, env.IMAGE_TAG)  || ''}}
           version: 0.9.9
@@ -62,5 +62,5 @@ jobs:
         uses: dagger/dagger-for-github@v5
         with:
           verb: run
-          args: poetry run tests/ci/main.py --with-security-scan
+          args: poetry run python tests/ci/main.py --with-security-scan
           version: 0.9.9
