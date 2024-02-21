@@ -120,7 +120,7 @@ async def run_tests(
         .with_exec(shlex.split("poetry run django-admin migrate"))
         .with_exec(
             shlex.split(
-                "poetry run pytest --verbose --cov --reuse-db tests")
+                "poetry run pytest --reuse-db tests")
         )
     ).stdout()
 

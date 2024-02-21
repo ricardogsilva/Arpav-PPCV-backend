@@ -46,6 +46,14 @@ pytest-cov = "^4.1.0"
 pytest-django = "^4.8.0"
 dagger-io = "^0.9.10"
 
+
+[tool.pytest.ini_options]
+addopts = "--verbose --cov --cov-branch --log-level=warning"
+
+[tool.coverage.run]
+branch = true
+source = ["djangoapp", "forecastattributes", "places", "thredds"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
