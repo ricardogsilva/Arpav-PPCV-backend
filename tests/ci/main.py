@@ -90,6 +90,24 @@ def _get_env_variables() -> dict[str, str | None]:
     }
 
 
+async def _run_linter(built_container: dagger.Container):
+    return await (
+        built_container.with_user("appuser")
+        .without_entrypoint()
+        .with_exec(shlex.split("poetry install --with dev"))
+        .with_exec(shlex.split("poetry run ruff check ."))
+    )
+
+
+async def _run_formatter(built_container: dagger.Container):
+    return await (
+        built_container.with_user("appuser")
+        .without_entrypoint()
+        .with_exec(shlex.split("poetry install --with dev"))
+        .with_exec(shlex.split("poetry run ruff format ."))
+    )
+
+
 async def _run_security_scan(built_container: dagger.Container):
     return await (
         built_container.with_user("root")
@@ -169,6 +187,8 @@ async def _run_pipeline(
         *,
         with_tests: bool,
         with_security_scan: bool,
+        with_linter: bool,
+        with_formatter: bool,
         publish_docker_image: str | None = None
 ):
     env_variables = _get_env_variables()
@@ -189,6 +209,10 @@ async def _run_pipeline(
                 "https://github.com/geobeyond/Arpav-PPCV-backend"
             )
         )
+        if with_linter:
+            await _run_linter(built_container)
+        if with_formatter:
+            await _run_formatter(built_container)
         if with_security_scan:
             await _run_security_scan(built_container)
         if with_tests:
