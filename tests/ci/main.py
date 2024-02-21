@@ -104,7 +104,7 @@ async def _run_formatter(built_container: dagger.Container):
         built_container.with_user("appuser")
         .without_entrypoint()
         .with_exec(shlex.split("poetry install --with dev"))
-        .with_exec(shlex.split("poetry run ruff format ."))
+        .with_exec(shlex.split("poetry run ruff format --check ."))
     )
 
 
