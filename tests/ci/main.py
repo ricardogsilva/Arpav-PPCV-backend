@@ -5,14 +5,55 @@ import os
 import shlex
 import sys
 from pathlib import Path
+from typing import Annotated
 
 import dagger
+import typer
 
 logger = logging.getLogger(__name__)
 POSTGIS_IMAGE_VERSION = "postgis/postgis:16-3.4"
 
+cli_app = typer.Typer()
 
-def sanitize_docker_image_name(docker_image_name: str) -> str:
+
+@cli_app.command()
+def run_ci_pipeline(
+    with_tests: Annotated[
+            bool,
+            typer.Option(
+                help=(
+                        "Run automated tests on the built container and exit with an "
+                        "error if a test fails."
+                )
+            )
+        ] = False,
+        with_security_scan: Annotated[
+            bool,
+            typer.Option(
+                help=(
+                        "Full URI to an image registry where the built container image should be "
+                        "published, including the image tag. This assumes that logging in to the "
+                        "registry has already been made (for example by running the "
+                        "`docker login` command beforehand)."
+                        "Example: ghcr.io/geobeyond/arpav-ppcv-backend:latest"
+                )
+            )
+        ] = False,
+        publish_docker_image: str | None = None
+):
+    """Command-line interface for running CI pipeline."""
+
+    logging.basicConfig(level=logging.INFO)
+    return asyncio.run(
+        _run_pipeline(
+            with_tests=with_tests,
+            with_security_scan=with_security_scan,
+            publish_docker_image=publish_docker_image
+        )
+    )
+
+
+def _sanitize_docker_image_name(docker_image_name: str) -> str:
     """Ensure input docker_image_name is valid.
 
     This function sanitizes the input according to the rules described in
@@ -32,7 +73,7 @@ def sanitize_docker_image_name(docker_image_name: str) -> str:
     return f"{host}/{path.lower()}:{tag or 'latest'}"
 
 
-def get_env_variables() -> dict[str, str | None]:
+def _get_env_variables() -> dict[str, str | None]:
     return {
         "DEBUG": os.getenv("DEBUG", "0"),
         "PGPASSWORD": os.getenv("PGPASSWORD", "postgres"),
@@ -50,7 +91,7 @@ def get_env_variables() -> dict[str, str | None]:
     }
 
 
-async def run_security_scan(built_container: dagger.Container):
+async def _run_security_scan(built_container: dagger.Container):
     return await (
         built_container.with_user("root")
         .without_entrypoint()
@@ -77,7 +118,7 @@ async def run_security_scan(built_container: dagger.Container):
     ).stdout()
 
 
-async def run_tests(
+async def _run_tests(
         client: dagger.Client,
         built_container: dagger.Container,
         env_variables: dict[str, str]
@@ -125,13 +166,13 @@ async def run_tests(
     ).stdout()
 
 
-async def run_pipeline(
+async def _run_pipeline(
         *,
         with_tests: bool,
         with_security_scan: bool,
         publish_docker_image: str | None = None
 ):
-    env_variables = get_env_variables()
+    env_variables = _get_env_variables()
     conf = dagger.Config(
         log_output=sys.stderr,
     )
@@ -150,51 +191,51 @@ async def run_pipeline(
             )
         )
         if with_security_scan:
-            await run_security_scan(built_container)
+            await _run_security_scan(built_container)
         if with_tests:
-            await run_tests(client, built_container, env_variables)
+            await _run_tests(client, built_container, env_variables)
         if publish_docker_image is not None:
-            sanitized_name = sanitize_docker_image_name(publish_docker_image)
+            sanitized_name = _sanitize_docker_image_name(publish_docker_image)
             await built_container.publish(sanitized_name)
-
         print("Done")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--with-security-scan",
-        action="store_true",
-        help=(
-            "Run the trivy security scanner on the built container image in order "
-            "to find known vulnerabilities of level HIGH and CRITICAL. Exits with "
-            "an error if any vulnerabilities are found."
-        )
-    )
-    parser.add_argument(
-        "--with-tests",
-        action="store_true",
-        help=(
-            "Run automated tests on the built container and exit with an error if a "
-            "test fails."
-        )
-    )
-    parser.add_argument(
-        "--publish-docker-image",
-        help=(
-            "Full URI to an image registry where the built container image should be "
-            "published, including the image tag. This assumes that logging in to the "
-            "registry has already been made (for example by running the "
-            "`docker login` command beforehand)."
-            "Example: ghcr.io/geobeyond/arpav-ppcv-backend:latest"
-        )
-    )
-    args = parser.parse_args()
-    logging.basicConfig(level=logging.INFO)
-    asyncio.run(
-        run_pipeline(
-            with_tests=args.with_tests,
-            with_security_scan=args.with_security_scan,
-            publish_docker_image=args.publish_docker_image,
-        )
-    )
+    cli_app()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument(
+    #     "--with-security-scan",
+    #     action="store_true",
+    #     help=(
+    #         "Run the trivy security scanner on the built container image in order "
+    #         "to find known vulnerabilities of level HIGH and CRITICAL. Exits with "
+    #         "an error if any vulnerabilities are found."
+    #     )
+    # )
+    # parser.add_argument(
+    #     "--with-tests",
+    #     action="store_true",
+    #     help=(
+    #         "Run automated tests on the built container and exit with an error if a "
+    #         "test fails."
+    #     )
+    # )
+    # parser.add_argument(
+    #     "--publish-docker-image",
+    #     help=(
+    #         "Full URI to an image registry where the built container image should be "
+    #         "published, including the image tag. This assumes that logging in to the "
+    #         "registry has already been made (for example by running the "
+    #         "`docker login` command beforehand)."
+    #         "Example: ghcr.io/geobeyond/arpav-ppcv-backend:latest"
+    #     )
+    # )
+    # args = parser.parse_args()
+    # logging.basicConfig(level=logging.INFO)
+    # asyncio.run(
+    #     _run_pipeline(
+    #         with_tests=args.with_tests,
+    #         with_security_scan=args.with_security_scan,
+    #         publish_docker_image=args.publish_docker_image,
+    #     )
+    # )
