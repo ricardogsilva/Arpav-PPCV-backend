@@ -35,8 +35,8 @@ jobs:
         with:
           poetry-version: "1.7.1"
 
-      - name: install dev dependencies
-        run: poetry install --only dev --no-root
+      - name: install code with dev dependencies
+        run: poetry install --with dev
 
       - name: login to container registry
         if: ${{ env.PUBLISH_IMAGE == 'TRUE' }}
