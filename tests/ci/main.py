@@ -1,4 +1,3 @@
-import argparse
 import asyncio
 import logging
 import os
@@ -202,40 +201,3 @@ async def _run_pipeline(
 
 if __name__ == "__main__":
     cli_app()
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument(
-    #     "--with-security-scan",
-    #     action="store_true",
-    #     help=(
-    #         "Run the trivy security scanner on the built container image in order "
-    #         "to find known vulnerabilities of level HIGH and CRITICAL. Exits with "
-    #         "an error if any vulnerabilities are found."
-    #     )
-    # )
-    # parser.add_argument(
-    #     "--with-tests",
-    #     action="store_true",
-    #     help=(
-    #         "Run automated tests on the built container and exit with an error if a "
-    #         "test fails."
-    #     )
-    # )
-    # parser.add_argument(
-    #     "--publish-docker-image",
-    #     help=(
-    #         "Full URI to an image registry where the built container image should be "
-    #         "published, including the image tag. This assumes that logging in to the "
-    #         "registry has already been made (for example by running the "
-    #         "`docker login` command beforehand)."
-    #         "Example: ghcr.io/geobeyond/arpav-ppcv-backend:latest"
-    #     )
-    # )
-    # args = parser.parse_args()
-    # logging.basicConfig(level=logging.INFO)
-    # asyncio.run(
-    #     _run_pipeline(
-    #         with_tests=args.with_tests,
-    #         with_security_scan=args.with_security_scan,
-    #         publish_docker_image=args.publish_docker_image,
-    #     )
-    # )
