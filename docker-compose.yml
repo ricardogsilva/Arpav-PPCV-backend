@@ -26,7 +26,7 @@ services:
   backend:
     env_file: .env
     container_name: backend.api
-    image: "ghcr.io/geobeyond/arpav_ppcv_backend:${CURRENT_GIT_BRANCH:-latest}"
+    image: "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend:${CURRENT_GIT_BRANCH:-latest}"
     restart: unless-stopped
     environment:
       GUNICORN_WORKERS: 15

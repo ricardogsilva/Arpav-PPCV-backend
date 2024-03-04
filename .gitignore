@@ -58,7 +58,6 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
-*/*/dj*/*/migrations/0*.py
 
 # Flask stuff:
 instance/
@@ -133,7 +132,6 @@ backend/static
 backend/.env
 #backend/djcore
 
-**/migrations/*.py
 /docker/basemap/data/
 /docker/basemap/gebco/
 /proxy/node_modules/
