@@ -50,6 +50,9 @@ jobs:
         uses: dagger/dagger-for-github@v5
         with:
           verb: run
+          # not including the `--with-linter` and `--with-formatter` flags yet,
+          # in order to not break CI - we will fix linting and formatting errors
+          # shortly
           args: >-
             poetry run python tests/ci/main.py 
             --with-tests 
