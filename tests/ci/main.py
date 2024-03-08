@@ -17,7 +17,7 @@ cli_app = typer.Typer()
 
 @cli_app.command()
 def run_ci_pipeline(
-    with_tests: Annotated[
+        with_tests: Annotated[
             bool,
             typer.Option(
                 help=(
@@ -38,6 +38,24 @@ def run_ci_pipeline(
                 )
             )
         ] = False,
+        with_linter: Annotated[
+            bool,
+            typer.Option(
+                help=(
+                        "Apply linting to the code and exit with an error if there are static "
+                        "analysis issues."
+                )
+            )
+        ] = False,
+        with_formatter: Annotated[
+            bool,
+            typer.Option(
+                help=(
+                        "Check the code for formatting issues and exit with an error if "
+                        "found."
+                )
+            )
+        ] = False,
         publish_docker_image: str | None = None
 ):
     """Command-line interface for running CI pipeline."""
@@ -47,7 +65,9 @@ def run_ci_pipeline(
         _run_pipeline(
             with_tests=with_tests,
             with_security_scan=with_security_scan,
-            publish_docker_image=publish_docker_image
+            with_linter=with_linter,
+            with_formatter=with_formatter,
+            publish_docker_image=publish_docker_image,
         )
     )
 
@@ -83,11 +103,30 @@ def _get_env_variables() -> dict[str, str | None]:
         "SECRET_KEY": os.getenv("SECRET_KEY", "generate it e.g. from https://djecrety.ir/"),
         "SSL_CERTIFICATE": os.getenv("SSL_CERTIFICATE", "/etc/letsencrypt/live/yourdomain/fullchain.pem"),
         "SSL_KEY": os.getenv("SSL_KEY", "/etc/letsencrypt/live/yourdomain/privkey.pem"),
-        "THREDDS_AUTH_URL": os.getenv("THREDDS_AUTH_URL", "https://thredds.arpa.veneto.it/thredds/restrictedAccess/dati_accordo"),
+        "THREDDS_AUTH_URL": os.getenv("THREDDS_AUTH_URL",
+                                      "https://thredds.arpa.veneto.it/thredds/restrictedAccess/dati_accordo"),
         "THREDDS_HOST": os.getenv("THREDDS_HOST", "https://thredds.arpa.veneto.it/thredds/"),
         "THREDDS_PASSWORD": os.getenv("THREDDS_PASSWORD", ""),
         "THREDDS_USER": os.getenv("THREDDS_USER", ""),
     }
+
+
+async def _run_linter(built_container: dagger.Container):
+    return await (
+        built_container.with_user("appuser")
+        .without_entrypoint()
+        .with_exec(shlex.split("poetry install --with dev"))
+        .with_exec(shlex.split("poetry run ruff check ."))
+    )
+
+
+async def _run_formatter(built_container: dagger.Container):
+    return await (
+        built_container.with_user("appuser")
+        .without_entrypoint()
+        .with_exec(shlex.split("poetry install --with dev"))
+        .with_exec(shlex.split("poetry run ruff format --check ."))
+    )
 
 
 async def _run_security_scan(built_container: dagger.Container):
@@ -169,6 +208,8 @@ async def _run_pipeline(
         *,
         with_tests: bool,
         with_security_scan: bool,
+        with_linter: bool,
+        with_formatter: bool,
         publish_docker_image: str | None = None
 ):
     env_variables = _get_env_variables()
@@ -189,6 +230,10 @@ async def _run_pipeline(
                 "https://github.com/geobeyond/Arpav-PPCV-backend"
             )
         )
+        if with_linter:
+            await _run_linter(built_container)
+        if with_formatter:
+            await _run_formatter(built_container)
         if with_security_scan:
             await _run_security_scan(built_container)
         if with_tests:
