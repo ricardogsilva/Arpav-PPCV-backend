@@ -186,16 +186,6 @@ async def _run_tests(
         .with_env_variable("THREDDS_PASSWORD", env_variables["THREDDS_PASSWORD"])
         .with_env_variable("THREDDS_USER", env_variables["THREDDS_USER"])
         .with_exec(shlex.split("poetry install --with dev"))
-        .with_exec(
-            shlex.split(
-                "poetry run django-admin makemigrations "
-                "users "
-                "groups "
-                "forecastattributes "
-                "places "
-                "thredds"
-            )
-        )
         .with_exec(shlex.split("poetry run django-admin migrate"))
         .with_exec(
             shlex.split(

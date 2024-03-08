@@ -9,8 +9,6 @@ class Command(BaseCommand):
     help = "This will import all importable things"
 
     def handle(self, *args, **options):
-        call_command('makemigrations')
-        call_command('migrate')
         # call_command('import_client')
         call_command('import_super_user')
         # call_command('load_groups_and_permissions')
