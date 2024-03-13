@@ -1,9 +1,12 @@
 """Command-line interface for the project."""
 
 import dataclasses
+import datetime as dt
 import enum
 import itertools
+import typing
 from pathlib import Path
+from xml.etree import ElementTree as et
 
 import requests
 import typer
@@ -130,3 +133,254 @@ def import_anomaly_forecast_datasets(target_dir: Path):
         else:
             print(f"path already exists ({output_path!r}) - skipping")
     print("Done!")
+
+#
+#
+# @dataclasses.dataclass
+# class ThreddsWildcardFilterSelector:
+#     type_: typing.Literal["wildcard", "regexp"]
+#     value: str
+#     applies_to_datasets: bool = True
+#     applies_to_collections: bool = False
+#
+#
+# @dataclasses.dataclass
+# class ThreddsDatasetScanFilter:
+#     includes: list[ThreddsWildcardFilterSelector] = dataclasses.field(
+#         default_factory=list)
+#     excludes: list[ThreddsWildcardFilterSelector] = dataclasses.field(
+#         default_factory=list)
+
+
+@dataclasses.dataclass
+class ThreddsClientService:
+    name: str
+    service_type: str
+    base: str
+
+
+@dataclasses.dataclass
+class ThreddsClientPublicDataset:
+    name: str
+    id: str
+    url_path: str
+
+
+@dataclasses.dataclass
+class ThreddsClientCatalogRef:
+    title: str
+    id: str
+    name: str
+    href: str
+
+
+@dataclasses.dataclass
+class ThreddsClientDataset:
+    name: str
+    properties: dict[str, str]
+    metadata: dict[str, str]
+    public_datasets: list[ThreddsClientPublicDataset]
+    catalog_refs: list[ThreddsClientCatalogRef]
+
+
+@dataclasses.dataclass
+class ThreddsClientCatalog:
+    url: str
+    services: dict[str, ThreddsClientService]
+    dataset: ThreddsClientDataset
+
+
+_NAMESPACES: typing.Final = {
+    "thredds": "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0",
+    "xlink": "http://www.w3.org/1999/xlink",
+}
+
+
+def discover_catalog_contents(
+        catalog_host: str,
+        catalog_ref: str,
+        http_client: requests.Session,
+        use_https: bool = True,
+) -> ThreddsClientCatalog:
+    """
+    host: thredds.arpa.veneto.it
+    catalog_ref: /thredds/catalog/ensembletwbc/clipped
+    """
+
+
+    url = _build_catalog_url(catalog_host, catalog_ref, use_https)
+    response = http_client.get(url)
+    response.raise_for_status()
+    raw_catalog_description = response.content
+    parsed_services, parsed_dataset = _parse_catalog_client_description(
+        raw_catalog_description)
+    return ThreddsClientCatalog(
+        url=url,
+        services={service.service_type: service for service in parsed_services},
+        dataset=parsed_dataset
+    )
+
+
+def build_download_urls(
+        catalog_host: str,
+        catalog_contents: ThreddsClientCatalog,
+        use_https: bool = True
+) -> dict[str, str]:
+    urls = {}
+    url_pattern = "{scheme}://{host}/{service_base}/{dataset_path}"
+    for dataset in catalog_contents.dataset.public_datasets:
+        urls[dataset.id] = url_pattern.format(
+            scheme="https" if use_https else "http",
+            host=catalog_host,
+            service_base=catalog_contents.services["HTTPServer"].base.strip("/"),
+            dataset_path=dataset.url_path.strip("/")
+        )
+    return urls
+
+
+
+def _build_catalog_url(host: str, catalog_ref: str, use_https: bool = True) -> str:
+    return "{scheme}://{host}/{path}/catalog.xml".format(
+        scheme="https" if use_https else "http",
+        host=host,
+        path=catalog_ref.strip("/")
+    )
+
+
+def _parse_catalog_client_description(
+        catalog_description: bytes
+) -> tuple[list[ThreddsClientService], ThreddsClientDataset]:
+    root_element = et.fromstring(catalog_description)
+    service_qn = et.QName(_NAMESPACES["thredds"], "service")
+    dataset_qn = et.QName(_NAMESPACES["thredds"], "dataset")
+    services = []
+    for service_element in root_element.findall(f"./{service_qn}/"):
+        service = _parse_service_element(service_element)
+        services.append(service)
+    dataset = _parse_dataset_element(
+        root_element.findall(f"./{dataset_qn}")[0])
+    return services, dataset
+
+
+def _parse_service_element(service_el: et.Element) -> ThreddsClientService:
+    return ThreddsClientService(
+        name=service_el.get("name", default=""),
+        service_type=service_el.get("serviceType", default=""),
+        base=service_el.get("base", default="")
+    )
+
+
+def _parse_dataset_element(dataset_el: et.Element) -> ThreddsClientDataset:
+    prop_qname = et.QName(_NAMESPACES["thredds"], "property")
+    meta_qname = et.QName(_NAMESPACES["thredds"], "metadata")
+    ds_qname = et.QName(_NAMESPACES["thredds"], "dataset")
+    cat_ref_qname = et.QName(_NAMESPACES["thredds"], "catalogRef")
+    properties = {}
+    metadata = {}
+    public_datasets = []
+    catalog_references = []
+    for element in dataset_el.findall("./"):
+        match element.tag:
+            case prop_qname.text:
+                properties[element.get("name")] = element.get("value")
+            case meta_qname.text:
+                for metadata_element in element.findall("./"):
+                    key = metadata_element.tag.replace(
+                        f"{{{_NAMESPACES['thredds']}}}", "")
+                    metadata[key] = metadata_element.text
+            case ds_qname.text:
+                public_ds = ThreddsClientPublicDataset(
+                    name=element.get("name", ""),
+                    id=element.get("ID", ""),
+                    url_path=element.get("urlPath", ""),
+                )
+                public_datasets.append(public_ds)
+            case cat_ref_qname.text:
+                title_qname = et.QName(_NAMESPACES["xlink"], "title")
+                href_qname = et.QName(_NAMESPACES["xlink"], "href")
+                catalog_ref = ThreddsClientCatalogRef(
+                    title=element.get(title_qname.text, ""),
+                    id=element.get("ID", ""),
+                    name=element.get("name", ""),
+                    href=element.get(href_qname.text, ""),
+                )
+                catalog_references.append(catalog_ref)
+    return ThreddsClientDataset(
+        name=dataset_el.get("name", default=""),
+        properties=properties,
+        metadata=metadata,
+        public_datasets=public_datasets,
+        catalog_refs=catalog_references,
+    )
+#
+#
+# @dataclasses.dataclass
+# class ThreddsDatasetScan:
+#     """DatasetScan defines a single mapping between a URL base path and a directory.
+#
+#     DatasetScan configuration enables TDS to discover and serve some or all of the
+#     datasets found in the mapped directory. It generates nested catalogs by scanning
+#     the directory named in the `location` property and creating a `Dataset` for each
+#     file found and a `CatalogRef` for each subdirectory
+#
+#     In the THREDDS configuration, a DatasetScan element can be used wherever a Dataset
+#     is expected.
+#
+#     In the client view, DatasetScan elements get converted to CatalogRef elements
+#
+#     """
+#
+#     name: str
+#     id: str
+#     path: str  # is used to create the URL for files and catalogs, must be globally unique and must not contain leading or trailing slashes
+#     location: str  # must be an absolute path to a directory
+#     filter_: ThreddsDatasetScanFilter | None = None
+#
+#     def build_client_catalog_url(self):
+#         ...
+#
+#     def build_download_url(self) -> str:
+#         ...
+#
+#
+# ensemble_5rcm_bc = ThreddsDatasetScan(
+#     name="ENSEMBLE 5rcm BC",
+#     id="ensembletwbc",
+#     path="",
+#     location="",
+#     filter_=ThreddsDatasetScanFilter(
+#         excludes=[
+#             ThreddsWildcardFilterSelector(type_="wildcard", value="heat_waves_avg_*.nc"),
+#             ThreddsWildcardFilterSelector(type_="wildcard", value="heat_waves_*DJF.nc"),
+#             ThreddsWildcardFilterSelector(type_="wildcard", value="ecasuan_25_*.nc"),
+#             ThreddsWildcardFilterSelector(
+#                 type_="wildcard", value="ts",
+#                 applies_to_datasets=False,
+#                 applies_to_collections=True,
+#             ),
+#             ThreddsWildcardFilterSelector(
+#                 type_="wildcard", value="thralert",
+#                 applies_to_datasets=False,
+#                 applies_to_collections=True,
+#             ),
+#             ThreddsWildcardFilterSelector(
+#                 type_="w_null", value="thralert",
+#                 applies_to_datasets=False,
+#                 applies_to_collections=True,
+#             ),
+#         ]
+#     )
+# )
+#
+#
+# @dataclasses.dataclass
+# class AnomalyModelMetadata:
+#     name: str
+#     id: str
+#     path: Path
+#     location: str
+#
+#
+# @app.command()
+# def get_anomaly_data(target_dir: Path):
+#     ...
