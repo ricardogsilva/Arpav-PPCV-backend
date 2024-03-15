@@ -73,7 +73,10 @@ app = typer.Typer()
 
 @app.command()
 def import_thredds_datasets(
-        catalog: Annotated[KnownCatalogIdentifier, typer.Argument(...)],
+        catalog: Annotated[
+            Optional[list[KnownCatalogIdentifier]],
+            typer.Option(default_factory=list)
+        ],
         output_base_dir: Annotated[
             Optional[Path],
             typer.Option(
@@ -106,19 +109,22 @@ def import_thredds_datasets(
             )
         ] = False
 ):
+    print(f"{locals()=}")
     if verbose:
         logging.basicConfig(level=logging.INFO)
-    catalog_url = _get_catalog_url(catalog)
+    relevant_catalogs = catalog if len(catalog) > 0 else list(KnownCatalogIdentifier)
     client = httpx.Client()
-    print(f"Parsing catalog contents...")
-    contents = crawler.discover_catalog_contents(catalog_url, client)
-    print(f"Found {len(contents.get_public_datasets(wildcard_filter))} datasets")
-    if output_base_dir is not None:
-        print("Downloading datasets...")
-        anyio.run(
-            crawler.download_datasets,
-            output_base_dir,
-            contents,
-            wildcard_filter,
-            force_download,
-        )
+    for relevant_catalog in relevant_catalogs:
+        print(f"Processing catalog {relevant_catalog.value!r}...")
+        catalog_url = _get_catalog_url(relevant_catalog)
+        contents = crawler.discover_catalog_contents(catalog_url, client)
+        print(f"Found {len(contents.get_public_datasets(wildcard_filter))} datasets")
+        if output_base_dir is not None:
+            print("Downloading datasets...")
+            anyio.run(
+                crawler.download_datasets,
+                output_base_dir,
+                contents,
+                wildcard_filter,
+                force_download,
+            )
