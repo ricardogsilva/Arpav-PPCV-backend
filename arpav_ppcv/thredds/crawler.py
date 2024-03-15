@@ -43,7 +43,8 @@ def discover_catalog_contents(
 async def download_datasets(
         output_base_directory: Path,
         catalog_contents: models.ThreddsClientCatalog,
-        dataset_wildcard_filter: str
+        dataset_wildcard_filter: str = "*",
+        force_download: bool = False
 ) -> None:
     client = httpx.AsyncClient()
     relevant_datasets = catalog_contents.get_public_datasets(
@@ -58,7 +59,8 @@ async def download_datasets(
                     public_dataset.id,
                     catalog_contents,
                     output_base_directory,
-                    client
+                    force_download,
+                    client,
                 )
 
 
@@ -66,17 +68,21 @@ async def download_individual_dataset(
         dataset_id: str,
         catalog_contents: models.ThreddsClientCatalog,
         output_base_directory: Path,
-        http_client: httpx.AsyncClient
+        force_download: bool,
+        http_client: httpx.AsyncClient,
 ) -> None:
     url = catalog_contents.build_dataset_download_url(dataset_id)
-    async with http_client.stream("GET", url) as response:
-        response.raise_for_status()
-        output_path = output_base_directory / dataset_id
-        output_dir = output_path.parent
-        output_dir.mkdir(parents=True, exist_ok=True)
-        with output_path.open("wb") as fh:
-            async for chunk in response.aiter_bytes():
-                fh.write(chunk)
+    output_path = output_base_directory / dataset_id
+    if (not output_path.exists()) or force_download:
+        async with http_client.stream("GET", url) as response:
+            response.raise_for_status()
+            output_dir = output_path.parent
+            output_dir.mkdir(parents=True, exist_ok=True)
+            with output_path.open("wb") as fh:
+                async for chunk in response.aiter_bytes():
+                    fh.write(chunk)
+    else:
+        logger.info(f"dataset {dataset_id!r} alread exists locally, skipping...")
 
 
 def _parse_catalog_client_description(
