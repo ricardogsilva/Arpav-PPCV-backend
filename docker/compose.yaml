@@ -18,58 +18,75 @@ x-postgres-db-healthcheck: &postgres-db-healthcheck
 
 services:
 
-  web:
-    image: *backend-image
-    depends_on:
-      web-db:
-        condition: service_healthy
+#  web:
+#    image: *backend-image
+#    depends_on:
+#      web-db:
+#        condition: service_healthy
 
-  worker:
-    image: *backend-image
+#  worker:
+#    image: *backend-image
 
-  message-broker:
-    image: redis
+#  message-broker:
+#    image: redis
 
-  web-db:
-    image: *postgis-image
-    ports:
-      - target: "5432"
-        published: "55432"
-    environment:
-      PGDATA: /var/lib/postgresql/data/pgdata
-      POSTGRES_DB: "arpavppcv"
-      POSTGRES_PASSWORD: "pass"
-      POSTGRES_USER: "arpavppcv"
-    healthcheck: *postgres-db-healthcheck
+#  web-db:
+#    image: *postgis-image
+#    ports:
+#      - target: "5432"
+#        published: "55432"
+#    environment:
+#      PGDATA: /var/lib/postgresql/data/pgdata
+#      POSTGRES_DB: "arpavppcv"
+#      POSTGRES_PASSWORD: "pass"
+#      POSTGRES_USER: "arpavppcv"
+#    healthcheck: *postgres-db-healthcheck
 
   thredds:
     image: unidata/thredds-docker:5.4
     ports:
-      - target: "80"
-        published: "8080"
+      - target: "8080"
+        published: "8081"
     environment:
       TDS_CONTENT_ROOT_PATH: /usr/local/tomcat/content
       TDM_PW: "arpavppcvthredds"
+      TDS_HOST: "http://localhost:8081"
+    volumes:
+      - type: bind
+        source: $PWD/thredds/content-root/catalog.xml
+        target: /usr/local/tomcat/content/thredds/catalog.xml
+      - type: bind
+        source: $PWD/thredds/content-root/catalog_rcm.xml
+        target: /usr/local/tomcat/content/thredds/catalog_rcm.xml
+      - type: bind
+        source: $PWD/thredds/content-root/threddsConfig.xml
+        target: /usr/local/tomcat/content/thredds/threddsConfig.xml
+      - type: bind
+        source: $PWD/thredds/content-root/wmsConfig.xml
+        target: /usr/local/tomcat/content/thredds/wmsConfig.xml
+      - type: bind
+        source: /datadisk/data/geobeyond/arpav-ppcv/datasets
+        target: /datasets
 
-  martin:
-    image: ghcr.io/maplibre/martin:v0.13.0
-    ports:
-      - target: "3000"
-        published: "3000"
-    environment:
-      - DATABASE_URL=postgres://arpavppcv_tiles:pass@martin-db/arpavppcv_tiles
-    depends_on:
-      martin-db:
-        condition: service_healthy
+#  martin:
+#    image: ghcr.io/maplibre/martin:v0.13.0
+#    ports:
+#      - target: "3000"
+#        published: "3000"
+#    environment:
+#      - DATABASE_URL=postgres://arpavppcv_tiles:pass@martin-db/arpavppcv_tiles
+#    depends_on:
+#      martin-db:
+#        condition: service_healthy
 
-  martin-db:
-    image: *postgis-image
-    ports:
-      - target: "5432"
-        published: "55433"
-    environment:
-      PGDATA: /var/lib/postgresql/data/pgdata
-      POSTGRES_DB: "arpavppcv_tiles"
-      POSTGRES_PASSWORD: "pass"
-      POSTGRES_USER: "arpavppcv_tiles"
-    healthcheck: *postgres-db-healthcheck
+#  martin-db:
+#    image: *postgis-image
+#    ports:
+#      - target: "5432"
+#        published: "55433"
+#    environment:
+#      PGDATA: /var/lib/postgresql/data/pgdata
+#      POSTGRES_DB: "arpavppcv_tiles"
+#      POSTGRES_PASSWORD: "pass"
+#      POSTGRES_USER: "arpavppcv_tiles"
+#    healthcheck: *postgres-db-healthcheck
