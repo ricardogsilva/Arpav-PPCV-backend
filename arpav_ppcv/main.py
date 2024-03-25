@@ -23,15 +23,14 @@ class KnownCatalogIdentifier(enum.Enum):
     YEARLY_ABSOLUTE_5_MODEL_AVERAGE = "yearly-ensemble-absolute"
     YEARLY_ANOMALY_EC_EARTH_CCLM4_8_17 = "anomaly-ec-earth-cclm4-8-17"
     YEARLY_ABSOLUTE_EC_EARTH_CCLM4_8_17 = "yearly-ec-earth-cclm4-8-17-absolute"
-    YEARLY_ANOMALY_EC_EARTH_RACM022E = "anomaly-ec-earth-racm022e"
-    YEARLY_ABSOLUTE_EC_EARTH_RACM022E = "yearly-ec-earth-racm022e-absolute"
+    YEARLY_ANOMALY_EC_EARTH_RACM022E = "anomaly-ec-earth-racm022e"  # noqa
+    YEARLY_ABSOLUTE_EC_EARTH_RACM022E = "yearly-ec-earth-racm022e-absolute"  # noqa
     YEARLY_ANOMALY_EC_EARTH_RCA4 = "anomaly-ec-earth-rca4"
     YEARLY_ABSOLUTE_EC_EARTH_RCA4 = "yearly-ec-earth-rca4-absolute"
-    YEARLY_ANOMALY_HADGEM2_ES_RACMO22E = "anomaly-hadgem2-es-racmo22e"
-    YEARLY_ABSOLUTE_HADGEM2_ES_RACMO22E = "yearly-hadgem2-es-racmo22e-absolute"
+    YEARLY_ANOMALY_HADGEM2_ES_RACMO22E = "anomaly-hadgem2-es-racmo22e"  # noqa
+    YEARLY_ABSOLUTE_HADGEM2_ES_RACMO22E = "yearly-hadgem2-es-racmo22e-absolute"  # noqa
     YEARLY_ANOMALY_MPI_ESM_LR_REMO2009 = "anomaly-mpi-esm-lr-remo2009"
     YEARLY_ABSOLUTE_MPI_ESM_LR_REMO2009 = "yearly-mpi-esm-lr-remo2009-absolute"
-
 
 
 def _get_catalog_url(catalog_identifier: KnownCatalogIdentifier) -> str:
@@ -70,6 +69,7 @@ def _get_catalog_url(catalog_identifier: KnownCatalogIdentifier) -> str:
 
 
 app = typer.Typer()
+
 
 @app.command()
 def import_thredds_datasets(
@@ -122,7 +122,7 @@ def import_thredds_datasets(
         if output_base_dir is not None:
             print("Downloading datasets...")
             anyio.run(
-                crawler.download_datasets,
+                crawler.download_datasets,  # noqa
                 output_base_dir,
                 contents,
                 wildcard_filter,
