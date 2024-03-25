@@ -53,20 +53,23 @@ services:
       TDS_HOST: "http://localhost:8081"
     volumes:
       - type: bind
-        source: $PWD/thredds/content-root/catalog.xml
+        source: $PWD/docker/thredds/content-root/catalog.xml
         target: /usr/local/tomcat/content/thredds/catalog.xml
       - type: bind
-        source: $PWD/thredds/content-root/catalog_rcm.xml
+        source: $PWD/docker/thredds/content-root/catalog_rcm.xml
         target: /usr/local/tomcat/content/thredds/catalog_rcm.xml
       - type: bind
-        source: $PWD/thredds/content-root/threddsConfig.xml
+        source: $PWD/docker/thredds/content-root/threddsConfig.xml
         target: /usr/local/tomcat/content/thredds/threddsConfig.xml
       - type: bind
-        source: $PWD/thredds/content-root/wmsConfig.xml
+        source: $PWD/docker/thredds/content-root/wmsConfig.xml
         target: /usr/local/tomcat/content/thredds/wmsConfig.xml
       - type: bind
         source: /datadisk/data/geobeyond/arpav-ppcv/datasets
         target: /datasets
+      - type: bind
+        source: /datadisk/data/geobeyond/arpav-ppcv/netcdf-uncertainty-example
+        target: /additional
 
 #  martin:
 #    image: ghcr.io/maplibre/martin:v0.13.0
