@@ -37,6 +37,22 @@ the GetFeatureInfo operation.
                 <logScaling>false</logScaling>
                 <intervalTime>true</intervalTime>
             </standardName>
+            <standardName name="air_temperature_anomaly" units="K">
+                <allowFeatureInfo>true</allowFeatureInfo>
+                <defaultColorScaleRange>-3 3</defaultColorScaleRange>
+                <defaultPaletteName>seq-YlOrRd</defaultPaletteName>
+                <defaultNumColorBands>20</defaultNumColorBands>
+                <logScaling>false</logScaling>
+                <intervalTime>true</intervalTime>
+            </standardName>
+            <standardName name="air_temperature_anomaly_standard_error" units="K">
+                <allowFeatureInfo>true</allowFeatureInfo>
+                <defaultColorScaleRange>-1 1</defaultColorScaleRange>
+                <defaultPaletteName>seq-YlOrRd</defaultPaletteName>
+                <defaultNumColorBands>20</defaultNumColorBands>
+                <logScaling>false</logScaling>
+                <intervalTime>true</intervalTime>
+            </standardName>
             <standardName name="precipitation_flux" units="mm">
                 <allowFeatureInfo>true</allowFeatureInfo>
                 <defaultColorScaleRange>-40 40</defaultColorScaleRange>-->

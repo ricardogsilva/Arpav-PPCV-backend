@@ -15,6 +15,28 @@
         <service name="ncssGrid" serviceType="NetcdfSubset" base="/thredds/ncss/grid/"/>
     </service>
 
+    <dataset name="netcdf tests">
+        <metadata inherited="true">
+            <serviceName>all</serviceName>
+            <dataType>Grid</dataType>
+            <authority>Arpav</authority>
+        </metadata>
+
+        <datasetScan
+                name="Tests"
+                ID="tests"
+                path="tests"
+                location="/additional"
+        >
+            <metadata inherited="true">
+                <serviceName>all</serviceName>
+                <dataType>Grid</dataType>
+                <authority>Arpav</authority>
+            </metadata>
+        </datasetScan>
+
+    </dataset>
+
     <dataset name="CORDEX RCM Triveneto">
         <metadata inherited="true">
             <serviceName>all</serviceName>
