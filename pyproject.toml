@@ -10,6 +10,7 @@ packages = [
     {include = "forecastattributes", from = "backend/padoa"},
     {include = "places", from = "backend/padoa"},
     {include = "thredds", from = "backend/padoa"},
+    {include = "arpav_ppcv"},
 ]
 
 [tool.poetry.dependencies]
@@ -37,6 +38,8 @@ requests = "2.23.0"
 python-dateutil = "2.8.1"
 pytz = "2020.1"
 django-redis-sessions = "0.6.1"
+httpx = "^0.27.0"
+anyio = "^4.3.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -47,6 +50,8 @@ pytest-django = "^4.8.0"
 dagger-io = "^0.9.10"
 ruff = "^0.2.2"
 
+[tool.poetry.scripts]
+arpav-ppcv = "arpav_ppcv.main:app"
 
 [tool.pytest.ini_options]
 addopts = "--verbose --cov --cov-branch --log-level=warning"
