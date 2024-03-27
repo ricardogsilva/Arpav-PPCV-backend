@@ -5,45 +5,45 @@ import urllib.parse
 
 
 @dataclasses.dataclass
-class ForecastTemporalPeriodMetadata:
+class _ForecastTemporalPeriodMetadata:
+    name: str
+    code: str
+
+
+@dataclasses.dataclass
+class _ForecastYearPeriodMetadata:
+    name: str
+    code: str
+
+
+@dataclasses.dataclass
+class _ForecastScenarioMetadata:
     name: str
     code: str
 
 
 class ForecastTemporalPeriod(enum.Enum):
-    TW1 = ForecastTemporalPeriodMetadata(name="2021 - 2050", code="tw1")
-    TW2 = ForecastTemporalPeriodMetadata(name="2071 - 2100", code="tw2")
+    TW1 = _ForecastTemporalPeriodMetadata(name="2021 - 2050", code="tw1")
+    TW2 = _ForecastTemporalPeriodMetadata(name="2071 - 2100", code="tw2")
 
 
-@dataclasses.dataclass
-class ForecastSeasonMetadata:
-    name: str
-    code: str
-
-
-class ForecastSeason(enum.Enum):
-    DJF = ForecastSeasonMetadata(name="Winter", code="DJF")
-    MAM = ForecastSeasonMetadata(name="Spring", code="MAM")
-    JJA = ForecastSeasonMetadata(name="Summer", code="JJA")
-    SON = ForecastSeasonMetadata(name="Autumn", code="SON")
-
-
-@dataclasses.dataclass
-class ForecastScenarioMetadata:
-    name: str
-    code: str
+class ForecastYearPeriod(enum.Enum):
+    WINTER = _ForecastYearPeriodMetadata(name="Winter", code="DJF")
+    SPRING = _ForecastYearPeriodMetadata(name="Spring", code="MAM")
+    SUMMER = _ForecastYearPeriodMetadata(name="Summer", code="JJA")
+    AUTUMN = _ForecastYearPeriodMetadata(name="Autumn", code="SON")
+    ANNUAL = _ForecastYearPeriodMetadata(name="Annual", code="*")
 
 
 class ForecastScenario(enum.Enum):
-    RCP26 = ForecastScenarioMetadata(name="RCP26", code="rcp26")
-    RCP45 = ForecastScenarioMetadata(name="RCP45", code="rcp45")
-    RCP85 = ForecastScenarioMetadata(name="RCP85", code="rcp85")
+    RCP26 = _ForecastScenarioMetadata(name="RCP26", code="rcp26")
+    RCP45 = _ForecastScenarioMetadata(name="RCP45", code="rcp45")
+    RCP85 = _ForecastScenarioMetadata(name="RCP85", code="rcp85")
 
 
 class AveragingPeriod(enum.Enum):
     YEAR = "year"
     THIRTY_YEAR = "thirty-year"
-
 
 
 @dataclasses.dataclass
