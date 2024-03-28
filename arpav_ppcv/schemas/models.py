@@ -9,10 +9,10 @@ class ForecastModelScenario(pydantic.BaseModel):
 class ThreddsDatasetConfiguration(pydantic.BaseModel):
     identifier: str
     dataset_id_pattern: str
-    unit: str
+    unit: str | None = None
     palette: str
     range: list[float]
-    allowed_values: dict[str, list[str]]
+    allowed_values: dict[str, list[str]] | None = None
 
 
 class ListMeta(pydantic.BaseModel):
@@ -37,6 +37,10 @@ class ResourceList(pydantic.BaseModel):
 
 class ThreddsDatasetConfigurationList(ResourceList):
     items: list[ThreddsDatasetConfiguration]
+
+
+class ThreddsDatasetConfigurationIdentifierList(ResourceList):
+    items: list[str]
 
 
 class ForecastModelScenarioList(ResourceList):

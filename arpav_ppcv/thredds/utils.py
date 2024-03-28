@@ -2,6 +2,7 @@ import logging
 
 import httpx
 
+from .. import config
 from . import models
 
 logger = logging.getLogger(__name__)
@@ -38,3 +39,20 @@ async def proxy_request(url: str, http_client: httpx.AsyncClient) -> httpx.Respo
     response = await http_client.get(url)
     response.raise_for_status()
     return response
+
+
+def tweak_wms_get_map_request(
+        query_params: dict[str, str],
+        dataset_configuration: config.ThreddsDatasetSettings,
+        uncertainty_visualization_scale_range: tuple[float, float]
+) -> dict[str, str]:
+    if not query_params.get("styles"):
+        query_params["styles"] = dataset_configuration.palette
+    if not query_params.get("colorscalerange"):
+        color_scale_range = ",".join(str(f) for f in dataset_configuration.range)
+        if "stippled" in dataset_configuration.palette:
+            uncert_scale_range = ",".join(
+                str(f) for f in uncertainty_visualization_scale_range)
+            color_scale_range = ";".join((color_scale_range, uncert_scale_range))
+        query_params.setdefault("colorscalerange", color_scale_range)
+    return query_params
