@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 
 import os
 
+from arpav_ppcv import config
+
+ARPAV_PPCV = config.get_settings()
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -20,10 +24,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY", '')
+SECRET_KEY = ARPAV_PPCV.django_app.secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(os.environ.get("DEBUG", "False"))
+DEBUG = ARPAV_PPCV.debug
 
 ALLOWED_HOSTS = [
     '*'
@@ -32,7 +36,6 @@ ALLOWED_HOSTS = [
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    #'django.contrib.staticfiles.finders.DefaultStorageFinder'
 )
 RESOURCE_ROOT = os.path.join(BASE_DIR, 'resources')
 
@@ -98,20 +101,19 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = os.environ.get('WSGI_APPLICATION', 'djangoapp.wsgi.application')
-ASGI_APPLICATION = os.environ.get('ASGI_APPLICATION', 'djangoapp.asgi.app')
+WSGI_APPLICATION = 'djangoapp.wsgi.application'
+ASGI_APPLICATION = 'djangoapp.asgi.app'
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': os.environ.get("DB_ENGINE", 'django.contrib.gis.db.backends.postgis'),
-        #'ENGINE': os.environ.get("DB_ENGINE", 'django.db.backends.postgresql'),
-        'NAME': os.environ.get("POSTGRES_DB_NAME", 'django'),
-        'USER': os.environ.get("POSTGRES_USER", 'django'),
-        'PASSWORD': os.environ.get("PGPASSWORD", 'django'),
-        'HOST': os.environ.get("POSTGRES_PORT_5432_TCP_ADDR", 'localhost'),
-        'PORT': os.environ.get("POSTGRES_PORT_5432_TCP_PORT", '5432'),
+        'ENGINE': ARPAV_PPCV.django_app.db_engine,
+        'NAME': ARPAV_PPCV.django_app.db_dsn.path[1:],
+        'USER': ARPAV_PPCV.django_app.db_dsn.hosts()[0]["username"],
+        'PASSWORD': ARPAV_PPCV.django_app.db_dsn.hosts()[0]["password"],
+        'HOST': ARPAV_PPCV.django_app.db_dsn.hosts()[0]["host"],
+        'PORT': ARPAV_PPCV.django_app.db_dsn.hosts()[0]["port"],
         'CONN_MAX_AGE': 3600
     }
 }
@@ -156,9 +158,9 @@ AUTH_USER_MODEL = 'users.User'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = ARPAV_PPCV.django_app.static_mount_prefix
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = str(ARPAV_PPCV.django_app.static_root)
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'templates'),)
 
@@ -222,10 +224,10 @@ DEFAULT_SCOPES = ['read', 'write']
 LOGIN_URL = '/oauth/login'
 LOGIN_REDIRECT_URL = '/'
 
-EMAIL_HOST = os.environ.get("EMAIL_HOST","smtp.mailtrap.io")
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER","572936e320d74cd9d")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD","26ffbaa1230f4a")
-EMAIL_PORT = os.environ.get("EMAIL_PORT","2525")
+EMAIL_HOST = ARPAV_PPCV.django_app.email.host
+EMAIL_HOST_USER = ARPAV_PPCV.django_app.email.host_user
+EMAIL_HOST_PASSWORD = ARPAV_PPCV.django_app.email.host_password
+EMAIL_PORT = ARPAV_PPCV.django_app.email.port
 
 LOGGING = {
     'version': 1,
@@ -275,8 +277,8 @@ ACCEPTED_UPLOAD_MEDIA_TYPES = [
 ]
 
 
-CELERY_BROKER_URL = 'redis://' + os.environ.get("REDIS_HOST","localhost") + ':' + str(os.environ.get("REDIS_PORT", 6379))
-CELERY_RESULT_BACKEND = 'redis://' + os.environ.get("REDIS_HOST","localhost") + ':' + str(os.environ.get("REDIS_PORT", 6379))
+CELERY_BROKER_URL = ARPAV_PPCV.django_app.redis_dsn.unicode_string()
+CELERY_RESULT_BACKEND = ARPAV_PPCV.django_app.redis_dsn.unicode_string()
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
@@ -288,7 +290,10 @@ CHANNEL_LAYERS = {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
            "hosts": [
-               (os.environ.get("REDIS_HOST","localhost"), os.environ.get("REDIS_PORT", 6379))
+               (
+                   ARPAV_PPCV.django_app.redis_dsn.host,
+                   ARPAV_PPCV.django_app.redis_dsn.port
+               ),
            ],  # set redis address
         },
     }
@@ -302,8 +307,8 @@ CACHES = {
 SESSION_ENGINE = 'redis_sessions.session'
 
 SESSION_REDIS = {
-    'host': os.environ.get('REDIS_HOST', 'localhost'),
-    'port': os.environ.get('REDIS_PORT', 6379),
+    'host': ARPAV_PPCV.django_app.redis_dsn.host,
+    'port': ARPAV_PPCV.django_app.redis_dsn.port,
     'db': 0,
     'password': '',
     'prefix': 'session',
@@ -311,11 +316,10 @@ SESSION_REDIS = {
 }
 
 THREDDS = {
-    'host': os.environ.get('THREDDS_HOST', 'localhost'),
-    'auth_url': os.environ.get('THREDDS_AUTH_URL', 'https://thredds.arpa.veneto.it/thredds/restrictedAccess/dati_accordo'),
-    'port': os.environ.get('THREDDS_PORT', 8080),
-    'user': os.environ.get('THREDDS_USER', 'admin'),
-    'password': os.environ.get('THREDDS_PASSWORD', 'admin'),
-    'proxy': 'http://proxy:8089/thredds/',
+    'host': ARPAV_PPCV.django_app.thredds.host,
+    'auth_url': ARPAV_PPCV.django_app.thredds.auth_url,
+    'port': ARPAV_PPCV.django_app.thredds.port,
+    'user': ARPAV_PPCV.django_app.thredds.user,
+    'password': ARPAV_PPCV.django_app.thredds.password,
+    'proxy': ARPAV_PPCV.django_app.thredds.proxy,
 }
-

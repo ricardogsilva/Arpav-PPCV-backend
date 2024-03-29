@@ -96,6 +96,38 @@ class ThreddsServerSettings(pydantic.BaseModel):
         return self
 
 
+class DjangoEmailSettings(pydantic.BaseModel):
+    host: str = "localhost"
+    host_user: str = "user"
+    host_password: str = "password"
+    port: int = 587
+
+
+class DjangoThreddsSettings(pydantic.BaseModel):
+    host: str = "localhost"
+    auth_url: str = (
+        "https://thredds.arpa.veneto.it/thredds/restrictedAccess/dati_accordo")
+    port: int = 8080
+    user: str = 'admin'
+    password: str = 'admin'
+    proxy: str = 'http://proxy:8089/thredds/'
+
+
+class DjangoAppSettings(pydantic.BaseModel):
+    settings_module: str = "djangoapp.settings"
+    secret_key: str = "changeme"
+    mount_prefix: str = "/legacy"
+    static_root: Path = Path.home() / "django_static"
+    static_mount_prefix: str = "/static/legacy"
+    db_engine: str = "django.contrib.gis.db.backends.postgis"
+    db_dsn: pydantic.PostgresDsn = pydantic.PostgresDsn(
+        "postgresql://django_user:django_password@localhost:5432/django_db")
+    email: DjangoEmailSettings = DjangoEmailSettings()
+    redis_dsn: pydantic.RedisDsn = pydantic.RedisDsn("redis://localhost:6379")
+    thredds: DjangoThreddsSettings = DjangoThreddsSettings()
+
+
+
 class ArpavPpcvSettings(BaseSettings):  # noqa
     model_config = SettingsConfigDict(
         env_prefix="ARPAV_PPCV__",  # noqa
@@ -107,6 +139,7 @@ class ArpavPpcvSettings(BaseSettings):  # noqa
     bind_port: int = 5001
     contact: ContactSettings = ContactSettings()
     thredds_server: ThreddsServerSettings = ThreddsServerSettings()
+    django_app: DjangoAppSettings = DjangoAppSettings()
     uvicorn_log_config_file: Path | None = None
 
 

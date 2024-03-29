@@ -54,6 +54,6 @@ RUN echo $GIT_COMMIT > /home/appuser/git-commit.txt
 RUN poetry run python -c "import compileall; compileall.compile_path(maxlevels=10)"
 
 # use tini as the init process
-ENTRYPOINT ["tini", "-g", "--", "poetry", "run", "django-admin"]
+ENTRYPOINT ["tini", "-g", "--", "poetry", "run", "arpav-ppcv"]
 
-CMD ["runserver", "0.0.0.0:8000"]
+CMD ["run-server"]

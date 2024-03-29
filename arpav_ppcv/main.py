@@ -78,6 +78,27 @@ def run_server(ctx: typer.Context):
     os.execvp("uvicorn", uvicorn_args)
 
 
+@app.command(
+    context_settings={
+        "allow_extra_args": True,
+        "ignore_unknown_options": True,
+    }
+)
+def django_admin(ctx: typer.Context):
+    """Run a django command.
+
+    Run a django management command, just like if you were calling django-admin.
+    """
+    settings: config.ArpavPpcvSettings = ctx.obj["settings"]
+    os.environ.setdefault(
+        "DJANGO_SETTINGS_MODULE", settings.django_app.settings_module)
+    django_admin_args = ["django-admin", *ctx.args]
+    print(f"Running django command: {django_admin_args}")
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os.execvp("django-admin", django_admin_args)
+
+
 @dev_app.command()
 def import_thredds_datasets(
         catalog: Annotated[

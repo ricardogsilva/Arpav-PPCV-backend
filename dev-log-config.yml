@@ -51,3 +51,9 @@ loggers:
       - default
     level: DEBUG
     propagate: false
+
+  django:
+    handlers:
+      - default
+    level: DEBUG
+    propagate: false
