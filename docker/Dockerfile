@@ -40,8 +40,7 @@ RUN poetry install --no-root --only main
 EXPOSE 8000
 
 ARG GIT_COMMIT
-ENV GIT_COMMIT=$GIT_COMMIT \
-    DJANGO_SETTINGS_MODULE=djangoapp.settings
+ENV GIT_COMMIT=$GIT_COMMIT
 
 # Now install our code
 COPY --chown=appuser:appuser . .

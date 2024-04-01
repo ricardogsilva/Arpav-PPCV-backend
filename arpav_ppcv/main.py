@@ -10,10 +10,15 @@ from typing import (
 from pathlib import Path
 
 import anyio
+import django
 import httpx
 import typer
+from django.conf import settings as django_settings
+from django.core import management
+from django.utils.module_loading import import_string
 
 from .thredds import crawler
+from .webapp.legacy.django_settings import get_custom_django_settings
 from . import config
 
 app = typer.Typer()
@@ -84,19 +89,21 @@ def run_server(ctx: typer.Context):
         "ignore_unknown_options": True,
     }
 )
-def django_admin(ctx: typer.Context):
+def django_admin(ctx: typer.Context, command: str):
     """Run a django command.
 
     Run a django management command, just like if you were calling django-admin.
     """
     settings: config.ArpavPpcvSettings = ctx.obj["settings"]
-    os.environ.setdefault(
-        "DJANGO_SETTINGS_MODULE", settings.django_app.settings_module)
-    django_admin_args = ["django-admin", *ctx.args]
-    print(f"Running django command: {django_admin_args}")
-    sys.stdout.flush()
-    sys.stderr.flush()
-    os.execvp("django-admin", django_admin_args)
+    custom_django_settings = get_custom_django_settings(settings)
+    django_settings.configure(**custom_django_settings)
+    django.setup()
+    if "." in command:
+        command_module = import_string(command)
+    else:  # it's a builtin command
+        command_module = import_string(
+            f"django.core.management.commands.{command}")
+    management.call_command(command_module.Command())
 
 
 @dev_app.command()

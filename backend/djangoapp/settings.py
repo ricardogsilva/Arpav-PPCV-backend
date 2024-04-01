@@ -285,19 +285,19 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 # CELERYD_TASK_SOFT_TIME_LIMIT = 3600
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-           "hosts": [
-               (
-                   ARPAV_PPCV.django_app.redis_dsn.host,
-                   ARPAV_PPCV.django_app.redis_dsn.port
-               ),
-           ],  # set redis address
-        },
-    }
-}
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {
+#            "hosts": [
+#                (
+#                    ARPAV_PPCV.django_app.redis_dsn.host,
+#                    ARPAV_PPCV.django_app.redis_dsn.port
+#                ),
+#            ],  # set redis address
+#         },
+#     }
+# }
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
