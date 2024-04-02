@@ -6,6 +6,7 @@
 # - initializing django and accessing its ORM from the v1 app
 #
 import os
+from pathlib import Path
 from typing import Any
 
 from ... import config
@@ -13,7 +14,7 @@ from ... import config
 
 def get_custom_django_settings(
         settings: config.ArpavPpcvSettings) -> dict[str, Any]:
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    base_dir = str(Path(__file__).parents[3] / "backend")
     time_zone = "UTC"
     return {
         "SECRET_KEY": settings.django_app.secret_key,
