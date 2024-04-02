@@ -5,12 +5,12 @@ from padoa.thredds import models as tm
 from padoa.forecastattributes import models as fam
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 @pytest.mark.xfail(reason="Not implemented yet")
 @pytest.mark.parametrize("url_list_path", [
-    pytest.param("/maps/ncss/timeserie/"),
+    pytest.param("legacy/maps/ncss/timeserie/"),
 ])
-def test_ncsstimeserie_list(client, url_list_path):
+def test_ncsstimeserie_list(test_client, url_list_path):
     num_items = 3
     variable = fam.Variable.objects.create(id="fakevar1", name="Fake var 1")
     forecast_model = fam.ForecastModel.objects.create(id="fakeforecastmodel1", name="Fake forecast model 1")
@@ -38,7 +38,7 @@ def test_ncsstimeserie_list(client, url_list_path):
             palette="fakepalette",
         )
         created_ids.append(instance.id)
-    response = client.get(
+    response = test_client.get(
         url_list_path,
         data={"ids": ",".join(str(i) for i in created_ids)}
     )

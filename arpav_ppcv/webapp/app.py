@@ -15,6 +15,7 @@ def create_app_from_settings(settings: config.ArpavPpcvSettings) -> fastapi.Fast
     v1_app = create_v1_app(settings)
     v1_docs_url = "".join(
         (settings.public_url, settings.v1_mount_prefix, v1_app.docs_url))
+    django_app = create_django_app(settings)
     app = fastapi.FastAPI(
         debug=settings.debug,
         title="ARPAV PPCV backend",
@@ -36,7 +37,6 @@ def create_app_from_settings(settings: config.ArpavPpcvSettings) -> fastapi.Fast
     )
     app.mount(settings.v1_mount_prefix, v1_app)
     app.mount(settings.v2_mount_prefix, v2_app)
-    django_app = create_django_app(settings)
     app.mount(settings.django_app.mount_prefix, WSGIMiddleware(django_app))
     settings.django_app.static_root.mkdir(parents=True, exist_ok=True)
     app.mount(

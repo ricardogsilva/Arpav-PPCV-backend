@@ -2,8 +2,7 @@ import pytest
 
 from padoa.forecastattributes import models
 
-
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 @pytest.mark.parametrize("model_class, list_url_path", [
     pytest.param(models.Variable, "/legacy/forcastattributes/variables/"),
     pytest.param(models.ForecastModel, "/legacy/forcastattributes/forecast_models/"),
@@ -28,7 +27,6 @@ def test_list_instances(test_client, model_class, list_url_path):
     assert contents.get("count") == num_items
     assert len(contents.get("results")) == num_items
     for i in range(1, num_items + 1):
-        print(f"looking for scenario #{i}...")
         for model_ in contents["results"]:
             if model_.get("id") == f"fake{model_class.__name__.lower()}{i}":
                 assert model_["name"] == f"Fake {model_class.__name__} {i}"

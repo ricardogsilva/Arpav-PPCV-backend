@@ -171,22 +171,19 @@ async def _run_tests(
         .with_exposed_port(5432)
         .as_service()
     )
+    db_dsn = (
+        f"postgresql://{env_variables['POSTGRES_USER']}:{env_variables['PGPASSWORD']}"
+        f"@db:5432/{env_variables['POSTGRES_DB_NAME']}")
     return await (
         built_container.with_service_binding("db", postgis_service)
         .without_entrypoint()
         # .with_mounted_directory("/opt/api/tests", client.host().directory("./tests"))
-        .with_env_variable("DEBUG", env_variables["DEBUG"])
-        .with_env_variable("POSTGRES_DB_NAME", env_variables["POSTGRES_DB_NAME"])
-        .with_env_variable("POSTGRES_USER", env_variables["POSTGRES_USER"])
-        .with_env_variable("PGPASSWORD", env_variables["PGPASSWORD"])
-        .with_env_variable("POSTGRES_PORT_5432_TCP_ADDR", "db")
-        .with_env_variable("REDIS_HOST", env_variables["REDIS_HOST"])
-        .with_env_variable("SECRET_KEY", env_variables["SECRET_KEY"])
-        .with_env_variable("THREDDS_HOST", env_variables["THREDDS_HOST"])
-        .with_env_variable("THREDDS_PASSWORD", env_variables["THREDDS_PASSWORD"])
-        .with_env_variable("THREDDS_USER", env_variables["THREDDS_USER"])
+        .with_env_variable("ARPAV_PPCV__DEBUG", env_variables["DEBUG"])
+        .with_env_variable(
+            "ARPAV_PPCV__DJANGO_APP__SECRET_KEY", env_variables["SECRET_KEY"])
+        .with_env_variable("ARPAV_PPCV__DJANGO_APP__DB_DSN", db_dsn)
         .with_exec(shlex.split("poetry install --with dev"))
-        .with_exec(shlex.split("poetry run django-admin migrate"))
+        .with_exec(shlex.split("poetry run arpav-ppcv django-admin migrate"))
         .with_exec(
             shlex.split(
                 "poetry run pytest --reuse-db tests")
