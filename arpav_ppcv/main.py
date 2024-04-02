@@ -98,12 +98,7 @@ def django_admin(ctx: typer.Context, command: str):
     custom_django_settings = get_custom_django_settings(settings)
     django_settings.configure(**custom_django_settings)
     django.setup()
-    if "." in command:
-        command_module = import_string(command)
-    else:  # it's a builtin command
-        command_module = import_string(
-            f"django.core.management.commands.{command}")
-    management.call_command(command_module.Command())
+    management.call_command(command, *ctx.args)
 
 
 @dev_app.command()
