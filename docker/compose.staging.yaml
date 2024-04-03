@@ -1,0 +1,56 @@
+# docker compose file that can be used for deployment in the staging environment.
+# - do not use this in production!
+#
+# In this file, do this:
+#
+# - use the `env_file` property to provide sensitive environment variables
+#   from suitable .env file(s) which are kept off the code repository
+#
+# - pull the main services' images from the respective container registries
+#   and only use the `latest` docker tag - we want to take advantage of the
+#   fact that deployment will be triggered on each push to the `main`
+#   branch(es) (which would imply that CI has passed and a new docker image
+#   has been pushed to the registry)
+#
+# - do not mount source code inside any container - keep volume binds to the
+#   minimum, only for relevant configuration file(s) and data collections
+
+x-env-file: &env-file $HOME/arpav-ppcv.env
+
+services:
+
+  webapp:
+    env_file:
+      - *env-file
+
+  db:
+    env_file:
+      - *env-file
+
+  martin:
+    env_file:
+      - *env-file
+
+  thredds:
+    image: unidata/thredds-docker:5.4
+    environment:
+      TDS_CONTENT_ROOT_PATH: /usr/local/tomcat/content
+    volumes:
+      - type: bind
+        source: $PWD/docker/thredds/content-root/catalog.xml
+        target: /usr/local/tomcat/content/thredds/catalog.xml
+      - type: bind
+        source: $PWD/docker/thredds/content-root/catalog_rcm.xml
+        target: /usr/local/tomcat/content/thredds/catalog_rcm.xml
+      - type: bind
+        source: $PWD/docker/thredds/content-root/threddsConfig.xml
+        target: /usr/local/tomcat/content/thredds/threddsConfig.xml
+      - type: bind
+        source: $PWD/docker/thredds/content-root/wmsConfig.xml
+        target: /usr/local/tomcat/content/thredds/wmsConfig.xml
+      - type: bind
+        source: $HOME/data/geobeyond/arpav-ppcv/datasets
+        target: /datasets
+      - type: bind
+        source: $HOME/data/geobeyond/arpav-ppcv/netcdf-uncertainty-example
+        target: /additional

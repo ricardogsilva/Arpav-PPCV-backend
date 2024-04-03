@@ -1,46 +1,41 @@
-name: arpav-ppcv
-
-x-backend-image: &backend-image "ghcr.io/geobeyond/arpav_ppcv:develop"
-x-postgis-image: &postgis-image "postgis/postgis:16-3.4"
-x-postgres-db-healthcheck: &postgres-db-healthcheck
-  interval: 10s
-  timeout: 3s
-  start_period: 1m
-  retries: 10
-  test: |
-    export PGPASSWORD=$${POSTGRES_PASSWORD:-}
-    args="--host 127.0.0.1 --username $${POSTGRES_USER} --dbname $${POSTGRES_DB} --quiet --no-align --tuples-only"
-    response=$$(echo 'SELECT 1' | psql $${args})
-    if [ $${response} = '1' ];
-    then exit 0;
-    else echo "+++++++++++++DB $${POSTGRES_DB} is not up+++++++++++++"; exit 1;
-    fi
+# docker compose file that can be used for development purposes only
+# - do not use this in production!
+#
+# Modifications done:
+# - directly provides most of the environment variables in the file, not
+#   caring to protect potentially sensitive ones
+# - exposes some unneeded ports to the host system, which is useful for
+#   dev, testing and debugging
+# - mounts code repository inside the relevant container as a bind volume
 
 services:
 
-#  web:
-#    image: *backend-image
-#    depends_on:
-#      web-db:
-#        condition: service_healthy
+  webapp:
+    image: "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend:${CURRENT_GIT_BRANCH:-latest}"
+    environment:
+      ARPAV_PPCV__DEBUG: true
+      ARPAV_PPCV__PUBLIC_URL: http://localhost:5001
+      ARPAV_PPCV__UVICORN_LOG_CONFIG_FILE: /home/appuser/app/dev-log-config.yml
+      ARPAV_PPCV__DJANGO_APP__DB_DSN: postgres://postgres:postgres@db:5432/postgres
+      ARPAV_PPCV__DJANGO_APP__THREDDS__PORT: 8081
+      ARPAV_PPCV__DJANGO_APP__REDIS_DSN: redis://redis:6379
+      ARPAV_PPCV__DJANGO_APP__SECRET_KEY: some-dev-key
+    volumes:
+      - type: bind
+        source: $PWD
+        target: /home/appuser/app
 
-#  worker:
-#    image: *backend-image
-
-#  message-broker:
-#    image: redis
-
-#  web-db:
-#    image: *postgis-image
-#    ports:
-#      - target: "5432"
-#        published: "55432"
-#    environment:
-#      PGDATA: /var/lib/postgresql/data/pgdata
-#      POSTGRES_DB: "arpavppcv"
-#      POSTGRES_PASSWORD: "pass"
-#      POSTGRES_USER: "arpavppcv"
-#    healthcheck: *postgres-db-healthcheck
+  db:
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    # The below command adds a more verbose logging of operations - DON'T USE THIS IN PRODUCTION!
+    # The server's performance is impacted by this command. Moreover, logged statements may contain
+    # sensitive information
+    command: "-clog_statement=all"
 
   thredds:
     image: unidata/thredds-docker:5.4
@@ -49,7 +44,7 @@ services:
         published: "8081"
     environment:
       TDS_CONTENT_ROOT_PATH: /usr/local/tomcat/content
-      TDM_PW: "arpavppcvthredds"
+      TDS_PW: "arpavppcvthredds"
       TDS_HOST: "http://localhost:8081"
     volumes:
       - type: bind
@@ -65,31 +60,19 @@ services:
         source: $PWD/docker/thredds/content-root/wmsConfig.xml
         target: /usr/local/tomcat/content/thredds/wmsConfig.xml
       - type: bind
-        source: /datadisk/data/geobeyond/arpav-ppcv/datasets
+        source: $HOME/data/geobeyond/arpav-ppcv/datasets
         target: /datasets
       - type: bind
-        source: /datadisk/data/geobeyond/arpav-ppcv/netcdf-uncertainty-example
+        source: $HOME/data/geobeyond/arpav-ppcv/netcdf-uncertainty-example
         target: /additional
 
-#  martin:
-#    image: ghcr.io/maplibre/martin:v0.13.0
-#    ports:
-#      - target: "3000"
-#        published: "3000"
-#    environment:
-#      - DATABASE_URL=postgres://arpavppcv_tiles:pass@martin-db/arpavppcv_tiles
-#    depends_on:
-#      martin-db:
-#        condition: service_healthy
+  martin:
+    ports:
+      - target: 3000
+        published: 3000
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db/postgres
+      RUST_LOG: actix_web=info,martin=debug,tokio_postgres=debug
 
-#  martin-db:
-#    image: *postgis-image
-#    ports:
-#      - target: "5432"
-#        published: "55433"
-#    environment:
-#      PGDATA: /var/lib/postgresql/data/pgdata
-#      POSTGRES_DB: "arpavppcv_tiles"
-#      POSTGRES_PASSWORD: "pass"
-#      POSTGRES_USER: "arpavppcv_tiles"
-#    healthcheck: *postgres-db-healthcheck
+volumes:
+  db-data:
