@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 import shlex
+import subprocess
 import sys
 from pathlib import Path
 from typing import Annotated
@@ -199,6 +200,10 @@ async def _run_pipeline(
         with_formatter: bool,
         publish_docker_image: str | None = None
 ):
+    current_git_commit = subprocess.run(
+        shlex.split("git log -1 --format='%H'"),
+        capture_output=True
+    ).stdout.decode().strip()
     env_variables = _get_env_variables()
     conf = dagger.Config(
         log_output=sys.stderr,
@@ -210,7 +215,10 @@ async def _run_pipeline(
             client.container()
             .build(
                 context=src,
-                dockerfile="docker/Dockerfile"
+                dockerfile="docker/Dockerfile",
+                buildargs=[
+                    dagger.BuildArg(name="GIT_COMMIT", value=current_git_commit)
+                ]
             )
             .with_label(
                 "org.opencontainers.image.source",
