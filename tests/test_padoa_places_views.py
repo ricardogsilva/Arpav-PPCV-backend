@@ -3,8 +3,8 @@ import pytest
 from padoa.places import models
 
 
-@pytest.mark.django_db
-def test_list_cities(client):
+@pytest.mark.django_db(transaction=True)
+def test_list_cities(test_client):
     num_items = 3
     fake_region = models.Regions.objects.create(
         id=1,
@@ -32,7 +32,7 @@ def test_list_cities(client):
             geometry="MULTIPOLYGON(((40 40, 20 45, 45 30, 40 40)),((20 35, 10 30, 10 10, 30 5, 45 20, 20 35),(30 20, 20 15, 20 25, 30 20)))",
             centroid=f"Point({centroid['longitude']} {centroid['latitude']})"
         )
-    response = client.get("/places/cities/")
+    response = test_client.get("/legacy/places/cities/")
     assert response.status_code == 200
     contents = response.json()
     assert contents.get("count") == num_items

@@ -1,7 +1,8 @@
 """Command-line interface for the project."""
 
-import enum
 import logging
+import os
+import sys
 from typing import (
     Annotated,
     Optional
@@ -9,72 +10,101 @@ from typing import (
 from pathlib import Path
 
 import anyio
+import django
 import httpx
 import typer
+from django.conf import settings as django_settings
+from django.core import management
+from django.utils.module_loading import import_string
 
 from .thredds import crawler
-
-
-class KnownCatalogIdentifier(enum.Enum):
-    THIRTY_YEAR_ANOMALY_5_MODEL_AVERAGE = "30y-anomaly-ensemble"
-    THIRTY_YEAR_ANOMALY_TEMPERATURE_PRECIPITATION = "30y-anomaly-tas-pr"
-    THIRTY_YEAR_ANOMALY_CLIMATIC_INDICES = "30y-anomaly-climate-idx"
-    YEARLY_ANOMALY_5_MODEL_AVERAGE_TAS_PR = "anomaly-ensemble-tas-pr"
-    YEARLY_ABSOLUTE_5_MODEL_AVERAGE = "yearly-ensemble-absolute"
-    YEARLY_ANOMALY_EC_EARTH_CCLM4_8_17 = "anomaly-ec-earth-cclm4-8-17"
-    YEARLY_ABSOLUTE_EC_EARTH_CCLM4_8_17 = "yearly-ec-earth-cclm4-8-17-absolute"
-    YEARLY_ANOMALY_EC_EARTH_RACM022E = "anomaly-ec-earth-racm022e"  # noqa
-    YEARLY_ABSOLUTE_EC_EARTH_RACM022E = "yearly-ec-earth-racm022e-absolute"  # noqa
-    YEARLY_ANOMALY_EC_EARTH_RCA4 = "anomaly-ec-earth-rca4"
-    YEARLY_ABSOLUTE_EC_EARTH_RCA4 = "yearly-ec-earth-rca4-absolute"
-    YEARLY_ANOMALY_HADGEM2_ES_RACMO22E = "anomaly-hadgem2-es-racmo22e"  # noqa
-    YEARLY_ABSOLUTE_HADGEM2_ES_RACMO22E = "yearly-hadgem2-es-racmo22e-absolute"  # noqa
-    YEARLY_ANOMALY_MPI_ESM_LR_REMO2009 = "anomaly-mpi-esm-lr-remo2009"
-    YEARLY_ABSOLUTE_MPI_ESM_LR_REMO2009 = "yearly-mpi-esm-lr-remo2009-absolute"
-
-
-def _get_catalog_url(catalog_identifier: KnownCatalogIdentifier) -> str:
-    return {
-        KnownCatalogIdentifier.THIRTY_YEAR_ANOMALY_5_MODEL_AVERAGE: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/ensembletwbc/clipped"),
-        KnownCatalogIdentifier.THIRTY_YEAR_ANOMALY_TEMPERATURE_PRECIPITATION: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/taspr5rcm/clipped"),
-        KnownCatalogIdentifier.THIRTY_YEAR_ANOMALY_CLIMATIC_INDICES: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/indici5rcm/clipped"),
-        KnownCatalogIdentifier.YEARLY_ANOMALY_5_MODEL_AVERAGE_TAS_PR: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/ens5ym/clipped"),
-        KnownCatalogIdentifier.YEARLY_ABSOLUTE_5_MODEL_AVERAGE: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/ensymbc/clipped"),
-        KnownCatalogIdentifier.YEARLY_ANOMALY_EC_EARTH_CCLM4_8_17: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_CCLM4-8-17ym/clipped"),
-        KnownCatalogIdentifier.YEARLY_ABSOLUTE_EC_EARTH_CCLM4_8_17: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_CCLM4-8-17ymbc/clipped"),
-        KnownCatalogIdentifier.YEARLY_ANOMALY_EC_EARTH_RACM022E: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_RACMO22Eym/clipped"),
-        KnownCatalogIdentifier.YEARLY_ABSOLUTE_EC_EARTH_RACM022E: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_RACMO22Eymbc/clipped"),
-        KnownCatalogIdentifier.YEARLY_ANOMALY_EC_EARTH_RCA4: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_RCA4ym/clipped"),
-        KnownCatalogIdentifier.YEARLY_ABSOLUTE_EC_EARTH_RCA4: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_RCA4ymbc/clipped"),
-        KnownCatalogIdentifier.YEARLY_ANOMALY_HADGEM2_ES_RACMO22E: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/HadGEM2-ES_RACMO22Eym/clipped"),
-        KnownCatalogIdentifier.YEARLY_ABSOLUTE_HADGEM2_ES_RACMO22E: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/HadGEM2-ES_RACMO22Eymbc/clipped"),
-        KnownCatalogIdentifier.YEARLY_ANOMALY_MPI_ESM_LR_REMO2009: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/MPI-ESM-LR_REMO2009ym/clipped"),
-        KnownCatalogIdentifier.YEARLY_ABSOLUTE_MPI_ESM_LR_REMO2009: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/MPI-ESM-LR_REMO2009ymbc/clipped"),
-    }[catalog_identifier]
-
+from .webapp.legacy.django_settings import get_custom_django_settings
+from . import config
 
 app = typer.Typer()
+dev_app = typer.Typer()
+app.add_typer(dev_app, name="dev")
+
+
+@app.callback()
+def base_callback(ctx: typer.Context) -> None:
+    ctx_obj = ctx.ensure_object(dict)
+    settings = config.get_settings()
+    ctx_obj.update(
+        {
+            "settings": settings,
+        }
+    )
+    logging.basicConfig(level=logging.DEBUG if settings.debug else logging.INFO)
 
 
 @app.command()
+def run_server(ctx: typer.Context):
+    """Run the uvicorn server.
+
+    Example (dev) invocation:
+
+    ```
+    bash -c 'set -o allexport; source sample_env.env; set +o allexport; poetry run arpav-ppcv.run-server'
+    ```
+    """
+    # NOTE: we explicitly do not use uvicorn's programmatic running abilities here
+    # because they do not work correctly when called outside an
+    # `if __name__ == __main__` guard and when using its debug features.
+    # For more detail check:
+    #
+    # https://github.com/encode/uvicorn/issues/1045
+    #
+    # This solution works well both in development (where we want to use reload)
+    # and in production, as using os.execvp is actually similar to just running
+    # the standard `uvicorn` cli command (which is what uvicorn docs recommend).
+    settings: config.ArpavPpcvSettings = ctx.obj["settings"]
+    uvicorn_args = [
+        "uvicorn",
+        "arpav_ppcv.webapp.app:create_app",
+        f"--port={settings.bind_port}",
+        f"--host={settings.bind_host}",
+        "--factory",
+    ]
+    if settings.debug:
+        uvicorn_args.extend(
+            [
+                "--reload",
+                f"--reload-dir={str(Path(__file__).parent)}",
+                "--log-level=debug",
+            ]
+        )
+    else:
+        uvicorn_args.extend(["--log-level=info"])
+    if (log_config_file := settings.uvicorn_log_config_file) is not None:
+        uvicorn_args.append(f"--log-config={str(log_config_file)}")
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os.execvp("uvicorn", uvicorn_args)
+
+
+@app.command(
+    context_settings={
+        "allow_extra_args": True,
+        "ignore_unknown_options": True,
+    }
+)
+def django_admin(ctx: typer.Context, command: str):
+    """Run a django command.
+
+    Run a django management command, just like if you were calling django-admin.
+    """
+    settings: config.ArpavPpcvSettings = ctx.obj["settings"]
+    custom_django_settings = get_custom_django_settings(settings)
+    django_settings.configure(**custom_django_settings)
+    django.setup()
+    management.call_command(command, *ctx.args)
+
+
+@dev_app.command()
 def import_thredds_datasets(
         catalog: Annotated[
-            Optional[list[KnownCatalogIdentifier]],
+            Optional[list[crawler.KnownCatalogIdentifier]],
             typer.Option(default_factory=list)
         ],
         output_base_dir: Annotated[
@@ -100,23 +130,13 @@ def import_thredds_datasets(
                 )
             )
         ] = False,
-        verbose: Annotated[
-            Optional[bool],
-            typer.Option(
-                help=(
-                        "Verbose output"
-                )
-            )
-        ] = False
 ):
-    print(f"{locals()=}")
-    if verbose:
-        logging.basicConfig(level=logging.INFO)
-    relevant_catalogs = catalog if len(catalog) > 0 else list(KnownCatalogIdentifier)
+    relevant_catalogs = (
+        catalog if len(catalog) > 0 else list(crawler.KnownCatalogIdentifier))
     client = httpx.Client()
     for relevant_catalog in relevant_catalogs:
         print(f"Processing catalog {relevant_catalog.value!r}...")
-        catalog_url = _get_catalog_url(relevant_catalog)
+        catalog_url = crawler.get_catalog_url(relevant_catalog)
         contents = crawler.discover_catalog_contents(catalog_url, client)
         print(f"Found {len(contents.get_public_datasets(wildcard_filter))} datasets")
         if output_base_dir is not None:

@@ -2,18 +2,17 @@ import pytest
 
 from padoa.forecastattributes import models
 
-
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 @pytest.mark.parametrize("model_class, list_url_path", [
-    pytest.param(models.Variable, "/forcastattributes/variables/"),
-    pytest.param(models.ForecastModel, "/forcastattributes/forecast_models/"),
-    pytest.param(models.Scenario, "/forcastattributes/scenarios/"),
-    pytest.param(models.DataSeries, "/forcastattributes/data_series/"),
-    pytest.param(models.YearPeriod, "/forcastattributes/year_periods/"),
-    pytest.param(models.TimeWindow, "/forcastattributes/time_windows/"),
-    pytest.param(models.ValueType, "/forcastattributes/value_types/"),
+    pytest.param(models.Variable, "/legacy/forcastattributes/variables/"),
+    pytest.param(models.ForecastModel, "/legacy/forcastattributes/forecast_models/"),
+    pytest.param(models.Scenario, "/legacy/forcastattributes/scenarios/"),
+    pytest.param(models.DataSeries, "/legacy/forcastattributes/data_series/"),
+    pytest.param(models.YearPeriod, "/legacy/forcastattributes/year_periods/"),
+    pytest.param(models.TimeWindow, "/legacy/forcastattributes/time_windows/"),
+    pytest.param(models.ValueType, "/legacy/forcastattributes/value_types/"),
 ])
-def test_list_instances(client, model_class, list_url_path):
+def test_list_instances(test_client, model_class, list_url_path):
     num_items = 3
     for i in range(1, num_items + 1):
         model_class.objects.create(
@@ -22,13 +21,12 @@ def test_list_instances(client, model_class, list_url_path):
             description=f"This is a fake {model_class.__name__}, useful for testing",
             order_item=i
         )
-    response = client.get(list_url_path)
+    response = test_client.get(list_url_path)
     assert response.status_code == 200
     contents = response.json()
     assert contents.get("count") == num_items
     assert len(contents.get("results")) == num_items
     for i in range(1, num_items + 1):
-        print(f"looking for scenario #{i}...")
         for model_ in contents["results"]:
             if model_.get("id") == f"fake{model_class.__name__.lower()}{i}":
                 assert model_["name"] == f"Fake {model_class.__name__} {i}"

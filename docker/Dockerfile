@@ -40,8 +40,7 @@ RUN poetry install --no-root --only main
 EXPOSE 8000
 
 ARG GIT_COMMIT
-ENV GIT_COMMIT=$GIT_COMMIT \
-    DJANGO_SETTINGS_MODULE=djangoapp.settings
+ENV GIT_COMMIT=$GIT_COMMIT
 
 # Now install our code
 COPY --chown=appuser:appuser . .
@@ -54,6 +53,6 @@ RUN echo $GIT_COMMIT > /home/appuser/git-commit.txt
 RUN poetry run python -c "import compileall; compileall.compile_path(maxlevels=10)"
 
 # use tini as the init process
-ENTRYPOINT ["tini", "-g", "--", "poetry", "run", "django-admin"]
+ENTRYPOINT ["tini", "-g", "--", "poetry", "run", "arpav-ppcv"]
 
-CMD ["runserver", "0.0.0.0:8000"]
+CMD ["run-server"]
