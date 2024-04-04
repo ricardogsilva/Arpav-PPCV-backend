@@ -1,0 +1,70 @@
+# THIS FILE IS NOT SUITABLE FOR RUNNING IN PRODUCTION BY ITSELF!
+#
+# Base docker compose file
+#
+# This file has the base compose configuration for running the project.
+# Specialize it into suitable `dev`, `ci`, etc. stacks in the respective
+# `compose.dev.yaml`, `compose.ci.yaml`, etc. files, as needed.
+#
+# Then use both this file and the specialized one together, like this:
+#
+# ```sh
+# docker compose -f docker/compose.yaml -f compose.dev.yaml up --detach
+# ```
+#
+# ---
+#
+# The definitions below, whose name starts with `x-` make use of
+# docker compose's extension fields, as defined in:
+#
+# https://docs.docker.com/compose/compose-file/11-extension/
+#
+# Briefly, it is a way to keep the docker compose file DRY. We define common
+# blocks with a name like `x-something`. Then we mark these as being YAML
+# anchors. Later in the file we refer to them using YAML aliases.
+
+x-postgres-db-healthcheck: &postgres-db-healthcheck
+  interval: 10s
+  timeout: 3s
+  start_period: 1m
+  retries: 10
+  test: |
+    export PGPASSWORD=$${POSTGRES_PASSWORD:-}
+    args="--host 127.0.0.1 --username $${POSTGRES_USER} --dbname $${POSTGRES_DB} --quiet --no-align --tuples-only"
+    response=$$(echo 'SELECT 1' | psql $${args})
+    if [ $${response} = '1' ];
+    then exit 0;
+    else echo "+++++++++++++DB $${POSTGRES_DB} is not up+++++++++++++"; exit 1;
+    fi
+
+name: arpav-ppcv
+
+services:
+
+  webapp:
+    image: "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend:latest}"
+    environment:
+      ARPAV_PPCV__BIND_HOST: 0.0.0.0
+      ARPAV_PPCV__BIND_PORT: 5001
+    ports:
+      - target: 5001
+        published: 5001
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: "postgis/postgis:16-3.4"
+    environment:
+      PG_DATA: /var/lib/postgresql/data/pgdata
+    healthcheck: *postgres-db-healthcheck
+
+  redis:
+    image: redis:4
+    restart: unless-stopped
+
+  martin:
+    image: 'ghcr.io/maplibre/martin:v0.13.0'
+    depends_on:
+      db:
+        condition: service_healthy

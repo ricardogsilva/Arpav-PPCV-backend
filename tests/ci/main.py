@@ -56,7 +56,15 @@ def run_ci_pipeline(
                 )
             )
         ] = False,
-        publish_docker_image: str | None = None
+        publish_docker_image: str | None = None,
+        git_commit: Annotated[
+            str,
+            typer.Option(
+                help=(
+                    "Hash of the current version's git commit"
+                )
+            )
+        ] = None
 ):
     """Command-line interface for running CI pipeline."""
 
@@ -68,6 +76,7 @@ def run_ci_pipeline(
             with_linter=with_linter,
             with_formatter=with_formatter,
             publish_docker_image=publish_docker_image,
+            git_commit=git_commit
         )
     )
 
@@ -197,20 +206,25 @@ async def _run_pipeline(
         with_security_scan: bool,
         with_linter: bool,
         with_formatter: bool,
-        publish_docker_image: str | None = None
+        publish_docker_image: str | None,
+        git_commit: str | None,
 ):
     env_variables = _get_env_variables()
     conf = dagger.Config(
         log_output=sys.stderr,
     )
     repo_root = Path(__file__).parents[2]
+    build_args = []
+    if git_commit is not None:
+        build_args.append(dagger.BuildArg(name="GIT_COMMIT", value=git_commit))
     async with dagger.Connection(conf) as client:
         src = client.host().directory(str(repo_root))
         built_container = (
             client.container()
             .build(
                 context=src,
-                dockerfile="docker/Dockerfile"
+                dockerfile="docker/Dockerfile",
+                build_args=build_args
             )
             .with_label(
                 "org.opencontainers.image.source",
