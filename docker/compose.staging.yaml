@@ -35,8 +35,8 @@ services:
 
   thredds:
     image: unidata/thredds-docker:5.4
-    environment:
-      TDS_CONTENT_ROOT_PATH: /usr/local/tomcat/content
+    env_file:
+      - *env-file
     volumes:
       - type: bind
         source: $PWD/docker/thredds/content-root/catalog.xml
