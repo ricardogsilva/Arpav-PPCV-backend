@@ -26,6 +26,8 @@ services:
   db:
     env_file:
       - *env-file
+    volumes:
+      - db-data:/var/lib/postgresql/data
 
   martin:
     env_file:
@@ -54,3 +56,6 @@ services:
       - type: bind
         source: $HOME/data/geobeyond/arpav-ppcv/netcdf-uncertainty-example
         target: /additional
+
+volumes:
+  db-data:
