@@ -1,0 +1,31 @@
+# configuration of the hooks recognized by the webhook server
+#
+# Reference for the webhook hook rules:
+# https://github.com/adnanh/webhook/blob/master/docs/Hook-Rules.md
+#
+# Reference for github webhooks:
+# https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries
+
+- id: deploy-arpav-ppcv
+  execute-command: /usr/bin/python3
+  pass-arguments-to-command:
+    - source: string
+      name: /home/arpav/staging/hook-scripts/deploy.py
+    - source: entire-payload
+    - source: entire-headers
+    - source: entire-query
+  command-working-directory: /home/arpav/staging/hook-scripts
+  trigger-rule:
+    and:
+      - match:
+          type: payload-hmac-sha256
+          secret: tk4zow69rnbh
+          parameter:
+            source: header
+            value: X-Hub-Signature-256
+      - match:
+          type: value
+          value: refs/heads/main
+          parameter:
+            source: payload
+            name: ref
