@@ -14,7 +14,7 @@
   pass-arguments-to-command:
     # location of the hook scripts
     - source: string
-      name: /home/arpav/staging/hook-scripts/deploy.py
+      name: /home/arpav/webhooks/hook-scripts/deploy.py
     # deployment root dir
     - source: string
       name: /home/arpav
@@ -22,11 +22,11 @@
     # ensure the deployment script does not run in dry-mode
     - source: string
       name: '--confirm'
-  command-working-directory: /home/arpav/staging/hook-scripts
+  command-working-directory: /home/arpav/webhooks/hook-scripts
   trigger-rule:
-    - match:
-        type: payload-hmac-sha256
-        secret: '{{ getenv "WEBHOOK_SECRET" | js }}'
-        parameter:
-          source: header
-          value: X-Hub-Signature-256
+    match:
+      type: payload-hmac-sha256
+      secret: '{{ getenv "WEBHOOK_SECRET" | js }}'
+      parameter:
+        source: header
+        value: X-Hub-Signature-256
