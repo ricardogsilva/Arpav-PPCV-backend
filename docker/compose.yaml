@@ -42,7 +42,7 @@ name: arpav-ppcv
 services:
 
   webapp:
-    image: "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend:latest}"
+    image: "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend:latest"
     environment:
       ARPAV_PPCV__BIND_HOST: 0.0.0.0
       ARPAV_PPCV__BIND_PORT: 5001
