@@ -1,0 +1,8 @@
+# systemd service file for the webhook server
+# place this in /etc/systemd/system
+
+[Service]
+EnvironmentFile=/home/arpav/arpav-ppcv.env
+ExecStart=/usr/bin/webhook -template -port 9001 -hooks /home/arpav/webhooks/hooks.yaml
+User=arpav
+Group=arpav
