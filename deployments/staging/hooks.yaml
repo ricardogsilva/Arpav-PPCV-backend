@@ -19,6 +19,9 @@
     - source: string
       name: /home/arpav
     - source: entire-payload
+    # ensure the deployment script does not run in dry-mode
+    - source: string
+      name: '--confirm'
   command-working-directory: /home/arpav/staging/hook-scripts
   trigger-rule:
     - match:
