@@ -6,7 +6,7 @@ name: Deployment to staging environment
 
 on:
 
-  package:
+  registry_package:
     types:
       - published
       - updated
