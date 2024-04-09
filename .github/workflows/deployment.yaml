@@ -6,8 +6,9 @@ name: Deployment to staging environment
 
 on:
 
-  registry_package:
+  package:
     types:
+      - published
       - updated
 
 concurrency: staging
