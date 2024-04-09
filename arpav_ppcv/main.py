@@ -15,7 +15,6 @@ import httpx
 import typer
 from django.conf import settings as django_settings
 from django.core import management
-from django.utils.module_loading import import_string
 
 from .thredds import crawler
 from .webapp.legacy.django_settings import get_custom_django_settings
