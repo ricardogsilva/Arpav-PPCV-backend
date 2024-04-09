@@ -15,7 +15,7 @@
 # - do not mount source code inside any container - keep volume binds to the
 #   minimum, only for relevant configuration file(s) and data collections
 
-x-env-file: &env-file $ARPAV_PPCV_DEPLOYMENT_ENV_FILE
+x-env-file: &env-file ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE:-/home/arpav/arpav-ppcv.env}
 
 name: arpav-ppcv-staging
 
