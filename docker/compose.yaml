@@ -50,8 +50,16 @@ services:
       - target: 5001
         published: 5001
     depends_on:
+      legacy-db:
+        condition: service_healthy
       db:
         condition: service_healthy
+
+  legacy-db:
+    image: "postgis/postgis:16-3.4"
+    environment:
+      PG_DATA: /var/lib/postgresql/data/pgdata
+    healthcheck: *postgres-db-healthcheck
 
   db:
     image: "postgis/postgis:16-3.4"

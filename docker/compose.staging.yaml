@@ -25,6 +25,12 @@ services:
     env_file:
       - *env-file
 
+  legacy-db:
+    env_file:
+      - *env-file
+    volumes:
+      - legacy-db-data:/var/lib/postgresql/data
+
   db:
     env_file:
       - *env-file
@@ -61,3 +67,4 @@ services:
 
 volumes:
   db-data:
+  legacy-db-data:

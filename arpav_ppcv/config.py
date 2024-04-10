@@ -138,6 +138,9 @@ class ArpavPpcvSettings(BaseSettings):  # noqa
     bind_host: str = "127.0.0.1"
     bind_port: int = 5001
     public_url: str = "http://localhost:5001"
+    db_dsn: pydantic.PostgresDsn = pydantic.PostgresDsn(
+        "postgresql://user:password@localhost:5432/arpav_ppcv"
+    )
     contact: ContactSettings = ContactSettings()
     thredds_server: ThreddsServerSettings = ThreddsServerSettings()
     v1_mount_prefix: str = "/v1"
