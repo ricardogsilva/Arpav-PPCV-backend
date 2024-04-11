@@ -141,12 +141,13 @@ class ArpavPpcvSettings(BaseSettings):  # noqa
     db_dsn: pydantic.PostgresDsn = pydantic.PostgresDsn(
         "postgresql://user:password@localhost:5432/arpav_ppcv"
     )
+    verbose_db_logs: bool = False
     contact: ContactSettings = ContactSettings()
     thredds_server: ThreddsServerSettings = ThreddsServerSettings()
     v1_mount_prefix: str = "/v1"
     v2_mount_prefix: str = "/v2"
     django_app: DjangoAppSettings = DjangoAppSettings()
-    uvicorn_log_config_file: Path | None = None
+    log_config_file: Path | None = None
 
 
 def get_settings() -> ArpavPpcvSettings:

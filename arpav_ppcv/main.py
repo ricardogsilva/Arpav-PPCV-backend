@@ -1,6 +1,7 @@
 """Command-line interface for the project."""
 
 import logging
+import logging.config
 import os
 import sys
 from typing import (
@@ -13,10 +14,9 @@ import alembic.command
 import alembic.config
 import anyio
 import django
-import geojson_pydantic
 import httpx
-import sqlmodel
 import typer
+import yaml
 from django.conf import settings as django_settings
 from django.core import management
 
@@ -24,13 +24,14 @@ from . import (
     config,
     database,
 )
-from .schemas import models
+from .cliapp.app import app as cli_app
 from .thredds import crawler
 from .webapp.legacy.django_settings import get_custom_django_settings
 
 app = typer.Typer()
 db_app = typer.Typer()
 dev_app = typer.Typer()
+app.add_typer(cli_app, name="app")
 app.add_typer(db_app, name="db")
 app.add_typer(dev_app, name="dev")
 
@@ -50,7 +51,8 @@ def base_callback(ctx: typer.Context) -> None:
             "alembic_config": alembic_config,
         }
     )
-    logging.basicConfig(level=logging.DEBUG if settings.debug else logging.INFO)
+    logging.config.dictConfig(
+        yaml.safe_load(settings.log_config_file.read_text()))
 
 
 @db_app.callback()
@@ -78,31 +80,6 @@ def upgrade_db(ctx: typer.Context) -> None:
     print("Upgrading database...")
     alembic.command.upgrade(ctx.obj["alembic_config"], "head")
     print("Done!")
-
-
-@db_app.command(name="list-stations")
-def list_stations(ctx: typer.Context) -> None:
-    """List stations."""
-    with sqlmodel.Session(ctx.obj["engine"]) as session:
-        for db_station in database.collect_all_stations(session):
-            print(db_station.model_dump_json())
-
-
-@db_app.command(name="create-station")
-def create_station(
-        ctx: typer.Context,
-        code: str,
-        longitude: Annotated[float, typer.Argument(min=-180, max=180)],
-        latitude: Annotated[float, typer.Argument(min=-90, max=90)]
-) -> None:
-    station_create = models.StationCreate(
-        geom=geojson_pydantic.Point(type="Point", coordinates=(longitude, latitude)),
-        code=code
-    )
-    """Create a new station."""
-    with sqlmodel.Session(ctx.obj["engine"]) as session:
-        db_station = database.create_station(session, station_create)
-        print(db_station.model_dump_json())
 
 
 @app.command()
@@ -143,7 +120,7 @@ def run_server(ctx: typer.Context):
         )
     else:
         uvicorn_args.extend(["--log-level=info"])
-    if (log_config_file := settings.uvicorn_log_config_file) is not None:
+    if (log_config_file := settings.log_config_file) is not None:
         uvicorn_args.append(f"--log-config={str(log_config_file)}")
     sys.stdout.flush()
     sys.stderr.flush()

@@ -1,52 +1,74 @@
+import datetime as dt
+import json
 import uuid
+from typing import Annotated
 
 import geoalchemy2
-import geojson_pydantic
 import pydantic
 import sqlalchemy
+import shapely.io
 import sqlmodel
+from pydantic.functional_serializers import PlainSerializer
 
 
-class Station(sqlmodel.SQLModel, table=True):
+def serialize_wkbelement(wkbelement: geoalchemy2.WKBElement):
+    geom = shapely.io.from_wkb(bytes(wkbelement.data))
+    return json.loads(shapely.io.to_geojson(geom))
+
+
+WkbElement = Annotated[
+    geoalchemy2.WKBElement,
+    PlainSerializer(serialize_wkbelement, return_type=dict, when_used="json")
+]
+
+
+class StationBase(sqlmodel.SQLModel):
     model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
     id: pydantic.UUID4 = sqlmodel.Field(
         default_factory=uuid.uuid4,
         primary_key=True
     )
-    geom: geoalchemy2.WKBElement = sqlmodel.Field(
+    geom: WkbElement = sqlmodel.Field(
         sa_column=sqlalchemy.Column(
             geoalchemy2.Geometry(
                 srid=4326,
-                geometry_type="POLYGON",
+                geometry_type="POINT",
                 spatial_index=True,
             )
         )
     )
     code: str = sqlmodel.Field(unique=True)
+
+
+class Station(StationBase, table=True):
+
     monthly_measurements: list["MonthlyMeasurement"] = sqlmodel.Relationship(
         back_populates="station")
 
 
-class StationCreate(sqlmodel.SQLModel):
-    geom: geojson_pydantic.Point
-    code: str
-
-
-class Variable(sqlmodel.SQLModel, table=True):
+class VariableBase(sqlmodel.SQLModel):
     id: pydantic.UUID4 = sqlmodel.Field(
         default_factory=uuid.uuid4,
         primary_key=True
     )
-    name: str
+    name: str = sqlmodel.Field(unique=True)
     unit: str
+
+
+class Variable(VariableBase, table=True):
 
     monthly_measurements: list["MonthlyMeasurement"] = sqlmodel.Relationship(
         back_populates="variable"
     )
 
 
-class MonthlyMeasurement(sqlmodel.SQLModel, table=True):
+class MonthlyMeasurementBase(sqlmodel.SQLModel):
+    value: float
+    date: dt.date
+
+
+class MonthlyMeasurement(MonthlyMeasurementBase, table=True):
     id: pydantic.UUID4 = sqlmodel.Field(
         default_factory=uuid.uuid4,
         primary_key=True
@@ -57,7 +79,6 @@ class MonthlyMeasurement(sqlmodel.SQLModel, table=True):
     variable_id: pydantic.UUID4 = sqlmodel.Field(
         foreign_key="variable.id"
     )
-
     station: Station = sqlmodel.Relationship(
         back_populates="monthly_measurements",
         sa_relationship_kwargs={

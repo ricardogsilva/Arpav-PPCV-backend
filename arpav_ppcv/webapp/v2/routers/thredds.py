@@ -12,11 +12,19 @@ from fastapi import (
     status,
 )
 
-from ...config import ArpavPpcvSettings
-from .schemas import models
-from ...thredds import utils as thredds_utils
-from ...operations import thredds as thredds_ops
-from .. import dependencies
+from ....config import ArpavPpcvSettings
+from ..schemas.thredds import (
+    ThreddsDatasetConfiguration,
+    ThreddsDatasetConfigurationIdentifierList,
+    ThreddsDatasetConfigurationList,
+)
+from ..schemas.base import (
+    ListMeta,
+    ListLinks,
+)
+from ....thredds import utils as thredds_utils
+from ....operations import thredds as thredds_ops
+from ... import dependencies
 
 
 logger = logging.getLogger(__name__)
@@ -30,7 +38,7 @@ async def landing_page():
 
 @router.get(
     "/thredds-dataset-configurations/",
-    response_model=models.ThreddsDatasetConfigurationList
+    response_model=ThreddsDatasetConfigurationList
 )
 async def list_thredds_dataset_configurations(
         request: Request,
@@ -71,7 +79,7 @@ async def list_thredds_dataset_configurations(
     items = []
     for ds_id, ds in thredds_ops.list_dataset_configurations(setttings).items():
         items.append(
-            models.ThreddsDatasetConfiguration(
+            ThreddsDatasetConfiguration(
                 identifier=ds_id,
                 dataset_id_pattern=ds.dataset_id_pattern,
                 unit=ds.unit,
@@ -80,13 +88,13 @@ async def list_thredds_dataset_configurations(
                 allowed_values=ds.allowed_values,
             )
         )
-    return models.ThreddsDatasetConfigurationList(
-        meta=models.ListMeta(
+    return ThreddsDatasetConfigurationList(
+        meta=ListMeta(
             returned_records=len(items),
             total_records=len(items),
             total_filtered_records=len(items)
         ),
-        links=models.ListLinks(
+        links=ListLinks(
             self=str(request.url_for("list_thredds_dataset_configurations"))
         ),
         items=items
@@ -95,7 +103,7 @@ async def list_thredds_dataset_configurations(
 
 @router.get(
     "/thredds_dataset_configurations/{configuration_id}/dataset-ids/",
-    response_model=models.ThreddsDatasetConfigurationIdentifierList
+    response_model=ThreddsDatasetConfigurationIdentifierList
 )
 async def list_dataset_identifiers(
         request: Request,
@@ -103,13 +111,13 @@ async def list_dataset_identifiers(
         configuration_id: str):
     ds_config = settings.thredds_server.datasets[configuration_id]
     items = thredds_ops.list_dataset_identifiers(configuration_id, ds_config)
-    return models.ThreddsDatasetConfigurationIdentifierList(
-        meta=models.ListMeta(
+    return ThreddsDatasetConfigurationIdentifierList(
+        meta=ListMeta(
             returned_records=len(items),
             total_records=len(items),
             total_filtered_records=len(items),
         ),
-        links=models.ListLinks(
+        links=ListLinks(
             self=str(
                 request.url_for(
                     "list_dataset_identifiers",

@@ -16,7 +16,7 @@ services:
       ARPAV_PPCV__DEBUG: true
       ARPAV_PPCV__PUBLIC_URL: http://localhost:5001
       ARPAV_PPCV__DB_DSN: postgresql://arpav:arpavpassword@db:5432/arpav_ppcv
-      ARPAV_PPCV__UVICORN_LOG_CONFIG_FILE: /home/appuser/app/dev-log-config.yml
+      ARPAV_PPCV__LOG_CONFIG_FILE: /home/appuser/app/dev-log-config.yml
       ARPAV_PPCV__DJANGO_APP__DB_DSN: postgres://postgres:postgres@legacy-db:5432/postgres
       ARPAV_PPCV__DJANGO_APP__THREDDS__PORT: 8081
       ARPAV_PPCV__DJANGO_APP__REDIS_DSN: redis://redis:6379
@@ -31,6 +31,9 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
+    ports:
+      - target: 5432
+        published: 55433
     volumes:
       - legacy-db-data:/var/lib/postgresql/data
     # The below command adds a more verbose logging of operations - DON'T USE THIS IN PRODUCTION!
@@ -43,6 +46,9 @@ services:
       POSTGRES_USER: arpav
       POSTGRES_PASSWORD: arpavpassword
       POSTGRES_DB: arpav_ppcv
+    ports:
+      - target: 5432
+        published: 55432
     volumes:
       - db-data:/var/lib/postgresql/data
     # The below command adds a more verbose logging of operations - DON'T USE THIS IN PRODUCTION!
