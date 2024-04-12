@@ -12,28 +12,24 @@ class StationRead(app_models.StationBase):
     ...
 
 
-class StationCreate(sqlmodel.SQLModel):
-    geom: geojson_pydantic.Point
-    code: str
+class StationCreate(app_models.StationCreate):
+    ...
 
 
-class StationUpdate(sqlmodel.SQLModel):
-    geom: Optional[geojson_pydantic.Point] = None
-    code: Optional[str] = None
+class StationUpdate(app_models.StationUpdate):
+    ...
 
 
 class VariableRead(app_models.VariableBase):
     ...
 
 
-class VariableCreate(sqlmodel.SQLModel):
-    name: str
-    unit: str
+class VariableCreate(app_models.VariableCreate):
+    ...
 
 
-class VariableUpdate(sqlmodel.SQLModel):
-    name: Optional[str] = None
-    unit: Optional[str] = None
+class VariableUpdate(app_models.VariableUpdate):
+    ...
 
 
 class MonthlyMeasurementRead(app_models.MonthlyMeasurementBase):
@@ -41,13 +37,9 @@ class MonthlyMeasurementRead(app_models.MonthlyMeasurementBase):
     variable_id: pydantic.UUID4
 
 
-class MonthlyMeasurementCreate(sqlmodel.SQLModel):
-    station_id: pydantic.UUID4
-    variable_id: pydantic.UUID4
-    value: float
-    date: dt.date
+class MonthlyMeasurementCreate(app_models.MonthlyMeasurementCreate):
+    ...
 
 
-class MonthlyMeasurementUpdate(sqlmodel.SQLModel):
-    value: Optional[float] = None
-    date: Optional[dt.date] = None
+class MonthlyMeasurementUpdate(app_models.MonthlyMeasurementUpdate):
+    ...

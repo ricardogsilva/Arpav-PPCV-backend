@@ -1,6 +1,6 @@
 import pydantic
 
-from .base import ResourceList
+from .base import WebResourceList
 
 
 class ForecastModelScenario(pydantic.BaseModel):
@@ -17,13 +17,13 @@ class ThreddsDatasetConfiguration(pydantic.BaseModel):
     allowed_values: dict[str, list[str]] | None = None
 
 
-class ThreddsDatasetConfigurationList(ResourceList):
+class ThreddsDatasetConfigurationList(WebResourceList):
     items: list[ThreddsDatasetConfiguration]
 
 
-class ThreddsDatasetConfigurationIdentifierList(ResourceList):
+class ThreddsDatasetConfigurationIdentifierList(WebResourceList):
     items: list[str]
 
 
-class ForecastModelScenarioList(ResourceList):
+class ForecastModelScenarioList(WebResourceList):
     items: list[ForecastModelScenario]

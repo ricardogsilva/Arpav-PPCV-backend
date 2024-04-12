@@ -144,8 +144,8 @@ class ArpavPpcvSettings(BaseSettings):  # noqa
     verbose_db_logs: bool = False
     contact: ContactSettings = ContactSettings()
     thredds_server: ThreddsServerSettings = ThreddsServerSettings()
-    v1_mount_prefix: str = "/v1"
-    v2_mount_prefix: str = "/v2"
+    v1_mount_prefix: str = "/v1/api"
+    v2_mount_prefix: str = "/v2/api"
     django_app: DjangoAppSettings = DjangoAppSettings()
     log_config_file: Path | None = None
 
