@@ -100,13 +100,33 @@ def get_variable(
 def list_monthly_measurements(
         request: Request,
         db_session: Annotated[Session, Depends(dependencies.get_db_session)],
-        list_params: Annotated[dependencies.CommonListFilterParameters, Depends()]
+        list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
+        station_code: str | None = None,
+        variable_name: str | None = None,
 ):
     """List known monthly measurements."""
+    if station_code is not None:
+        db_station = database.get_station_by_code(db_session, station_code)
+        if db_station is not None:
+            station_id = db_station.id
+        else:
+            raise ValueError("Invalid station code")
+    else:
+        station_id = None
+    if variable_name is not None:
+        db_variable = database.get_variable_by_name(db_session, variable_name)
+        if db_variable is not None:
+            variable_id = db_variable.id
+        else:
+            raise ValueError("Invalid variable name")
+    else:
+        variable_id = None
     monthly_measurements, filtered_total = database.list_monthly_measurements(
         db_session,
         limit=list_params.limit,
         offset=list_params.offset,
+        station_id_filter=station_id,
+        variable_id_filter=variable_id,
         include_total=True
     )
     _, unfiltered_total = database.list_monthly_measurements(

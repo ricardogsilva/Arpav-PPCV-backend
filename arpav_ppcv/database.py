@@ -144,6 +144,34 @@ def create_station(
         return db_station
 
 
+def create_many_stations(
+        session: sqlmodel.Session,
+        stations_to_create: Sequence[models.StationCreate],
+) -> list[models.Station]:
+    """Create several stations."""
+    db_records = []
+    for station_create in stations_to_create:
+        geom = shapely.io.from_geojson(station_create.geom.model_dump_json())
+        wkbelement = from_shape(geom)
+        db_station = models.Station(
+            code=station_create.code,
+            geom=wkbelement,
+            altitude_m=station_create.altitude_m,
+            name=station_create.name,
+            type_=station_create.type_,
+        )
+        db_records.append(db_station)
+        session.add(db_station)
+    try:
+        session.commit()
+    except sqlalchemy.exc.DBAPIError:
+        raise
+    else:
+        for db_record in db_records:
+            session.refresh(db_record)
+        return db_records
+
+
 def get_station(
         session: sqlmodel.Session, station_id: uuid.UUID) -> Optional[models.Station]:
     return session.get(models.Station, station_id)
@@ -225,6 +253,31 @@ def create_monthly_measurement(
         return db_monthly_measurement
 
 
+def create_many_monthly_measurements(
+        session: sqlmodel.Session,
+        monthly_measurements_to_create: Sequence[models.MonthlyMeasurementCreate],
+) -> list[models.MonthlyMeasurement]:
+    """Create several monthly measurements."""
+    db_records = []
+    for monthly_measurement_create in monthly_measurements_to_create:
+        db_monthly_measurement = models.MonthlyMeasurement(
+            station_id=monthly_measurement_create.station_id,
+            variable_id=monthly_measurement_create.variable_id,
+            value=monthly_measurement_create.value,
+            date=monthly_measurement_create.date,
+        )
+        db_records.append(db_monthly_measurement)
+        session.add(db_monthly_measurement)
+    try:
+        session.commit()
+    except sqlalchemy.exc.DBAPIError:
+        raise
+    else:
+        for db_record in db_records:
+            session.refresh(db_record)
+        return db_records
+
+
 def get_monthly_measurement(
         session: sqlmodel.Session,
         monthly_measurement_id: uuid.UUID
@@ -248,10 +301,23 @@ def list_monthly_measurements(
         *,
         limit: int = 20,
         offset: int = 0,
+        station_id_filter: Optional[uuid.UUID] = None,
+        variable_id_filter: Optional[uuid.UUID] = None,
+        month_filter: Optional[int] = None,
         include_total: bool = False,
 ) -> tuple[Sequence[models.MonthlyMeasurement], Optional[int]]:
     """List existing monthly measurements."""
     statement = sqlmodel.select(models.MonthlyMeasurement)
+    if station_id_filter is not None:
+        statement = statement.where(
+            models.MonthlyMeasurement.station_id == station_id_filter)
+    if variable_id_filter is not None:
+        statement = statement.where(
+            models.MonthlyMeasurement.variable_id == variable_id_filter)
+    if month_filter is not None:
+        statement = statement.where(
+            sqlmodel.func.extract(
+                "MONTH", models.MonthlyMeasurement.date) == month_filter)
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = (
         _get_total_num_records(session, statement) if include_total else None)
@@ -260,9 +326,27 @@ def list_monthly_measurements(
 
 def collect_all_monthly_measurements(
         session: sqlmodel.Session,
+        *,
+        station_id_filter: Optional[uuid.UUID] = None,
+        variable_id_filter: Optional[uuid.UUID] = None,
+        month_filter: Optional[int] = None,
 ) -> Sequence[models.MonthlyMeasurement]:
-    _, num_total = list_monthly_measurements(session, limit=1, include_total=True)
-    result, _ = list_monthly_measurements(session, limit=num_total, include_total=False)
+    _, num_total = list_monthly_measurements(
+        session,
+        limit=1,
+        station_id_filter=station_id_filter,
+        variable_id_filter=variable_id_filter,
+        month_filter=month_filter,
+        include_total=True
+    )
+    result, _ = list_monthly_measurements(
+        session,
+        limit=num_total,
+        station_id_filter=station_id_filter,
+        variable_id_filter=variable_id_filter,
+        month_filter=month_filter,
+        include_total=False
+    )
     return result
 
 
