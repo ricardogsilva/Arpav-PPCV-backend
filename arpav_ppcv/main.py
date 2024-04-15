@@ -25,6 +25,7 @@ from . import (
     database,
 )
 from .cliapp.app import app as cli_app
+from .observations_harvester.cliapp import app as observations_harvester_app
 from .thredds import crawler
 from .webapp.legacy.django_settings import get_custom_django_settings
 
@@ -34,6 +35,7 @@ dev_app = typer.Typer()
 app.add_typer(cli_app, name="app")
 app.add_typer(db_app, name="db")
 app.add_typer(dev_app, name="dev")
+app.add_typer(observations_harvester_app, name="observations-harvester")
 
 
 @app.callback()

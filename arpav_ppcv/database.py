@@ -39,6 +39,26 @@ def create_variable(
         return db_variable
 
 
+def create_many_variables(
+        session: sqlmodel.Session,
+        variables_to_create: Sequence[models.VariableCreate],
+) -> list[models.Variable]:
+    """Create several variables."""
+    db_records = []
+    for variable_create in variables_to_create:
+        db_variable = models.Variable(**variable_create.model_dump())
+        db_records.append(db_variable)
+        session.add(db_variable)
+    try:
+        session.commit()
+    except sqlalchemy.exc.DBAPIError:
+        raise
+    else:
+        for db_record in db_records:
+            session.refresh(db_record)
+        return db_records
+
+
 def get_variable(
         session: sqlmodel.Session, variable_id: uuid.UUID) -> Optional[models.Variable]:
     return session.get(models.Variable, variable_id)
