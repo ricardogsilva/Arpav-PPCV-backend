@@ -46,19 +46,28 @@ class StationBase(sqlmodel.SQLModel):
 
 
 class Station(StationBase, table=True):
+    altitude_m: Optional[float] = sqlmodel.Field(default=None)
+    name: str = ""
+    type_: str = ""
 
     monthly_measurements: list["MonthlyMeasurement"] = sqlmodel.Relationship(
         back_populates="station")
 
 
 class StationCreate(sqlmodel.SQLModel):
-    geom: geojson_pydantic.Point
     code: str
+    geom: geojson_pydantic.Point
+    altitude_m: Optional[float] = None
+    name: Optional[str] = ""
+    type_: Optional[str] = ""
 
 
 class StationUpdate(sqlmodel.SQLModel):
-    geom: Optional[geojson_pydantic.Point] = None
     code: Optional[str] = None
+    geom: Optional[geojson_pydantic.Point] = None
+    altitude_m: Optional[float] = None
+    name: Optional[str] = None
+    type_: Optional[str] = None
 
 
 class VariableBase(sqlmodel.SQLModel):
@@ -67,7 +76,8 @@ class VariableBase(sqlmodel.SQLModel):
         primary_key=True
     )
     name: str = sqlmodel.Field(unique=True)
-    unit: str
+    description: str
+    unit: str = ""
 
 
 class Variable(VariableBase, table=True):
@@ -79,11 +89,13 @@ class Variable(VariableBase, table=True):
 
 class VariableCreate(sqlmodel.SQLModel):
     name: str
-    unit: str
+    description: str
+    unit: Optional[str] = ""
 
 
 class VariableUpdate(sqlmodel.SQLModel):
     name: Optional[str] = None
+    description: Optional[str] = None
     unit: Optional[str] = None
 
 

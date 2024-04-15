@@ -18,9 +18,6 @@ class StationReadListItem(app_models.StationBase):
             request: Request,
     ) -> "StationReadListItem":
         url = request.url_for("get_station", **{"station_id": instance.id})
-        print(f"{url=}")
-        print(f"{__name__=}")
-        logger.debug(f"{url=}")
         return cls(
             **instance.model_dump(),
             url=str(url),
@@ -28,11 +25,36 @@ class StationReadListItem(app_models.StationBase):
 
 
 class VariableReadListItem(app_models.VariableBase):
-    ...
+    url: pydantic.AnyHttpUrl
+
+    @classmethod
+    def from_db_instance(
+            cls,
+            instance: app_models.Variable,
+            request: Request,
+    ) -> "VariableReadListItem":
+        return cls(
+            **instance.model_dump(),
+            url=str(request.url_for("get_variable", variable_id=instance.id))
+        )
 
 
-class MonthlyMeasurementListItem(app_models.MonthlyMeasurementBase):
-    ...
+class MonthlyMeasurementReadListItem(app_models.MonthlyMeasurementBase):
+    url: pydantic.AnyHttpUrl
+
+    @classmethod
+    def from_db_instance(
+            cls,
+            instance: app_models.MonthlyMeasurement,
+            request: Request,
+    ) -> "MonthlyMeasurementReadListItem":
+        return cls(
+            **instance.model_dump(),
+            url=str(
+                request.url_for(
+                    "get_monthly_measurement", monthly_measurement_id=instance.id)
+            )
+        )
 
 
 class StationList(WebResourceList):
@@ -43,7 +65,11 @@ class StationList(WebResourceList):
 
 class VariableList(WebResourceList):
     items: list[VariableReadListItem]
+    list_item_type = VariableReadListItem
+    path_operation_name = "list_variables"
 
 
 class MonthlyMeasurementList(WebResourceList):
-    items: list[MonthlyMeasurementListItem]
+    items: list[MonthlyMeasurementReadListItem]
+    list_item_type = MonthlyMeasurementReadListItem
+    path_operation_name = "list_monthly_measurements"

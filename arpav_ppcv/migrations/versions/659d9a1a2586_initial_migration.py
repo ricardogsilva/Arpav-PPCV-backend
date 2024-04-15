@@ -1,8 +1,8 @@
 """initial migration
 
-Revision ID: 15447f10da86
+Revision ID: 659d9a1a2586
 Revises: 
-Create Date: 2024-04-11 16:58:14.027264
+Create Date: 2024-04-15 09:49:37.180158
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel
 from geoalchemy2 import Geometry
 
 # revision identifiers, used by Alembic.
-revision: str = '15447f10da86'
+revision: str = '659d9a1a2586'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -25,6 +25,9 @@ def upgrade() -> None:
     sa.Column('id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.Column('geom', Geometry(geometry_type='POINT', srid=4326, spatial_index=False, from_text='ST_GeomFromEWKT', name='geometry'), nullable=True),
     sa.Column('code', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('altitude_m', sa.Float(), nullable=True),
+    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('type_', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('code')
     )
@@ -32,6 +35,7 @@ def upgrade() -> None:
     op.create_table('variable',
     sa.Column('id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('description', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('unit', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')

@@ -40,14 +40,6 @@ class ListLinks(pydantic.BaseModel):
     last: str | None = None
 
 
-class WebAccessibleResource(pydantic.BaseModel):
-    path_operation_name: typing.ClassVar[str]
-
-    @classmethod
-    def get_detail_url(cls, request: Request, **path_kwargs) -> str:
-        return request.url_for(cls.path_operation_name, **path_kwargs)
-
-
 class WebResourceList(base_schemas.ResourceList):
     meta: ListMeta
     links: ListLinks

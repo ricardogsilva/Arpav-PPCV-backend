@@ -1,6 +1,9 @@
 import datetime as dt
 import uuid
-from typing import Annotated
+from typing import (
+    Annotated,
+    Optional,
+)
 
 import geojson_pydantic
 import pydantic_core
@@ -34,13 +37,19 @@ def create_station(
         ctx: typer.Context,
         code: str,
         longitude: Annotated[float, typer.Argument(min=-180, max=180)],
-        latitude: Annotated[float, typer.Argument(min=-90, max=90)]
+        latitude: Annotated[float, typer.Argument(min=-90, max=90)],
+        altitude: Annotated[float, typer.Option(min=-50, max=10_000)] = None,
+        name: Annotated[str, typer.Option(help="Station name")] = "",
+        type: Annotated[str, typer.Option(help="Station type")] = "",
 ) -> None:
     station_create = schemas.StationCreate(
         geom=geojson_pydantic.Point(
             type="Point", coordinates=(longitude, latitude)
         ),
-        code=code
+        code=code,
+        altitude_m=altitude,
+        name=name,
+        type_=type.lower().replace(" ", "_")
     )
     """Create a new station."""
     with sqlmodel.Session(ctx.obj["engine"]) as session:
@@ -73,10 +82,12 @@ def list_variables(ctx: typer.Context) -> None:
 def create_variable(
         ctx: typer.Context,
         name: str,
-        unit: str,
+        description: str,
+        unit: Optional[str] = "",
 ) -> None:
     variable_create = schemas.VariableCreate(
         name=name,
+        description=description,
         unit=unit
     )
     """Create a new variable."""
