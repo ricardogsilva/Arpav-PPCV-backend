@@ -189,6 +189,8 @@ async def _run_tests(
         # .with_mounted_directory("/opt/api/tests", client.host().directory("./tests"))
         .with_env_variable("ARPAV_PPCV__DEBUG", env_variables["DEBUG"])
         .with_env_variable(
+            "ARPAV_PPCV__LOG_CONFIG_FILE", "/home/appuser/app/dev-log-config.yml")
+        .with_env_variable(
             "ARPAV_PPCV__DJANGO_APP__SECRET_KEY", env_variables["SECRET_KEY"])
         .with_env_variable("ARPAV_PPCV__DJANGO_APP__DB_DSN", db_dsn)
         .with_exec(shlex.split("poetry install --with dev"))

@@ -53,8 +53,12 @@ def base_callback(ctx: typer.Context) -> None:
             "alembic_config": alembic_config,
         }
     )
-    logging.config.dictConfig(
-        yaml.safe_load(settings.log_config_file.read_text()))
+    if (
+            (config_file_path := settings.log_config_file) is not None and
+            config_file_path.exists()
+    ):
+        logging.config.dictConfig(
+            yaml.safe_load(config_file_path.read_text()))
 
 
 @db_app.callback()
