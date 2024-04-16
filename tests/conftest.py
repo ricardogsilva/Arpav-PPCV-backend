@@ -1,10 +1,38 @@
-import pytest
-from django.conf import settings as django_settings
-from fastapi.testclient import TestClient
+import datetime as dt
+import random
 
-from arpav_ppcv import config
+import geojson_pydantic
+import pytest
+import shapely.io
+import shapely.geometry
+import sqlmodel
+from django.conf import settings as django_settings
+from fastapi import Depends
+from fastapi.testclient import TestClient
+from geoalchemy2.shape import from_shape
+
+from arpav_ppcv import (
+    config,
+    database,
+)
+from arpav_ppcv.schemas import models
+from arpav_ppcv.webapp import dependencies
 from arpav_ppcv.webapp.app import create_app_from_settings
 from arpav_ppcv.webapp.legacy.django_settings import get_custom_django_settings
+
+
+def _override_get_settings():
+    standard_settings = config.get_settings()
+    return standard_settings
+
+
+def _override_get_db_engine(settings=Depends(dependencies.get_settings)):
+    yield database.get_engine(settings, use_test_db=True)
+
+
+def _override_get_db_session(engine=Depends(dependencies.get_db_engine)):
+    with sqlmodel.Session(autocommit=False, autoflush=False, bind=engine) as session:
+        yield session
 
 
 @pytest.hookimpl
@@ -21,16 +49,119 @@ def pytest_configure():
 
 @pytest.fixture
 def settings() -> config.ArpavPpcvSettings:
-    settings = config.ArpavPpcvSettings()
+    settings = _override_get_settings()
     yield settings
 
 
 @pytest.fixture
 def app(settings):
     app = create_app_from_settings(settings)
+    app.dependency_overrides[dependencies.get_settings] = _override_get_settings
+    app.dependency_overrides[dependencies.get_db_engine] = _override_get_db_engine
     yield app
+
+
+@pytest.fixture()
+def arpav_db(settings):
+    """Provides a clean DB."""
+    engine = database.get_engine(settings, use_test_db=True)
+    sqlmodel.SQLModel.metadata.create_all(engine)
+    yield
+    sqlmodel.SQLModel.metadata.drop_all(engine)
+    # tables_to_truncate = list(sqlmodel.SQLModel.metadata.tables.keys())
+    # tables_fragment = ', '.join(f'"{t}"' for t in tables_to_truncate)
+    # with engine.connect() as connection:
+    #     connection.execute(text(f"TRUNCATE {tables_fragment}"))
+
+
+@pytest.fixture()
+def arpav_db_session(arpav_db, settings):
+    engine = database.get_engine(settings, use_test_db=True)
+    with sqlmodel.Session(autocommit=False, autoflush=False, bind=engine) as session:
+        yield session
 
 
 @pytest.fixture
 def test_client(app) -> TestClient:
     yield TestClient(app)
+
+
+@pytest.fixture
+def sample_stations(arpav_db_session) -> list[models.Station]:
+    db_stations = []
+    for i in range(50):
+        db_stations.append(
+            models.Station(
+                code=f"teststation{i}",
+                geom=from_shape(
+                    shapely.io.from_geojson(
+                        geojson_pydantic.Point(
+                            type="Point", coordinates=(i, 2*i)
+                        ).model_dump_json()
+                    )
+                ),
+                altitude_m=2,
+                name=f"teststation{i}name",
+                type_="sometype"
+            )
+        )
+    for db_station in db_stations:
+        arpav_db_session.add(db_station)
+    arpav_db_session.commit()
+    for db_station in db_stations:
+        arpav_db_session.refresh(db_station)
+    return db_stations
+
+
+@pytest.fixture
+def sample_variables(arpav_db_session) -> list[models.Variable]:
+    db_variables = []
+    for i in range(20):
+        db_variables.append(
+            models.Variable(
+                name=f"testvariable{i}",
+                description=f"Description for test variable {i}",
+            )
+        )
+    for db_variable in db_variables:
+        arpav_db_session.add(db_variable)
+    arpav_db_session.commit()
+    for db_station in db_variables:
+        arpav_db_session.refresh(db_station)
+    return db_variables
+
+
+@pytest.fixture
+def sample_monthly_measurements(
+        arpav_db_session,
+        sample_variables,
+        sample_stations
+) -> list[models.MonthlyMeasurement]:
+    db_monthly_measurements = []
+    unique_measurement_instances = set()
+    while len(unique_measurement_instances) < 200:
+        sampled_date = dt.date(
+            random.randrange(1920, 2020),
+            random.randrange(1, 13),
+            1
+        )
+        sampled_station_id = random.choice(sample_stations).id
+        sampled_variable_id = random.choice(sample_variables).id
+        unique_measurement_instances.add(
+            (sampled_date, sampled_station_id, sampled_variable_id))
+
+    for date_, station_id, variable_id in unique_measurement_instances:
+        db_monthly_measurements.append(
+            models.MonthlyMeasurement(
+                value=random.random() * 20 - 10,
+                date=date_,
+                station_id=station_id,
+                variable_id=variable_id,
+            )
+        )
+    for db_monthly_measurement in db_monthly_measurements:
+        arpav_db_session.add(db_monthly_measurement)
+    arpav_db_session.commit()
+    for db_station in db_monthly_measurements:
+        arpav_db_session.refresh(db_station)
+    return db_monthly_measurements

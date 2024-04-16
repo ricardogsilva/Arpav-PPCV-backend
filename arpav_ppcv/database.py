@@ -16,9 +16,13 @@ from . import config
 from .schemas import models
 
 
-def get_engine(settings: config.ArpavPpcvSettings):
+def get_engine(
+        settings: config.ArpavPpcvSettings,
+        use_test_db: Optional[bool] = False
+):
+    db_dsn = settings.test_db_dsn if use_test_db else settings.db_dsn
     return sqlmodel.create_engine(
-        settings.db_dsn.unicode_string(),
+        db_dsn.unicode_string(),
         echo=True if settings.verbose_db_logs else False
     )
 
@@ -108,7 +112,7 @@ def list_variables(
         include_total: bool = False,
 ) -> tuple[Sequence[models.Variable], Optional[int]]:
     """List existing variables."""
-    statement = sqlmodel.select(models.Variable)
+    statement = sqlmodel.select(models.Variable).order_by(models.Variable.name)
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = (
         _get_total_num_records(session, statement) if include_total else None)
@@ -221,7 +225,7 @@ def list_stations(
         include_total: bool = False,
 ) -> tuple[Sequence[models.Station], Optional[int]]:
     """List existing stations."""
-    statement = sqlmodel.select(models.Station)
+    statement = sqlmodel.select(models.Station).order_by(models.Station.code)
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = (
         _get_total_num_records(session, statement) if include_total else None)
@@ -307,7 +311,8 @@ def list_monthly_measurements(
         include_total: bool = False,
 ) -> tuple[Sequence[models.MonthlyMeasurement], Optional[int]]:
     """List existing monthly measurements."""
-    statement = sqlmodel.select(models.MonthlyMeasurement)
+    statement = sqlmodel.select(models.MonthlyMeasurement).order_by(
+        models.MonthlyMeasurement.date)
     if station_id_filter is not None:
         statement = statement.where(
             models.MonthlyMeasurement.station_id == station_id_filter)

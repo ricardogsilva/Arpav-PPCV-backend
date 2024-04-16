@@ -1,6 +1,7 @@
 import logging
 import re
 from pathlib import Path
+from typing import Optional
 
 import pydantic
 from pydantic_settings import (
@@ -141,6 +142,7 @@ class ArpavPpcvSettings(BaseSettings):  # noqa
     db_dsn: pydantic.PostgresDsn = pydantic.PostgresDsn(
         "postgresql://user:password@localhost:5432/arpav_ppcv"
     )
+    test_db_dsn: Optional[pydantic.PostgresDsn] = None
     verbose_db_logs: bool = False
     contact: ContactSettings = ContactSettings()
     thredds_server: ThreddsServerSettings = ThreddsServerSettings()
@@ -148,6 +150,16 @@ class ArpavPpcvSettings(BaseSettings):  # noqa
     v2_mount_prefix: str = "/v2/api"
     django_app: DjangoAppSettings = DjangoAppSettings()
     log_config_file: Path | None = None
+
+    @pydantic.model_validator(mode="after")
+    def ensure_test_db_dsn(self):
+        if self.test_db_dsn is None:
+            rest, standard_db_name = (
+                self.db_dsn.unicode_string().rpartition("/")[::2]
+            )
+            test_db_name = f"test_{standard_db_name}"
+            self.test_db_dsn = pydantic.PostgresDsn(f"{rest}/{test_db_name}")
+        return self
 
 
 def get_settings() -> ArpavPpcvSettings:
