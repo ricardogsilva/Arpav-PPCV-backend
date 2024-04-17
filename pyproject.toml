@@ -68,7 +68,7 @@ addopts = "--verbose --cov --cov-branch --log-level=warning"
 
 [tool.coverage.run]
 branch = true
-source = ["djangoapp", "forecastattributes", "places", "thredds"]
+source = ["djangoapp", "forecastattributes", "places", "thredds", "arpav_ppcv"]
 
 [build-system]
 requires = ["poetry-core"]
