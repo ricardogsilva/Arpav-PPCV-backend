@@ -101,37 +101,6 @@ def _sanitize_docker_image_name(docker_image_name: str) -> str:
     return f"{host}/{path.lower()}:{tag or 'latest'}"
 
 
-def _get_env_variables() -> dict[str, str | None]:
-    return {
-        "ARPAV_PPCV__BIND_HOST": "0.0.0.0",
-        "ARPAV_PPCV__BIND_PORT": "5001",
-
-        "ARPAV_PPCV__PUBLIC_URL": "http://localhost:5001",
-        # "ARPAV_PPCV__DB_DSN": "postgresql://arpav:arpavpassword@db:5432/arpav_ppcv",
-        "ARPAV_PPCV__TEST_DB_DSN": "postgresql://arpavtest:arpavtestpassword@test-db:5432/arpav_ppcv_test",
-        "ARPAV_PPCV__LOG_CONFIG_FILE": "/home/appuser/app/dev-log-config.yml",
-        "ARPAV_PPCV__DJANGO_APP__DB_DSN": "postgres://postgres:postgres@legacy-db:5432/postgres",
-        "ARPAV_PPCV__DJANGO_APP__THREDDS__PORT": "8081",
-        "ARPAV_PPCV__DJANGO_APP__REDIS_DSN": "redis://redis:6379",
-        "ARPAV_PPCV__DJANGO_APP__SECRET_KEY": "some-dev-key",
-
-        # "DEBUG": os.getenv("DEBUG", "0"),
-        # "PGPASSWORD": os.getenv("PGPASSWORD", "postgres"),
-        # "POSTGRES_DB_NAME": os.getenv("POSTGRES_DB_NAME", "postgres"),
-        # "POSTGRES_PORT_5432_TCP_ADDR": os.getenv("POSTGRES_PORT_5432_TCP_ADDR", "postgis"),
-        # "POSTGRES_USER": os.getenv("POSTGRES_USER", "postgres"),
-        # "REDIS_HOST": os.getenv("REDIS_HOST", "redis"),
-        # "SECRET_KEY": os.getenv("SECRET_KEY", "generate it e.g. from https://djecrety.ir/"),
-        # "SSL_CERTIFICATE": os.getenv("SSL_CERTIFICATE", "/etc/letsencrypt/live/yourdomain/fullchain.pem"),
-        # "SSL_KEY": os.getenv("SSL_KEY", "/etc/letsencrypt/live/yourdomain/privkey.pem"),
-        # "THREDDS_AUTH_URL": os.getenv("THREDDS_AUTH_URL",
-        #                               "https://thredds.arpa.veneto.it/thredds/restrictedAccess/dati_accordo"),
-        # "THREDDS_HOST": os.getenv("THREDDS_HOST", "https://thredds.arpa.veneto.it/thredds/"),
-        # "THREDDS_PASSWORD": os.getenv("THREDDS_PASSWORD", ""),
-        # "THREDDS_USER": os.getenv("THREDDS_USER", ""),
-    }
-
-
 async def _run_linter(built_container: dagger.Container):
     return await (
         built_container.with_user("appuser")

@@ -41,6 +41,8 @@ class VariableReadListItem(app_models.VariableBase):
 
 class MonthlyMeasurementReadListItem(app_models.MonthlyMeasurementBase):
     url: pydantic.AnyHttpUrl
+    variable_name: str
+    station_code: str
 
     @classmethod
     def from_db_instance(
@@ -50,6 +52,8 @@ class MonthlyMeasurementReadListItem(app_models.MonthlyMeasurementBase):
     ) -> "MonthlyMeasurementReadListItem":
         return cls(
             **instance.model_dump(),
+            variable_name=instance.variable.name,
+            station_code=instance.station.code,
             url=str(
                 request.url_for(
                     "get_monthly_measurement", monthly_measurement_id=instance.id)

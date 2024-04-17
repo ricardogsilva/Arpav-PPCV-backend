@@ -1,4 +1,5 @@
 import datetime as dt
+import os
 import random
 
 import geojson_pydantic
@@ -6,33 +7,23 @@ import pytest
 import shapely.io
 import shapely.geometry
 import sqlmodel
+import typer
 from django.conf import settings as django_settings
 from fastapi import Depends
 from fastapi.testclient import TestClient
 from geoalchemy2.shape import from_shape
+from typer.testing import CliRunner
 
 from arpav_ppcv import (
     config,
     database,
+    main,
 )
 from arpav_ppcv.schemas import models
 from arpav_ppcv.webapp import dependencies
 from arpav_ppcv.webapp.app import create_app_from_settings
 from arpav_ppcv.webapp.legacy.django_settings import get_custom_django_settings
-
-
-def _override_get_settings():
-    standard_settings = config.get_settings()
-    return standard_settings
-
-
-def _override_get_db_engine(settings=Depends(dependencies.get_settings)):
-    yield database.get_engine(settings, use_test_db=True)
-
-
-def _override_get_db_session(engine=Depends(dependencies.get_db_engine)):
-    with sqlmodel.Session(autocommit=False, autoflush=False, bind=engine) as session:
-        yield session
+from arpav_ppcv.webapp.v2.app import create_app as create_v2_app
 
 
 @pytest.hookimpl
@@ -56,15 +47,25 @@ def settings() -> config.ArpavPpcvSettings:
 @pytest.fixture
 def app(settings):
     app = create_app_from_settings(settings)
-    app.dependency_overrides[dependencies.get_settings] = _override_get_settings
+    app.dependency_overrides[dependencies.get_db_session] = _override_get_db_session
     app.dependency_overrides[dependencies.get_db_engine] = _override_get_db_engine
+    app.dependency_overrides[dependencies.get_settings] = _override_get_settings
+    yield app
+
+
+@pytest.fixture
+def v2_app(settings):
+    app = create_v2_app(settings)
+    app.dependency_overrides[dependencies.get_db_session] = _override_get_db_session
+    app.dependency_overrides[dependencies.get_db_engine] = _override_get_db_engine
+    app.dependency_overrides[dependencies.get_settings] = _override_get_settings
     yield app
 
 
 @pytest.fixture()
 def arpav_db(settings):
     """Provides a clean DB."""
-    engine = database.get_engine(settings, use_test_db=True)
+    engine = next(_override_get_db_engine(settings))
     sqlmodel.SQLModel.metadata.create_all(engine)
     yield
     sqlmodel.SQLModel.metadata.drop_all(engine)
@@ -76,17 +77,48 @@ def arpav_db(settings):
 
 @pytest.fixture()
 def arpav_db_session(arpav_db, settings):
-    engine = database.get_engine(settings, use_test_db=True)
+    engine = next(_override_get_db_engine(settings))
     with sqlmodel.Session(autocommit=False, autoflush=False, bind=engine) as session:
         yield session
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_client(app) -> TestClient:
     yield TestClient(app)
 
 
-@pytest.fixture
+@pytest.fixture()
+def test_client_v2_app(v2_app) -> TestClient:
+    """This fixture exists in order to ensure app overrides work.
+
+    See https://github.com/tiangolo/fastapi/issues/3651#issuecomment-892138488
+    """
+    yield TestClient(v2_app)
+
+
+@pytest.fixture()
+def cli_runner():
+    runner = CliRunner(mix_stderr=False)
+    yield runner
+
+
+@pytest.fixture()
+def cli_app(settings, arpav_db):
+
+    # replaces the default callback with another one, with different settings
+    @main.app.callback()
+    def _override_main_app_callback(ctx: typer.Context):
+        cli_config = ctx.obj or {}
+        cli_config["settings"] = settings
+        engine = next(_override_get_db_engine(settings))
+        # engine = database.get_engine(settings, use_test_db=True)
+        cli_config["engine"] = engine
+        ctx.obj = cli_config
+
+    yield main.app
+
+
+@pytest.fixture()
 def sample_stations(arpav_db_session) -> list[models.Station]:
     db_stations = []
     for i in range(50):
@@ -113,7 +145,7 @@ def sample_stations(arpav_db_session) -> list[models.Station]:
     return db_stations
 
 
-@pytest.fixture
+@pytest.fixture()
 def sample_variables(arpav_db_session) -> list[models.Variable]:
     db_variables = []
     for i in range(20):
@@ -131,7 +163,7 @@ def sample_variables(arpav_db_session) -> list[models.Variable]:
     return db_variables
 
 
-@pytest.fixture
+@pytest.fixture()
 def sample_monthly_measurements(
         arpav_db_session,
         sample_variables,
@@ -165,3 +197,17 @@ def sample_monthly_measurements(
     for db_station in db_monthly_measurements:
         arpav_db_session.refresh(db_station)
     return db_monthly_measurements
+
+
+def _override_get_settings():
+    standard_settings = config.get_settings()
+    return standard_settings
+
+
+def _override_get_db_engine(settings=Depends(dependencies.get_settings)):
+    yield database.get_engine(settings, use_test_db=True)
+
+
+def _override_get_db_session(engine=Depends(dependencies.get_db_engine)):
+    with sqlmodel.Session(autocommit=False, autoflush=False, bind=engine) as session:
+        yield session
