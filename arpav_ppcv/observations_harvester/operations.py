@@ -148,9 +148,9 @@ def harvest_monthly_measurements(
                 f"\tProcessing variable {variable.name!r} ({var_idx+1}/"
                 f"{len(existing_variables)})..."
             )
-            for month_idx, month in enumerate(range(1, 13)):
+            for month in range(1, 13):
                 logger.info(
-                    f"\t\tProcessing month {month!r} ({month_idx + 1}/12)...")
+                    f"\t\tProcessing month {month!r} ({month}/12)...")
                 existing_measurements = database.collect_all_monthly_measurements(
                     db_session,
                     station_id_filter=station.id,

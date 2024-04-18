@@ -59,6 +59,7 @@ pytest-cov = "^4.1.0"
 pytest-django = "^4.8.0"
 dagger-io = "^0.9.10"
 ruff = "^0.2.2"
+pytest-httpx = "^0.30.0"
 
 [tool.poetry.scripts]
 arpav-ppcv = "arpav_ppcv.main:app"
