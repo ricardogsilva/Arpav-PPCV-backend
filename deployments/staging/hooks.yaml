@@ -29,4 +29,4 @@
       secret: '{{ getenv "WEBHOOK_SECRET" | js }}'
       parameter:
         source: header
-        value: X-Hub-Signature-256
+        name: X-Hub-Signature-256
