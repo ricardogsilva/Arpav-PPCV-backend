@@ -1,3 +1,12 @@
+# This workflow does not use the `github.actor` and `secrets.GITHUB_TOKEN` variables
+# The reason for it that we want to be able to have this workflow dispatching the workflow
+# workflow specified in `deployment.yaml` and as documented at:
+#
+# https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow
+#
+# github does not allow a workflow run to trigger other workflows when the `secrets.GITHUB_TOKEN`
+# variable is used in the calling workflow.
+
 name: CI
 
 run-name: ${{ github.event.schedule && 'Routine vulnerability scan' || 'Continuous Integration' }}
@@ -38,13 +47,20 @@ jobs:
       - name: install code with dev dependencies
         run: poetry install --with dev
 
+      - name: generate github app access token
+        id: generate-github-app-installation-access-token
+        uses: jamestrousdale/github-app-jwt-token@0.1.4
+        with:
+          app-id: ${{ vars.DEPLOYER_APP_ID }}
+          private-key: ${{ secrets.LOGIN_DEPLOYER_PRIVATE_KEY }}
+
       - name: login to container registry
         if: ${{ env.PUBLISH_IMAGE == 'TRUE' }}
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ vars.DEPLOYER_APP_ID }}
+          password: ${{ steps.generate-github-app-installation-access-token.outputs.access-token }}
 
       - name: run ci
         uses: dagger/dagger-for-github@v5
