@@ -43,8 +43,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.USER_FOR_REGISTRY }}
+          password: ${{ secrets.PAT_FOR_REGISTRY }}
 
       - name: run ci
         uses: dagger/dagger-for-github@v5
