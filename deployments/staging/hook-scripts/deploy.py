@@ -229,7 +229,7 @@ def perform_deployment(
         "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend",
         # TODO: add frontend image
     )
-    webapp_service_name = "arpav-ppcv-webapp-1"
+    webapp_service_name = "arpav-ppcv-staging-webapp-1"
     deployment_steps = [
         _ValidateRequestPayload(raw_payload=raw_request_payload),
         _FindEnvFile(env_file=deployment_env_file),
