@@ -170,7 +170,7 @@ class _RunMigrations:
         print("Upgrading database...")
         run(
             shlex.split(
-                f"docker exec -ti {self.webapp_service_name} poetry run "
+                f"docker exec {self.webapp_service_name} poetry run "
                 f"arpav-ppcv db upgrade"
             ),
             check=True
@@ -186,7 +186,7 @@ class _RunLegacyMigrations:
         print("Upgrading legacy database...")
         run(
             shlex.split(
-                f"docker exec -ti {self.webapp_service_name} poetry run "
+                f"docker exec {self.webapp_service_name} poetry run "
                 f"arpav-ppcv django-admin migrate"
             ),
             check=True
@@ -202,7 +202,7 @@ class _CollectLegacyStaticFiles:
         print("Collecting legacy static files...")
         run(
             shlex.split(
-                f"docker exec -ti {self.webapp_service_name} poetry run "
+                f"docker exec {self.webapp_service_name} poetry run "
                 f"arpav-ppcv django-admin collectstatic --no-input"
             ),
             check=True
