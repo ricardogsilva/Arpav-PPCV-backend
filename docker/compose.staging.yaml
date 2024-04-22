@@ -53,10 +53,10 @@ services:
         source: $PWD/docker/thredds/content-root/wmsConfig.xml
         target: /usr/local/tomcat/content/thredds/wmsConfig.xml
       - type: bind
-        source: $HOME/data/geobeyond/arpav-ppcv/datasets
+        source: $HOME/data/arpav-ppcv/datasets
         target: /datasets
       - type: bind
-        source: $HOME/data/geobeyond/arpav-ppcv/netcdf-uncertainty-example
+        source: $HOME/data/arpav-ppcv/netcdf-uncertainty-example
         target: /additional
 
 volumes:
