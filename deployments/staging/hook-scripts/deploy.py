@@ -130,21 +130,12 @@ class _FindEnvFile:
 @dataclasses.dataclass
 class _PullImage:
     images: tuple[str]
-    env_file: Path
-    compose_files_fragment: str
     name: str = "pull new docker images from container registry"
 
     def handle(self) -> None:
         print("Pulling updated docker images...")
         run(
-            shlex.split(
-                f"docker compose {self.compose_files_fragment} "
-                f"pull {' '.join(self.images)}"
-            ),
-            env={
-                **os.environ,
-                "ARPAV_PPCV_DEPLOYMENT_ENV_FILE": self.env_file
-            },
+            shlex.split(f"docker pull {' '.join(self.images)}"),
             check=True
         )
 
@@ -173,6 +164,7 @@ class _StartCompose:
 @dataclasses.dataclass
 class _RunMigrations:
     webapp_service_name: str
+    name: str = "run DB migrations"
 
     def handle(self) -> None:
         print("Upgrading database...")
@@ -188,6 +180,7 @@ class _RunMigrations:
 @dataclasses.dataclass
 class _RunLegacyMigrations:
     webapp_service_name: str
+    name: str = "run legacy DB migrations"
 
     def handle(self) -> None:
         print("Upgrading legacy database...")
@@ -203,6 +196,7 @@ class _RunLegacyMigrations:
 @dataclasses.dataclass
 class _CollectLegacyStaticFiles:
     webapp_service_name: str
+    name: str = "collect legacy static files"
 
     def handle(self) -> None:
         print("Collecting legacy static files...")
@@ -243,11 +237,7 @@ def perform_deployment(
         _StopCompose(docker_dir=docker_dir, compose_files_fragment=compose_files),
         _CloneRepo(clone_destination=clone_destination),
         _ReplaceDockerDir(repo_dir=clone_destination, docker_dir=docker_dir),
-        _PullImage(
-            images=relevant_images,
-            env_file=deployment_env_file,
-            compose_files_fragment=compose_files
-        ),
+        _PullImage(images=relevant_images),
         _StartCompose(
             env_file=deployment_env_file, compose_files_fragment=compose_files),
         # _RunMigrations(webapp_service_name=webapp_service_name),
