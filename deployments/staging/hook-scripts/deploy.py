@@ -170,6 +170,51 @@ class _StartCompose:
         )
 
 
+@dataclasses.dataclass
+class _RunMigrations:
+    webapp_service_name: str
+
+    def handle(self) -> None:
+        print("Upgrading database...")
+        run(
+            shlex.split(
+                f"docker exec -ti {self.webapp_service_name} poetry run "
+                f"arpav-ppcv db upgrade"
+            ),
+            check=True
+        )
+
+
+@dataclasses.dataclass
+class _RunLegacyMigrations:
+    webapp_service_name: str
+
+    def handle(self) -> None:
+        print("Upgrading legacy database...")
+        run(
+            shlex.split(
+                f"docker exec -ti {self.webapp_service_name} poetry run "
+                f"arpav-ppcv django-admin migrate"
+            ),
+            check=True
+        )
+
+
+@dataclasses.dataclass
+class _CollectLegacyStaticFiles:
+    webapp_service_name: str
+
+    def handle(self) -> None:
+        print("Collecting legacy static files...")
+        run(
+            shlex.split(
+                f"docker exec -ti {self.webapp_service_name} poetry run "
+                f"arpav-ppcv django-admin collectstatic --no-input"
+            ),
+            check=True
+        )
+
+
 def perform_deployment(
         *,
         raw_request_payload: str,
@@ -190,6 +235,7 @@ def perform_deployment(
         "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend",
         # TODO: add frontend image
     )
+    webapp_service_name = "arpav-ppcv-webapp-1"
     deployment_steps = [
         _ValidateRequestPayload(raw_payload=raw_request_payload),
         _FindEnvFile(env_file=deployment_env_file),
@@ -203,7 +249,10 @@ def perform_deployment(
             compose_files_fragment=compose_files
         ),
         _StartCompose(
-            env_file=deployment_env_file, compose_files_fragment=compose_files)
+            env_file=deployment_env_file, compose_files_fragment=compose_files),
+        # _RunMigrations(webapp_service_name=webapp_service_name),
+        _RunLegacyMigrations(webapp_service_name=webapp_service_name),
+        _CollectLegacyStaticFiles(webapp_service_name=webapp_service_name),
     ]
     for step in deployment_steps:
         print(f"Running step: {step.name!r}...")
