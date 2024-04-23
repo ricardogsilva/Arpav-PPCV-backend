@@ -116,15 +116,16 @@ class _ReplaceDockerDir:
 
 
 @dataclasses.dataclass
-class _FindEnvFile:
-    env_file: Path
+class _FindEnvFiles:
+    env_files: dict[str, Path]
     name: str = "find environment file"
 
     def handle(self) -> None:
         print("Looking for env_file...")
-        if not self.env_file.exists():
-            raise RuntimeError(
-                f"Could not find environment file {self.env_file!r}, aborting...")
+        for env_file_path in self.env_files.values():
+            if not env_file_path.exists():
+                raise RuntimeError(
+                    f"Could not find environment file {env_file_path!r}, aborting...")
 
 
 @dataclasses.dataclass
@@ -142,7 +143,9 @@ class _PullImage:
 
 @dataclasses.dataclass
 class _StartCompose:
-    env_file: Path
+    env_file_db_service: Path
+    env_file_legacy_db_service: Path
+    env_file_webapp_service: Path
     compose_files_fragment: str
     name: str = "start docker compose"
 
@@ -155,7 +158,9 @@ class _StartCompose:
             ),
             env={
                 **os.environ,
-                "ARPAV_PPCV_DEPLOYMENT_ENV_FILE": self.env_file
+                "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_DB_SERVICE": self.env_file_db_service,
+                "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_LEGACY_DB_SERVICE": self.env_file_legacy_db_service,  # noqa
+                "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_WEBAPP_SERVICE": self.env_file_webapp_service,  # noqa
             },
             check=True
         )
@@ -224,7 +229,11 @@ def perform_deployment(
         f"-f {docker_dir}/compose.staging.yaml"
     )
     clone_destination = Path("/tmp/arpav-ppcv-backend")
-    deployment_env_file = deployment_root / "arpav-ppcv.env"
+    deployment_env_files = {
+        "db_service": deployment_root / "environment-files/db-service.env",
+        "legacy_db_service": deployment_root / "environment-files/legacy-db-service.env",
+        "webapp_service": deployment_root / "environment-files/webapp-service.env",
+    }
     relevant_images = (
         "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend",
         # TODO: add frontend image
@@ -232,15 +241,19 @@ def perform_deployment(
     webapp_service_name = "arpav-ppcv-staging-webapp-1"
     deployment_steps = [
         _ValidateRequestPayload(raw_payload=raw_request_payload),
-        _FindEnvFile(env_file=deployment_env_file),
+        _FindEnvFiles(env_files=deployment_env_files),
         _FindDockerDir(docker_dir=docker_dir),
         _StopCompose(docker_dir=docker_dir, compose_files_fragment=compose_files),
         _CloneRepo(clone_destination=clone_destination),
         _ReplaceDockerDir(repo_dir=clone_destination, docker_dir=docker_dir),
         _PullImage(images=relevant_images),
         _StartCompose(
-            env_file=deployment_env_file, compose_files_fragment=compose_files),
-        # _RunMigrations(webapp_service_name=webapp_service_name),
+            env_file_db_service=deployment_env_files["db_service"],
+            env_file_legacy_db_service=deployment_env_files["legacy_db_service"],
+            env_file_webapp_service=deployment_env_files["webapp_service"],
+            compose_files_fragment=compose_files
+        ),
+        _RunMigrations(webapp_service_name=webapp_service_name),
         _RunLegacyMigrations(webapp_service_name=webapp_service_name),
         _CollectLegacyStaticFiles(webapp_service_name=webapp_service_name),
     ]
