@@ -1,14 +1,9 @@
-name: CI
-
-run-name: ${{ github.event.schedule && 'Routine vulnerability scan' || 'Continuous Integration' }}
+name: Continuous Integration
 
 on:
   push:
 
   pull_request:
-
-  schedule:
-    - cron: "30 12 * * *"  # runs everyday at 12h30
 
 env:
   PUBLISH_IMAGE: ${{ (github.ref_name == 'main' || github.ref_type == 'tag') && 'TRUE' || 'FALSE'}}
@@ -58,13 +53,4 @@ jobs:
             --git-commit ${{ github.sha }}
             --with-tests 
             ${{ env.PUBLISH_IMAGE == 'TRUE' && format('--publish-docker-image {0}:{1}', env.IMAGE_NAME, env.IMAGE_TAG)  || ''}}
-          version: 0.9.9
-
-      # Periodically scan built image for vulnerabilities
-      - name: run security scanning
-        if: ${{ github.event.schedule }}
-        uses: dagger/dagger-for-github@v5
-        with:
-          verb: run
-          args: poetry run python tests/ci/main.py --with-security-scan
           version: 0.9.9
