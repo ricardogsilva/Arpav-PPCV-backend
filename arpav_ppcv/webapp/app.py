@@ -6,6 +6,7 @@ from .. import config
 from .v2.app import create_app as create_v2_app
 from .v1.app import create_app as create_v1_app
 from .legacy.app import create_django_app
+from .routers import router
 
 
 def create_app_from_settings(settings: config.ArpavPpcvSettings) -> fastapi.FastAPI:
@@ -35,6 +36,7 @@ def create_app_from_settings(settings: config.ArpavPpcvSettings) -> fastapi.Fast
             "email": settings.contact.email
         },
     )
+    app.include_router(router)
     app.mount(settings.v1_mount_prefix, v1_app)
     app.mount(settings.v2_mount_prefix, v2_app)
     app.mount(settings.django_app.mount_prefix, WSGIMiddleware(django_app))
