@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/stations/", response_model=observations.StationList)
+@router.get("/stations", response_model=observations.StationList)
 def list_stations(
         request: Request,
         db_session: Annotated[Session, Depends(dependencies.get_db_session)],
@@ -56,7 +56,7 @@ def get_station(
     return observations.StationReadListItem.from_db_instance(db_station, request)
 
 
-@router.get("/variables/", response_model=observations.VariableList)
+@router.get("/variables", response_model=observations.VariableList)
 def list_variables(
         request: Request,
         db_session: Annotated[Session, Depends(dependencies.get_db_session)],
@@ -96,7 +96,7 @@ def get_variable(
 
 
 @router.get(
-    "/monthly-measurements/", response_model=observations.MonthlyMeasurementList)
+    "/monthly-measurements", response_model=observations.MonthlyMeasurementList)
 def list_monthly_measurements(
         request: Request,
         db_session: Annotated[Session, Depends(dependencies.get_db_session)],

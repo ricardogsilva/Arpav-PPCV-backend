@@ -7,7 +7,7 @@ router = APIRouter(tags=["maps"])
 
 
 @router.get(
-    "/maps/",
+    "/maps",
     response_model=schemas.ItemList[schemas.MapListItem]
 )
 def get_maps():
@@ -18,7 +18,7 @@ def get_maps():
 
 
 @router.get(
-    "/user-downloads/",
+    "/user-downloads",
     response_model=schemas.ItemList[schemas.UserDownloadListItem])
 def get_user_downloads():
     return get_item_list(

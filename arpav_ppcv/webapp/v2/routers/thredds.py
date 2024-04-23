@@ -37,7 +37,7 @@ async def landing_page():
 
 
 @router.get(
-    "/thredds-dataset-configurations/",
+    "/thredds-dataset-configurations",
     response_model=ThreddsDatasetConfigurationList
 )
 async def list_thredds_dataset_configurations(
@@ -102,7 +102,7 @@ async def list_thredds_dataset_configurations(
 
 
 @router.get(
-    "/thredds_dataset_configurations/{configuration_id}/dataset-ids/",
+    "/thredds_dataset_configurations/{configuration_id}/dataset-ids",
     response_model=ThreddsDatasetConfigurationIdentifierList
 )
 async def list_dataset_identifiers(
