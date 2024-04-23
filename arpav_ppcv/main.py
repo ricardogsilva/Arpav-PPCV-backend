@@ -19,6 +19,7 @@ import typer
 import yaml
 from django.conf import settings as django_settings
 from django.core import management
+from rich import print
 
 from . import (
     config,

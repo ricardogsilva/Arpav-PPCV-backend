@@ -1,6 +1,7 @@
 import httpx
 import sqlmodel
 import typer
+from rich import print
 from typing import Annotated
 
 from .. import database
