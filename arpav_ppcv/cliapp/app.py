@@ -9,11 +9,14 @@ import geojson_pydantic
 import pydantic_core
 import sqlmodel
 import typer
+from rich import print
 
 from .. import database
 from . import schemas
 
 app = typer.Typer()
+
+_JSON_INDENTATION = 2
 
 
 @app.command(name="list-stations")
@@ -24,7 +27,7 @@ def list_stations(ctx: typer.Context) -> None:
             schemas.StationRead(**s.model_dump())
             for s in database.collect_all_stations(session)
         ]
-        print(pydantic_core.to_json(result).decode("utf-8"))
+        print(pydantic_core.to_json(result, indent=_JSON_INDENTATION).decode("utf-8"))
 
 
 @app.command(
@@ -54,7 +57,11 @@ def create_station(
     """Create a new station."""
     with sqlmodel.Session(ctx.obj["engine"]) as session:
         db_station = database.create_station(session, station_create)
-        print(schemas.StationRead(**db_station.model_dump()).model_dump_json())
+        print(
+            schemas.StationRead(
+                **db_station.model_dump()
+            ).model_dump_json(indent=_JSON_INDENTATION)
+        )
 
 
 @app.command(name="delete-station")
@@ -75,7 +82,7 @@ def list_variables(ctx: typer.Context) -> None:
             schemas.VariableRead(**v.model_dump())
             for v in database.collect_all_variables(session)
         ]
-        print(pydantic_core.to_json(result).decode("utf-8"))
+        print(pydantic_core.to_json(result, indent=_JSON_INDENTATION).decode("utf-8"))
 
 
 @app.command(name="create-variable")
@@ -93,7 +100,11 @@ def create_variable(
     """Create a new variable."""
     with sqlmodel.Session(ctx.obj["engine"]) as session:
         db_variable = database.create_variable(session, variable_create)
-        print(schemas.VariableRead(**db_variable.model_dump()).model_dump_json())
+        print(
+            schemas.VariableRead(
+                **db_variable.model_dump()
+            ).model_dump_json(indent=_JSON_INDENTATION)
+        )
 
 
 @app.command(name="delete-variable")
@@ -114,7 +125,7 @@ def list_monthly_measurements(ctx: typer.Context) -> None:
             schemas.MonthlyMeasurementRead(**v.model_dump())
             for v in database.collect_all_monthly_measurements(session)
         ]
-        print(pydantic_core.to_json(result).decode("utf-8"))
+        print(pydantic_core.to_json(result, indent=_JSON_INDENTATION).decode("utf-8"))
 
 
 @app.command(
@@ -151,7 +162,7 @@ def create_monthly_measurement(
         print(
             schemas.MonthlyMeasurementRead(
                 **db_monthly_measurement.model_dump()
-            ).model_dump_json()
+            ).model_dump_json(indent=_JSON_INDENTATION)
         )
 
 
