@@ -6,7 +6,7 @@ router = APIRouter(tags=["places"])
 
 
 @router.get(
-    "/cities/",
+    "/cities",
     response_model=schemas.ItemList[schemas.CityListItem]
 )
 def get_cities():

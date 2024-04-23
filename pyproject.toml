@@ -17,7 +17,7 @@ packages = [
 python = "^3.10"
 django = "3.0.6"
 djangorestframework = "3.11.0"
-typer = "^0.9.0"
+typer = {extras = ["standard"], version = "^0.12.3"}
 django-dotenv = "^1.4.2"
 django-extensions = "2.2.9"
 django-celery-beat = "2.0.0"
@@ -43,6 +43,13 @@ anyio = "^4.3.0"
 fastapi = "^0.110.0"
 pydantic-settings = "^2.2.1"
 uvicorn = {extras = ["standard"], version = "^0.29.0"}
+sqlmodel = "^0.0.16"
+geoalchemy2 = "^0.14.7"
+sqlalchemy = "^2.0.29"
+alembic = "^1.13.1"
+geojson-pydantic = "^1.0.2"
+shapely = "^2.0.3"
+pyproj = "^3.6.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -52,6 +59,7 @@ pytest-cov = "^4.1.0"
 pytest-django = "^4.8.0"
 dagger-io = "^0.9.10"
 ruff = "^0.2.2"
+pytest-httpx = "^0.30.0"
 
 [tool.poetry.scripts]
 arpav-ppcv = "arpav_ppcv.main:app"
@@ -61,7 +69,7 @@ addopts = "--verbose --cov --cov-branch --log-level=warning"
 
 [tool.coverage.run]
 branch = true
-source = ["djangoapp", "forecastattributes", "places", "thredds"]
+source = ["djangoapp", "forecastattributes", "places", "thredds", "arpav_ppcv"]
 
 [build-system]
 requires = ["poetry-core"]

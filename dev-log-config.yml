@@ -44,7 +44,7 @@ loggers:
     handlers:
       - access
     level: INFO
-    propagate: False
+    propagate: false
 
   arpav_ppcv:
     handlers:
@@ -57,3 +57,9 @@ loggers:
       - default
     level: DEBUG
     propagate: false
+
+root:
+  level: WARNING
+  handlers:
+    - default
+  propagate: false

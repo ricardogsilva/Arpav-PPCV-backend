@@ -101,25 +101,6 @@ def _sanitize_docker_image_name(docker_image_name: str) -> str:
     return f"{host}/{path.lower()}:{tag or 'latest'}"
 
 
-def _get_env_variables() -> dict[str, str | None]:
-    return {
-        "DEBUG": os.getenv("DEBUG", "0"),
-        "PGPASSWORD": os.getenv("PGPASSWORD", "postgres"),
-        "POSTGRES_DB_NAME": os.getenv("POSTGRES_DB_NAME", "postgres"),
-        "POSTGRES_PORT_5432_TCP_ADDR": os.getenv("POSTGRES_PORT_5432_TCP_ADDR", "postgis"),
-        "POSTGRES_USER": os.getenv("POSTGRES_USER", "postgres"),
-        "REDIS_HOST": os.getenv("REDIS_HOST", "redis"),
-        "SECRET_KEY": os.getenv("SECRET_KEY", "generate it e.g. from https://djecrety.ir/"),
-        "SSL_CERTIFICATE": os.getenv("SSL_CERTIFICATE", "/etc/letsencrypt/live/yourdomain/fullchain.pem"),
-        "SSL_KEY": os.getenv("SSL_KEY", "/etc/letsencrypt/live/yourdomain/privkey.pem"),
-        "THREDDS_AUTH_URL": os.getenv("THREDDS_AUTH_URL",
-                                      "https://thredds.arpa.veneto.it/thredds/restrictedAccess/dati_accordo"),
-        "THREDDS_HOST": os.getenv("THREDDS_HOST", "https://thredds.arpa.veneto.it/thredds/"),
-        "THREDDS_PASSWORD": os.getenv("THREDDS_PASSWORD", ""),
-        "THREDDS_USER": os.getenv("THREDDS_USER", ""),
-    }
-
-
 async def _run_linter(built_container: dagger.Container):
     return await (
         built_container.with_user("appuser")
@@ -170,27 +151,40 @@ async def _run_tests(
         built_container: dagger.Container,
         env_variables: dict[str, str]
 ):
-    postgis_service = (
+    arpav_db_params = _get_db_parameters(env_variables["ARPAV_PPCV__TEST_DB_DSN"])
+    legacy_db_params = _get_db_parameters(
+        env_variables["ARPAV_PPCV__DJANGO_APP__DB_DSN"])
+
+    arpav_db_service = (
         client.container()
         .from_(POSTGIS_IMAGE_VERSION)
         .with_env_variable("PGDATA", "/var/lib/postgresql/data/pgdata")
-        .with_env_variable("POSTGRES_DB", env_variables["POSTGRES_DB_NAME"])
-        .with_env_variable("POSTGRES_PASSWORD", env_variables["PGPASSWORD"])
-        .with_env_variable("POSTGRES_USER", env_variables["POSTGRES_USER"])
-        .with_exposed_port(5432)
+        .with_env_variable("POSTGRES_DB", arpav_db_params["db"])
+        .with_env_variable("POSTGRES_PASSWORD", arpav_db_params["password"])
+        .with_env_variable("POSTGRES_USER", arpav_db_params["user"])
+        .with_exposed_port(int(arpav_db_params["port"]))
         .as_service()
     )
-    db_dsn = (
-        f"postgresql://{env_variables['POSTGRES_USER']}:{env_variables['PGPASSWORD']}"
-        f"@db:5432/{env_variables['POSTGRES_DB_NAME']}")
-    return await (
-        built_container.with_service_binding("db", postgis_service)
+    django_db_service = (
+        client.container()
+        .from_(POSTGIS_IMAGE_VERSION)
+        .with_env_variable("PGDATA", "/var/lib/postgresql/data/pgdata")
+        .with_env_variable("POSTGRES_DB", legacy_db_params["db"])
+        .with_env_variable("POSTGRES_PASSWORD", legacy_db_params["password"])
+        .with_env_variable("POSTGRES_USER", legacy_db_params["user"])
+        .with_exposed_port(int(legacy_db_params["port"]))
+        .as_service()
+    )
+    test_container = (
+        built_container
+        .with_service_binding(arpav_db_params["host"], arpav_db_service)
+        .with_service_binding(legacy_db_params["host"], django_db_service)
         .without_entrypoint()
-        # .with_mounted_directory("/opt/api/tests", client.host().directory("./tests"))
-        .with_env_variable("ARPAV_PPCV__DEBUG", env_variables["DEBUG"])
-        .with_env_variable(
-            "ARPAV_PPCV__DJANGO_APP__SECRET_KEY", env_variables["SECRET_KEY"])
-        .with_env_variable("ARPAV_PPCV__DJANGO_APP__DB_DSN", db_dsn)
+    )
+    for var_name, var_value in env_variables.items():
+        test_container = test_container.with_env_variable(var_name, var_value)
+    return await (
+        test_container
         .with_exec(shlex.split("poetry install --with dev"))
         .with_exec(shlex.split("poetry run arpav-ppcv django-admin migrate"))
         .with_exec(
@@ -209,7 +203,20 @@ async def _run_pipeline(
         publish_docker_image: str | None,
         git_commit: str | None,
 ):
-    env_variables = _get_env_variables()
+    # env_variables = _get_env_variables()
+    env_variables = {
+        "ARPAV_PPCV__BIND_HOST": "0.0.0.0",
+        "ARPAV_PPCV__BIND_PORT": "5001",
+        "ARPAV_PPCV__PUBLIC_URL": "http://localhost:5001",
+        # "ARPAV_PPCV__DB_DSN": "postgresql://arpav:arpavpassword@db:5432/arpav_ppcv",
+        "ARPAV_PPCV__TEST_DB_DSN": "postgresql://arpavtest:arpavtestpassword@test-db:5432/arpav_ppcv_test",
+        "ARPAV_PPCV__LOG_CONFIG_FILE": "/home/appuser/app/dev-log-config.yml",
+        "ARPAV_PPCV__DJANGO_APP__DB_DSN": "postgres://postgres:postgres@legacy-db:5432/postgres",
+        "ARPAV_PPCV__DJANGO_APP__THREDDS__PORT": "8081",
+        "ARPAV_PPCV__DJANGO_APP__REDIS_DSN": "redis://redis:6379",
+        "ARPAV_PPCV__DJANGO_APP__SECRET_KEY": "some-dev-key",
+    }
+
     conf = dagger.Config(
         log_output=sys.stderr,
     )
@@ -243,6 +250,21 @@ async def _run_pipeline(
             sanitized_name = _sanitize_docker_image_name(publish_docker_image)
             await built_container.publish(sanitized_name)
         print("Done")
+
+
+def _get_db_parameters(db_connection_string: str) -> dict[str, str]:
+    db_parts = db_connection_string.split("://")[-1]
+    other_parts, db_name = db_parts.rpartition("/")[::2]
+    user_details, host_details = other_parts.split("@")
+    username, password = user_details.split(":")
+    host, port = host_details.split(":")
+    return {
+        "db": db_name,
+        "user": username,
+        "password": password,
+        "host": host,
+        "port": port
+    }
 
 
 if __name__ == "__main__":

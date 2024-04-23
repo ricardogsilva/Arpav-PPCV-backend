@@ -7,7 +7,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/variables/",
+    "/variables",
     response_model=schemas.ItemList[schemas.VariableListItem]
 )
 def get_variables():
@@ -18,7 +18,7 @@ def get_variables():
 
 
 @router.get(
-    "/forecast-models/",
+    "/forecast-models",
     response_model=schemas.ItemList[schemas.ForecastModelListItem])
 def get_forecast_models():
     return get_item_list(
@@ -28,7 +28,7 @@ def get_forecast_models():
 
 
 @router.get(
-    "/scenarios/",
+    "/scenarios",
     response_model=schemas.ItemList[schemas.ScenarioListItem])
 def get_scenarios():
     return get_item_list(
@@ -38,7 +38,7 @@ def get_scenarios():
 
 
 @router.get(
-    "/data-series/",
+    "/data-series",
     response_model=schemas.ItemList[schemas.DataSeriesListItem])
 def get_data_series():
     return get_item_list(
@@ -48,7 +48,7 @@ def get_data_series():
 
 
 @router.get(
-    "/year-periods/",
+    "/year-periods",
     response_model=schemas.ItemList[schemas.YearPeriodListItem])
 def get_year_periods():
     return get_item_list(
@@ -58,7 +58,7 @@ def get_year_periods():
 
 
 @router.get(
-    "/time-windows/",
+    "/time-windows",
     response_model=schemas.ItemList[schemas.TimeWindowListItem])
 def get_time_windows():
     return get_item_list(
@@ -68,7 +68,7 @@ def get_time_windows():
 
 
 @router.get(
-    "/value-types/",
+    "/value-types",
     response_model=schemas.ItemList[schemas.ValueTypeListItem])
 def get_time_windows():
     return get_item_list(

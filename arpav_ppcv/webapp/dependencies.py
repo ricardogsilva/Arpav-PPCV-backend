@@ -1,11 +1,38 @@
-import httpx
+from typing import Annotated
 
-from .. import config
+import httpx
+import pydantic
+import sqlmodel
+from fastapi import Depends
+
+from .. import (
+    config,
+    database,
+)
 
 
 def get_settings() -> config.ArpavPpcvSettings:
     return config.get_settings()
 
 
+def get_db_engine(settings: config.ArpavPpcvSettings = Depends(get_settings)):
+    """Dependency for FastAPI to create a database engine."""
+    yield database.get_engine(settings)
+
+
+def get_db_session(engine=Depends(get_db_engine)):  # noqa: B008
+    """Dependency for FastAPI to get a fresh database session.
+
+    Use this on FastAPI path operations that need access to the db.
+    """
+    with sqlmodel.Session(engine) as session:
+        yield session
+
+
 def get_http_client() -> httpx.AsyncClient:
     return httpx.AsyncClient()
+
+
+class CommonListFilterParameters(pydantic.BaseModel):  # noqa: D101
+    offset: Annotated[int, pydantic.Field(ge=0)] = 0
+    limit: Annotated[int, pydantic.Field(ge=0, le=100)] = 20

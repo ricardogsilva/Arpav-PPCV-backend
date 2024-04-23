@@ -15,8 +15,10 @@ services:
     environment:
       ARPAV_PPCV__DEBUG: true
       ARPAV_PPCV__PUBLIC_URL: http://localhost:5001
-      ARPAV_PPCV__UVICORN_LOG_CONFIG_FILE: /home/appuser/app/dev-log-config.yml
-      ARPAV_PPCV__DJANGO_APP__DB_DSN: postgres://postgres:postgres@db:5432/postgres
+      ARPAV_PPCV__DB_DSN: postgresql://arpav:arpavpassword@db:5432/arpav_ppcv
+      ARPAV_PPCV__TEST_DB_DSN: postgresql://arpavtest:arpavtestpassword@test-db:5432/arpav_ppcv_test
+      ARPAV_PPCV__LOG_CONFIG_FILE: /home/appuser/app/dev-log-config.yml
+      ARPAV_PPCV__DJANGO_APP__DB_DSN: postgres://postgres:postgres@legacy-db:5432/postgres
       ARPAV_PPCV__DJANGO_APP__THREDDS__PORT: 8081
       ARPAV_PPCV__DJANGO_APP__REDIS_DSN: redis://redis:6379
       ARPAV_PPCV__DJANGO_APP__SECRET_KEY: some-dev-key
@@ -25,17 +27,52 @@ services:
         source: $PWD
         target: /home/appuser/app
 
-  db:
+  legacy-db:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
+    ports:
+      - target: 5432
+        published: 55433
+    volumes:
+      - legacy-db-data:/var/lib/postgresql/data
+    # The below command adds a more verbose logging of operations - DON'T USE THIS IN PRODUCTION!
+    # The server's performance is impacted by this command. Moreover, logged statements may contain
+    # sensitive information
+    command: "-clog_statement=all"
+
+  db:
+    environment:
+      POSTGRES_USER: arpav
+      POSTGRES_PASSWORD: arpavpassword
+      POSTGRES_DB: arpav_ppcv
+    ports:
+      - target: 5432
+        published: 55432
     volumes:
       - db-data:/var/lib/postgresql/data
     # The below command adds a more verbose logging of operations - DON'T USE THIS IN PRODUCTION!
     # The server's performance is impacted by this command. Moreover, logged statements may contain
     # sensitive information
     command: "-clog_statement=all"
+
+  test-db:
+    image: "postgis/postgis:16-3.4"
+    # The below command adds a more verbose logging of operations - DON'T USE THIS IN PRODUCTION!
+    # The server's performance is impacted by this command. Moreover, logged statements may contain
+    # sensitive information
+    command: "-clog_statement=all"
+    ports:
+      - target: 5432
+        published: 55434
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_USER: arpavtest
+      POSTGRES_PASSWORD: arpavtestpassword
+      POSTGRES_DB: arpav_ppcv_test
+    volumes:
+      - test-db-data:/var/lib/postgresql/data
 
   thredds:
     image: unidata/thredds-docker:5.4
@@ -71,8 +108,10 @@ services:
       - target: 3000
         published: 3000
     environment:
-      DATABASE_URL: postgres://postgres:postgres@db/postgres
+      DATABASE_URL: postgres://postgres:postgres@legacy-db/postgres
       RUST_LOG: actix_web=info,martin=debug,tokio_postgres=debug
 
 volumes:
   db-data:
+  test-db-data:
+  legacy-db-data:

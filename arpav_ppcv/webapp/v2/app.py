@@ -1,7 +1,8 @@
 import fastapi
 
 from ... import config
-from . import routers
+from .routers.thredds import router as thredds_router
+from .routers.observations import router as observations_router
 
 
 def create_app(settings: config.ArpavPpcvSettings) -> fastapi.FastAPI:
@@ -19,5 +20,7 @@ def create_app(settings: config.ArpavPpcvSettings) -> fastapi.FastAPI:
             "email": settings.contact.email
         },
     )
-    app.include_router(routers.router, prefix="/api")
+    app.include_router(thredds_router, prefix="/thredds", tags=["thredds",])
+    app.include_router(
+        observations_router, prefix="/observations", tags=["observations",])
     return app
