@@ -26,6 +26,9 @@ services:
       - type: bind
         source: $PWD
         target: /home/appuser/app
+      - type: bind
+        source: $HOME/data/geobeyond/arpav-ppcv
+        target: /home/appuser/data
 
   legacy-db:
     environment:

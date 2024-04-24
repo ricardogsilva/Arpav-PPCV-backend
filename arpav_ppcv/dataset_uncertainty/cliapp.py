@@ -1,6 +1,7 @@
 import dataclasses
 import enum
 from pathlib import Path
+from rich import print
 from typing import Annotated
 
 import netCDF4
@@ -11,10 +12,11 @@ from . import (
     operations,
 )
 
-
 _KNOWN_DATASET_CHOICES = enum.Enum(
     "KNOWN_DATASET_TYPES",
-    " ".join(n for n in constants.KNOWN_DATASETS), module=__name__)
+    [(n, n) for n in constants.KNOWN_DATASETS],
+    module=__name__
+)
 app = typer.Typer()
 
 
@@ -27,7 +29,7 @@ class _ErrorNetcdfFile:
 
 
 @app.command()
-def main(
+def prepare_netcdf_file(
         main_netcdf: Path,
         error_netcdf: Path,
         output_netcdf: Path,

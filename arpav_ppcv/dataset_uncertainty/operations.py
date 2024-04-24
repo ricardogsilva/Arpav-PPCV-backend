@@ -99,3 +99,21 @@ def tweak_agree_values(agree_var: netCDF4.Variable) -> None:
     contents[contents == 1] = 0
     contents[contents == 2] = 1
     agree_var[:] = contents[:]
+
+
+def generate_sample_uncertainty_netcdf_file(
+        template_ds: netCDF4.Dataset,
+        target_ds: netCDF4.Dataset,
+        template_variable_name: str,
+        out_ds: netCDF4.Dataset,
+        target_ds_meta: constants.ForecastDatasetMetadata
+):
+    _copy_dimensions(target_ds, out_ds)
+    template_variable = template_ds[template_variable_name]
+    uncertainty_variable = out_ds.createVariable(
+        target_ds_meta.uncertainty.netcdf_variable_name,
+        datatype=template_variable.datatype,
+        dimensions=template_variable.dimensions
+    )
+    uncertainty_variable[:] = template_ds[template_variable_name][:]
+    prepare_uncertainty_visualization_variable(out_ds, target_ds_meta)
