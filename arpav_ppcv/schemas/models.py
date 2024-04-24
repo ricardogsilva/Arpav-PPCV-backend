@@ -51,7 +51,17 @@ class Station(StationBase, table=True):
     type_: str = ""
 
     monthly_measurements: list["MonthlyMeasurement"] = sqlmodel.Relationship(
-        back_populates="station")
+        back_populates="station",
+        sa_relationship_kwargs={
+            # ORM relationship config, which explicitly includes the
+            # `delete` and `delete-orphan` options because we want the ORM
+            # to try to delete monthly measurements when their related station
+            # is deleted
+            "cascade": "all, delete-orphan",
+            # expect that the RDBMS handles cascading deletes
+            "passive_deletes": True
+        }
+    )
 
 
 class StationCreate(sqlmodel.SQLModel):
@@ -81,9 +91,17 @@ class VariableBase(sqlmodel.SQLModel):
 
 
 class Variable(VariableBase, table=True):
-
     monthly_measurements: list["MonthlyMeasurement"] = sqlmodel.Relationship(
-        back_populates="variable"
+        back_populates="variable",
+        sa_relationship_kwargs={
+            # ORM relationship config, which explicitly includes the
+            # `delete` and `delete-orphan` options because we want the ORM
+            # to try to delete monthly measurements when their related variable
+            # is deleted
+            "cascade": "all, delete-orphan",
+            # expect that the RDBMS handles cascading deletes
+            "passive_deletes": True
+        }
     )
 
 
@@ -105,16 +123,27 @@ class MonthlyMeasurementBase(sqlmodel.SQLModel):
 
 
 class MonthlyMeasurement(MonthlyMeasurementBase, table=True):
+    __table_args__ = (
+        sqlalchemy.ForeignKeyConstraint(
+            ["station_id",],
+            ["station.id",],
+            onupdate="CASCADE",
+            ondelete="CASCADE",  # i.e. delete a monthly measurement if its related station is deleted
+        ),
+        sqlalchemy.ForeignKeyConstraint(
+            ["variable_id", ],
+            ["variable.id", ],
+            onupdate="CASCADE",
+            ondelete="CASCADE",  # i.e. delete a monthly measurement if its related station is deleted
+        ),
+    )
     id: pydantic.UUID4 = sqlmodel.Field(
         default_factory=uuid.uuid4,
         primary_key=True
     )
-    station_id: pydantic.UUID4 = sqlmodel.Field(
-        foreign_key="station.id"
-    )
-    variable_id: pydantic.UUID4 = sqlmodel.Field(
-        foreign_key="variable.id"
-    )
+    station_id: pydantic.UUID4
+    variable_id: pydantic.UUID4
+
     station: Station = sqlmodel.Relationship(
         back_populates="monthly_measurements",
         sa_relationship_kwargs={
