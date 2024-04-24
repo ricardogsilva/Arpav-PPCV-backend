@@ -30,7 +30,7 @@ def harvest_variables(
     """
     existing_variables = {v.name: v for v in database.collect_all_variables(db_session)}
     response = client.get(
-        "https://api.arpa.veneto.it/REST/v1/provaclima/indi",
+        "https://api.arpa.veneto.it/REST/v1/clima_indicatori/tipo_indicatore",
     )
     response.raise_for_status()
     to_create = []
@@ -39,6 +39,7 @@ def harvest_variables(
         variable_create = models.VariableCreate(
             name=var_info["indicatore"],
             description=var_info["descrizione"],
+            unit=var_info.get("unita", ""),
         )
         if variable_create.name not in existing_variables:
             to_create.append(variable_create)
@@ -86,7 +87,7 @@ def harvest_stations(
             f"variable {variable.name!r}..."
         )
         response = client.get(
-            "https://api.arpa.veneto.it/REST/v1/provaclima/attivi",
+            "https://api.arpa.veneto.it/REST/v1/clima_indicatori/staz_attive",
             params={"indicatore": variable.name}
         )
         response.raise_for_status()
@@ -162,11 +163,10 @@ def harvest_monthly_measurements(
                     measurement_id = _build_measurement_id(db_measurement)
                     existing[measurement_id] = db_measurement
                 response = client.get(
-                    "https://api.arpa.veneto.it/REST/v1/provaclima/solo",
+                    "https://api.arpa.veneto.it/REST/v1/clima_indicatori",
                     params={
                         "statcd": station.code,
                         "indicatore": variable.name,
-                        "pdati": 0.95,
                         "tabella": "M",
                         "periodo": month
                     }
