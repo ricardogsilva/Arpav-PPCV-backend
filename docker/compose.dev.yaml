@@ -22,6 +22,50 @@ services:
       ARPAV_PPCV__DJANGO_APP__THREDDS__PORT: 8081
       ARPAV_PPCV__DJANGO_APP__REDIS_DSN: redis://redis:6379
       ARPAV_PPCV__DJANGO_APP__SECRET_KEY: some-dev-key
+      ARPAV_PPCV__THREDDS_SERVER__BASE_URL: http://thredds:8080/thredds
+      ARPAV_PPCV__THREDDS_SERVER__DATASETS: >
+        {
+          "uncertainty_test_giovanni": {
+            "thredds_url_pattern": "tests/giovanni-sample/tas_avgagree_anom_tw2_rcp26_DJF_VFVGTAAn.nc",
+            "palette": "uncert-stippled/seq-YlOrRd",
+            "range": [1, 6]
+          },
+          "uncertainty_test": {
+            "thredds_url_pattern": "tests/test-script-agree.nc",
+            "palette": "uncert-stippled/seq-YlOrRd",
+            "range": [1, 6]
+          },
+          "tas_absolute": {
+            "thredds_url_pattern": "ensymbc/tas_avg_{scenario}_{year_period}_ts19762100_ls.nc",
+            "allowed_values": {
+              "scenario": [
+                "rcp26",
+                "rcp45",
+                "rcp85"
+              ],
+              "year_period": [
+                "winter",
+                "spring",
+                "summer",
+                "autumn"
+              ]
+            },
+            "unit": "ºC",
+            "palette": "default/seq-YlOrRd",
+            "range": [-3, 32]
+          },
+          "tas_anomaly": {
+            "thredds_url_pattern": "ensembletwbc/tas_avg_anom_{time_window}_{scenario}_{year_period}.nc",
+            "allowed_values": {
+              "time_window": ["tw1", "tw2"],
+              "scenario": ["rcp26"],
+              "year_period": ["annual"]
+            },
+            "unit": "ºC",
+            "palette": "seq-YlOrRd",
+            "range": [0, 6]
+          }
+        }
     volumes:
       - type: bind
         source: $PWD

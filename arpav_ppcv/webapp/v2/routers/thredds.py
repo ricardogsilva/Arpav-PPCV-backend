@@ -164,12 +164,20 @@ async def wms_endpoint(
         parsed_url = urllib.parse.urlparse(base_wms_url)
         logger.info(f"{base_wms_url=}")
         query_params = {k.lower(): v for k, v in request.query_params.items()}
+        logger.debug(f"original query params: {query_params=}")
         if query_params.get("request") in ("GetMap", "GetLegendGraphic"):
             query_params = thredds_utils.tweak_wms_get_map_request(
                 query_params,
                 ds_config,
                 settings.thredds_server.uncertainty_visualization_scale_range
             )
+        elif query_params.get("request") == "GetCapabilities":
+            # TODO: need to tweak the reported URLs
+            # the response to a GetCapabilities request includes URLs for each
+            # operation and some clients (like QGIS) use them for GetMap and
+            # GetLegendGraphic - need to ensure these do not refer to the underlying
+            # THREDDS server
+            ...
         logger.debug(f"{query_params=}")
         wms_url = parsed_url._replace(
             query=urllib.parse.urlencode(
