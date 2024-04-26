@@ -46,12 +46,34 @@ def tweak_wms_get_map_request(
         dataset_configuration: config.ThreddsDatasetSettings,
         uncertainty_visualization_scale_range: tuple[float, float]
 ) -> dict[str, str]:
-    query_params.setdefault("styles", dataset_configuration.palette)
-    if not query_params.get("colorscalerange"):
-        color_scale_range = ",".join(str(f) for f in dataset_configuration.range)
-        if "stippled" in dataset_configuration.palette:
-            uncert_scale_range = ",".join(
-                str(f) for f in uncertainty_visualization_scale_range)
-            color_scale_range = ";".join((color_scale_range, uncert_scale_range))
-        query_params["colorscalerange"] = color_scale_range
+    # which layer type is being requested?
+
+    # - WMS GetMap allows requesting multiple layers, therefore the query param is
+    #   called `layers`
+    # - WMS GetLegendGraphic works for individual layers, therefore the query param is
+    #   called `layer`
+    layer_name = query_params.get("layers", query_params.get("layer", ""))
+
+    if "agree" in layer_name:
+        palette = "default/seq-Greys"
+        color_scale_range = "0,1"
+        num_color_bands = "2"
+        query_params["NUMCOLORBANDS"] = num_color_bands
+    else:
+        if "uncertainty_group" in layer_name:
+            palette = dataset_configuration.palette
+        else:
+            palette = f"default/{dataset_configuration.palette.rpartition('/')[-1]}"
+
+        if not (requested_color_scale_range := query_params.get("colorscalerange")):
+            color_scale_range = ",".join(str(f) for f in dataset_configuration.range)
+            if "stippled" in palette:
+                uncert_scale_range = ",".join(
+                    str(f) for f in uncertainty_visualization_scale_range)
+                color_scale_range = ";".join((color_scale_range, uncert_scale_range))
+        else:
+            color_scale_range = requested_color_scale_range
+
+    query_params["styles"] = palette
+    query_params["colorscalerange"] = color_scale_range
     return query_params
