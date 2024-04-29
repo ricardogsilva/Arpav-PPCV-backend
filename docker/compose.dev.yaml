@@ -14,6 +14,8 @@ services:
     image: "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend:${CURRENT_GIT_BRANCH:-latest}"
     environment:
       ARPAV_PPCV__DEBUG: true
+      ARPAV_PPCV__BIND_HOST: 0.0.0.0
+      ARPAV_PPCV__BIND_PORT: 5001
       ARPAV_PPCV__PUBLIC_URL: http://localhost:5001
       ARPAV_PPCV__DB_DSN: postgresql://arpav:arpavpassword@db:5432/arpav_ppcv
       ARPAV_PPCV__TEST_DB_DSN: postgresql://arpavtest:arpavtestpassword@test-db:5432/arpav_ppcv_test
@@ -66,6 +68,9 @@ services:
             "range": [0, 6]
           }
         }
+    ports:
+      - target: 5001
+        published: 5001
     volumes:
       - type: bind
         source: $PWD
