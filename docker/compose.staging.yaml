@@ -26,6 +26,13 @@ services:
   webapp:
     env_file:
       - *env-file-webapp
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.arpav-backend.entrypoints=webSecure"
+      - "traefik.http.routers.arpav-backend.tls=true"
+      - "traefik.http.routers.arpav-backend.tls.certResolver=letsEncryptResolver"
+      - "traefik.http.routers.arpav-backend.rule=Host(`arpav.geobeyond.dev`)"
+      - "traefik.http.services.arpav-backend-service.loadbalancer.server.port=5001"
 
   legacy-db:
     env_file:
