@@ -156,7 +156,13 @@ def django_admin(ctx: typer.Context, command: str):
 def import_thredds_datasets(
         catalog: Annotated[
             Optional[list[crawler.KnownCatalogIdentifier]],
-            typer.Option(default_factory=list)
+            typer.Option(
+                default_factory=list,
+                help=(
+                    "Catalogs to crawl in search of datasets. If this parameter is "
+                    "not provided, then all known catalogs will be crawled."
+                )
+            )
         ],
         output_base_dir: Annotated[
             Optional[Path],
