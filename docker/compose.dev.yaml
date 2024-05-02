@@ -75,6 +75,12 @@ services:
       - type: bind
         source: $PWD
         target: /home/appuser/app
+      - type: bind
+        source: $HOME/data/geobeyond/arpav-ppcv/datasets
+        target: /home/appuser/data/datasets
+      - type: bind
+        source: $HOME/data/geobeyond/arpav-ppcv/netcdf-uncertainty-example
+        target: /home/appuser/data/additional
 
   legacy-db:
     environment:

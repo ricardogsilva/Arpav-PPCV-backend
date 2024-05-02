@@ -33,6 +33,13 @@ services:
       - "traefik.http.routers.arpav-backend.tls.certResolver=letsEncryptResolver"
       - "traefik.http.routers.arpav-backend.rule=Host(`arpav.geobeyond.dev`)"
       - "traefik.http.services.arpav-backend-service.loadbalancer.server.port=5001"
+    volumes:
+      - type: bind
+        source: $HOME/data/arpav-ppcv/datasets
+        target: /home/appuser/data/datasets
+      - type: bind
+        source: $HOME/data/arpav-ppcv/netcdf-uncertainty-example
+        target: /home/appuser/data/additional
 
   legacy-db:
     env_file:
