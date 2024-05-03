@@ -13,7 +13,10 @@ import sqlmodel
 from geoalchemy2.shape import from_shape
 
 from . import config
-from .schemas import models
+from .schemas import (
+    coverages,
+    models,
+)
 
 
 def get_engine(
