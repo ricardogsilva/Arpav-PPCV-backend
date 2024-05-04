@@ -1,5 +1,6 @@
 """Database utilities."""
 
+import logging
 import uuid
 from typing import (
     Optional,
@@ -17,6 +18,8 @@ from .schemas import (
     coverages,
     models,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def get_engine(
@@ -356,6 +359,56 @@ def collect_all_monthly_measurements(
         include_total=False
     )
     return result
+
+
+def list_configuration_parameters(
+        session: sqlmodel.Session,
+        *,
+        limit: int = 20,
+        offset: int = 0,
+        include_total: bool = False,
+) -> tuple[Sequence[coverages.ConfigurationParameter], Optional[int]]:
+    """List existing configuration parameters."""
+    statement = sqlmodel.select(coverages.ConfigurationParameter).order_by(
+        coverages.ConfigurationParameter.name)
+    items = session.exec(statement.offset(offset).limit(limit)).all()
+    num_items = (
+        _get_total_num_records(session, statement) if include_total else None)
+    return items, num_items
+
+
+def collect_all_configuration_parameters(
+        session: sqlmodel.Session,
+) -> Sequence[coverages.ConfigurationParameter]:
+    _, num_total = list_configuration_parameters(session, limit=1, include_total=True)
+    result, _ = list_configuration_parameters(
+        session, limit=num_total, include_total=False)
+    return result
+
+
+def create_configuration_parameter(
+        session: sqlmodel.Session,
+        configuration_parameter_create: coverages.ConfigurationParameterCreate
+) -> coverages.ConfigurationParameter:
+    logger.debug(f"inside database.create_configuration_parameter - {locals()=}")
+    to_refresh = []
+    db_configuration_parameter = coverages.ConfigurationParameter(
+        name=configuration_parameter_create.name,
+        description=configuration_parameter_create.description
+    )
+    to_refresh.append(db_configuration_parameter)
+    for allowed in configuration_parameter_create.allowed_values:
+        db_conf_param_value = coverages.ConfigurationParameterValue(
+            name=allowed.name,
+            description=allowed.description,
+        )
+        db_configuration_parameter.allowed_values.append(db_conf_param_value)
+        to_refresh.append(db_conf_param_value)
+    session.add(db_configuration_parameter)
+    session.commit()
+    for item in to_refresh:
+        session.refresh(item)
+    return db_configuration_parameter
 
 
 def _get_total_num_records(session: sqlmodel.Session, statement):

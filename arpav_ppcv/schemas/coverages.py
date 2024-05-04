@@ -51,6 +51,33 @@ class ConfigurationParameter(sqlmodel.SQLModel, table=True):
     )
 
 
+class ConfigurationParameterValueRead(sqlmodel.SQLModel):
+    name: str
+    description: str
+
+
+class ConfigurationParameterRead(sqlmodel.SQLModel):
+    name: str
+    description: str
+    allowed_values: list[ConfigurationParameterValueRead]
+
+
+class ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+    sqlmodel.SQLModel
+):
+    name: str
+    description: str
+
+
+class ConfigurationParameterCreate(sqlmodel.SQLModel):
+    name: str
+    description: str
+
+    allowed_values: list[
+        ConfigurationParameterValueCreateEmbeddedInConfigurationParameter
+    ]
+
+
 class CoverageConfiguration(sqlmodel.SQLModel, table=True):
     """Configuration for NetCDF datasets.
 
