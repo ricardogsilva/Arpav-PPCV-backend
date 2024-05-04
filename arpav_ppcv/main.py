@@ -20,6 +20,8 @@ import yaml
 from django.conf import settings as django_settings
 from django.core import management
 from rich import print
+from rich.padding import Padding
+from rich.panel import Panel
 
 from . import (
     config,
@@ -116,6 +118,7 @@ def run_server(ctx: typer.Context):
         f"--port={settings.bind_port}",
         f"--host={settings.bind_host}",
         "--factory",
+        "--access-log",
     ]
     if settings.debug:
         uvicorn_args.extend(
@@ -129,6 +132,23 @@ def run_server(ctx: typer.Context):
         uvicorn_args.extend(["--log-level=info"])
     if (log_config_file := settings.log_config_file) is not None:
         uvicorn_args.append(f"--log-config={str(log_config_file)}")
+
+    serving_str = (
+        f"[dim]Serving at:[/dim] [link]http://{settings.bind_host}:{settings.bind_port}[/link]\n\n"
+        f"[dim]Public URL:[/dim] [link]{settings.public_url}[/link]\n\n"
+        f"[dim]API docs:[/dim] [link]{settings.public_url}/docs[/link]"
+    )
+    panel = Panel(
+        (
+            f"{serving_str}\n\n"
+            f"[dim]Running in [b]{'development' if settings.debug else 'production'} mode[/b]"
+        ),
+        title="ARPAV-PPCV",
+        expand=False,
+        padding=(1, 2),
+        style="green",
+    )
+    print(Padding(panel, 1))
     sys.stdout.flush()
     sys.stderr.flush()
     os.execvp("uvicorn", uvicorn_args)
