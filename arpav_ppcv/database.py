@@ -369,6 +369,31 @@ def get_configuration_parameter_value(
         coverages.ConfigurationParameterValue, configuration_parameter_value_id)
 
 
+def list_configuration_parameter_values(
+        session: sqlmodel.Session,
+        *,
+        limit: int = 20,
+        offset: int = 0,
+        include_total: bool = False,
+) -> tuple[Sequence[coverages.ConfigurationParameterValue], Optional[int]]:
+    """List existing configuration parameters."""
+    statement = sqlmodel.select(coverages.ConfigurationParameterValue).order_by(
+        coverages.ConfigurationParameterValue.name)
+    items = session.exec(statement.offset(offset).limit(limit)).all()
+    num_items = (
+        _get_total_num_records(session, statement) if include_total else None)
+    return items, num_items
+
+
+def collect_all_configuration_parameter_values(
+        session: sqlmodel.Session,
+) -> Sequence[coverages.ConfigurationParameterValue]:
+    _, num_total = list_configuration_parameter_values(session, limit=1, include_total=True)
+    result, _ = list_configuration_parameter_values(
+        session, limit=num_total, include_total=False)
+    return result
+
+
 def get_configuration_parameter(
         session: sqlmodel.Session,
         configuration_parameter_id: uuid.UUID
@@ -481,6 +506,114 @@ def update_configuration_parameter(
     for item in to_refresh:
         session.refresh(item)
     return db_configuration_parameter
+
+
+def get_coverage_configuration(
+        session: sqlmodel.Session,
+        coverage_configuration_id: uuid.UUID
+) -> Optional[coverages.CoverageConfiguration]:
+    return session.get(coverages.CoverageConfiguration, coverage_configuration_id)
+
+
+def list_coverage_configurations(
+        session: sqlmodel.Session,
+        *,
+        limit: int = 20,
+        offset: int = 0,
+        include_total: bool = False,
+) -> tuple[Sequence[coverages.CoverageConfiguration], Optional[int]]:
+    """List existing coverage configurations."""
+    statement = sqlmodel.select(coverages.CoverageConfiguration).order_by(
+        coverages.CoverageConfiguration.name)
+    items = session.exec(statement.offset(offset).limit(limit)).all()
+    num_items = (
+        _get_total_num_records(session, statement) if include_total else None)
+    return items, num_items
+
+
+def collect_all_coverage_configurations(
+        session: sqlmodel.Session,
+) -> Sequence[coverages.CoverageConfiguration]:
+    _, num_total = list_coverage_configurations(session, limit=1, include_total=True)
+    result, _ = list_coverage_configurations(
+        session, limit=num_total, include_total=False)
+    return result
+
+
+def create_coverage_configuration(
+        session: sqlmodel.Session,
+        coverage_configuration_create: coverages.CoverageConfigurationCreate
+) -> coverages.CoverageConfiguration:
+    logger.debug(f"inside database.create_coverage_configuration - {locals()=}")
+    to_refresh = []
+    db_coverage_configuration = coverages.CoverageConfiguration(
+        name=coverage_configuration_create.name,
+        thredds_url_pattern=coverage_configuration_create.thredds_url_pattern,
+        unit=coverage_configuration_create.unit,
+        palette=coverage_configuration_create.palette,
+        color_scale_min=coverage_configuration_create.color_scale_min,
+        color_scale_max=coverage_configuration_create.color_scale_max,
+    )
+    session.add(db_coverage_configuration)
+    to_refresh.append(db_coverage_configuration)
+    for possible in coverage_configuration_create.possible_values:
+        db_conf_param_value = get_configuration_parameter_value(
+            session, possible.configuration_parameter_value_id)
+        possible_value = coverages.ConfigurationParameterPossibleValue(
+            coverage_configuration=db_coverage_configuration,
+            configuration_parameter_value=db_conf_param_value
+        )
+        session.add(possible_value)
+        to_refresh.append(possible_value)
+    session.commit()
+    for item in to_refresh:
+        session.refresh(item)
+    return db_coverage_configuration
+
+
+def update_coverage_configuration(
+        session: sqlmodel.Session,
+        db_coverage_configuration: coverages.CoverageConfiguration,
+        coverage_configuration_update: coverages.CoverageConfigurationUpdate
+) -> coverages.CoverageConfiguration:
+    """Update a coverage configuration."""
+    to_refresh = []
+    # account for possible values being: added/deleted
+    for existing_possible_value in db_coverage_configuration.possible_values:
+        has_been_requested_to_remove = (
+                existing_possible_value.configuration_parameter_value_id not in
+                [
+                    i.configuration_parameter_value_id
+                    for i in coverage_configuration_update.possible_values
+                ]
+        )
+        if has_been_requested_to_remove:
+            session.delete(existing_possible_value)
+    for pvc in coverage_configuration_update.possible_values:
+        already_possible = (
+                pvc.configuration_parameter_value_id
+                in [
+                    i.configuration_parameter_value_id
+                    for i in db_coverage_configuration.possible_values
+                ]
+        )
+        if not already_possible:
+            db_possible_value = coverages.ConfigurationParameterPossibleValue(
+                coverage_configuration=db_coverage_configuration,
+                configuration_parameter_value_id=pvc.configuration_parameter_value_id
+            )
+            session.add(db_possible_value)
+            to_refresh.append(db_possible_value)
+    data_ = coverage_configuration_update.model_dump(
+        exclude={"possible_values"}, exclude_unset=True, exclude_none=True)
+    for key, value in data_.items():
+        setattr(db_coverage_configuration, key, value)
+    session.add(db_coverage_configuration)
+    to_refresh.append(db_coverage_configuration)
+    session.commit()
+    for item in to_refresh:
+        session.refresh(item)
+    return db_coverage_configuration
 
 
 def _get_total_num_records(session: sqlmodel.Session, statement):

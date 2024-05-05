@@ -110,6 +110,26 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
     )
 
 
+class CoverageConfigurationCreate(sqlmodel.SQLModel):
+    name: str
+    thredds_url_pattern: str
+    unit: str
+    palette: str
+    color_scale_min: float
+    color_scale_max: float
+    possible_values: list["ConfigurationParameterPossibleValueCreate"]
+
+
+class CoverageConfigurationUpdate(sqlmodel.SQLModel):
+    name: Optional[str] = None
+    thredds_url_pattern: Optional[str] = None
+    unit: Optional[str] = None
+    palette: Optional[str] = None
+    color_scale_min: Optional[float] = None
+    color_scale_max: Optional[float] = None
+    possible_values: list["ConfigurationParameterPossibleValueUpdate"]
+
+
 class ConfigurationParameterPossibleValue(sqlmodel.SQLModel, table=True):
     """Possible values for a parameter of a coverage configuration.
 
@@ -148,6 +168,13 @@ class ConfigurationParameterPossibleValue(sqlmodel.SQLModel, table=True):
     configuration_parameter_value: ConfigurationParameterValue = sqlmodel.Relationship(
         back_populates="used_in_configurations")
 
+
+class ConfigurationParameterPossibleValueCreate(sqlmodel.SQLModel):
+    configuration_parameter_value_id: uuid.UUID
+
+
+class ConfigurationParameterPossibleValueUpdate(sqlmodel.SQLModel):
+    configuration_parameter_value_id: uuid.UUID
 
 # def _get_subclasses(cls):
 #     for subclass in cls.__subclasses__():

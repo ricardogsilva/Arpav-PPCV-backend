@@ -24,8 +24,7 @@ def create_admin(settings: config.ArpavPpcvSettings) -> Admin:
         ]
     )
     admin.add_view(
-        views.ConfigurationParameterView(
-            coverages.ConfigurationParameter,
-        )
-    )
+        views.ConfigurationParameterView(coverages.ConfigurationParameter))
+    admin.add_view(
+        views.CoverageConfigurationView(coverages.CoverageConfiguration))
     return admin
