@@ -361,6 +361,36 @@ def collect_all_monthly_measurements(
     return result
 
 
+def get_configuration_parameter_value(
+        session: sqlmodel.Session,
+        configuration_parameter_value_id: uuid.UUID
+) -> Optional[coverages.ConfigurationParameterValue]:
+    return session.get(
+        coverages.ConfigurationParameterValue, configuration_parameter_value_id)
+
+
+def get_configuration_parameter(
+        session: sqlmodel.Session,
+        configuration_parameter_id: uuid.UUID
+) -> Optional[coverages.ConfigurationParameter]:
+    return session.get(coverages.ConfigurationParameter, configuration_parameter_id)
+
+
+def get_configuration_parameter_by_name(
+        session: sqlmodel.Session,
+        configuration_parameter_name: str
+) -> Optional[coverages.ConfigurationParameter]:
+    """Get a configuration parameter by its name.
+
+    Since a configuration parameter's name is unique, it can be used to uniquely
+    identify it.
+    """
+    return session.exec(
+        sqlmodel.select(coverages.ConfigurationParameter)
+        .where(coverages.ConfigurationParameter.name == configuration_parameter_name)
+    ).first()
+
+
 def list_configuration_parameters(
         session: sqlmodel.Session,
         *,
@@ -405,6 +435,48 @@ def create_configuration_parameter(
         db_configuration_parameter.allowed_values.append(db_conf_param_value)
         to_refresh.append(db_conf_param_value)
     session.add(db_configuration_parameter)
+    session.commit()
+    for item in to_refresh:
+        session.refresh(item)
+    return db_configuration_parameter
+
+
+def update_configuration_parameter(
+        session: sqlmodel.Session,
+        db_configuration_parameter: coverages.ConfigurationParameter,
+        configuration_parameter_update: coverages.ConfigurationParameterUpdate
+) -> coverages.ConfigurationParameter:
+    """Update a configuration parameter."""
+    to_refresh = []
+    # account for allowed values being: added/modified/deleted
+    for existing_allowed_value in db_configuration_parameter.allowed_values:
+        has_been_requested_to_remove = (
+                existing_allowed_value.id not in
+                [i.id for i in configuration_parameter_update.allowed_values]
+        )
+        if has_been_requested_to_remove:
+            session.delete(existing_allowed_value)
+    for av in configuration_parameter_update.allowed_values:
+        if av.id is None:
+            # this is a new allowed value, need to create it
+            db_allowed_value = coverages.ConfigurationParameterValue(
+                name=av.name,
+                description=av.description,
+            )
+            db_configuration_parameter.allowed_values.append(db_allowed_value)
+        else:
+            # this is an existing allowed value, lets update
+            db_allowed_value = get_configuration_parameter_value(session, av.id)
+            for prop, value in av.model_dump(exclude_none=True, exclude_unset=True).items():
+                setattr(db_allowed_value, prop, value)
+        session.add(db_allowed_value)
+        to_refresh.append(db_allowed_value)
+    data_ = configuration_parameter_update.model_dump(
+        exclude={"allowed_values"}, exclude_unset=True, exclude_none=True)
+    for key, value in data_.items():
+        setattr(db_configuration_parameter, key, value)
+    session.add(db_configuration_parameter)
+    to_refresh.append(db_configuration_parameter)
     session.commit()
     for item in to_refresh:
         session.refresh(item)

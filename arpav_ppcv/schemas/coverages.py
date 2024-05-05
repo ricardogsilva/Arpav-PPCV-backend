@@ -30,6 +30,7 @@ class ConfigurationParameterValue(sqlmodel.SQLModel, table=True):
         sa_relationship_kwargs={
             "cascade": "all, delete, delete-orphan",
             "passive_deletes": True,
+            "order_by": "ConfigurationParameterPossibleValue.configuration_parameter_value_id"
         }
     )
 
@@ -39,7 +40,7 @@ class ConfigurationParameter(sqlmodel.SQLModel, table=True):
         default_factory=uuid.uuid4,
         primary_key=True
     )
-    name: str
+    name: str = sqlmodel.Field(unique=True, index=True)
     description: str
 
     allowed_values: list[ConfigurationParameterValue] = sqlmodel.Relationship(
@@ -47,19 +48,9 @@ class ConfigurationParameter(sqlmodel.SQLModel, table=True):
         sa_relationship_kwargs={
             "cascade": "all, delete, delete-orphan",
             "passive_deletes": True,
+            "order_by": "ConfigurationParameterValue.name",
         }
     )
-
-
-class ConfigurationParameterValueRead(sqlmodel.SQLModel):
-    name: str
-    description: str
-
-
-class ConfigurationParameterRead(sqlmodel.SQLModel):
-    name: str
-    description: str
-    allowed_values: list[ConfigurationParameterValueRead]
 
 
 class ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
@@ -78,6 +69,21 @@ class ConfigurationParameterCreate(sqlmodel.SQLModel):
     ]
 
 
+class ConfigurationParameterValueUpdateEmbeddedInConfigurationParameterEdit(sqlmodel.SQLModel):
+    id: Optional[uuid.UUID] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+
+
+class ConfigurationParameterUpdate(sqlmodel.SQLModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+
+    allowed_values: list[
+        ConfigurationParameterValueUpdateEmbeddedInConfigurationParameterEdit
+    ]
+
+
 class CoverageConfiguration(sqlmodel.SQLModel, table=True):
     """Configuration for NetCDF datasets.
 
@@ -88,6 +94,7 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         default_factory=uuid.uuid4,
         primary_key=True
     )
+    name: str = sqlmodel.Field(unique=True, index=True)
     thredds_url_pattern: str
     unit: str = ""
     palette: str
