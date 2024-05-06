@@ -45,11 +45,7 @@ def settings() -> config.ArpavPpcvSettings:
 
 @pytest.fixture
 def app(settings):
-    app = create_app_from_settings(settings)
-    app.dependency_overrides[dependencies.get_db_session] = _override_get_db_session
-    app.dependency_overrides[dependencies.get_db_engine] = _override_get_db_engine
-    app.dependency_overrides[dependencies.get_settings] = _override_get_settings
-    yield app
+    yield create_app_from_settings(settings)
 
 
 @pytest.fixture
