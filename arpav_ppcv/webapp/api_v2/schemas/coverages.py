@@ -12,15 +12,6 @@ class ForecastModelScenario(pydantic.BaseModel):
     code: str
 
 
-# class CoverageConfigurationRead(pydantic.BaseModel):
-#     identifier: str
-#     dataset_id_pattern: str
-#     unit: str | None = None
-#     palette: str
-#     range: list[float]
-#     allowed_values: dict[str, list[str]] | None = None
-
-
 class ConfigurationParameterPossibleValueRead(pydantic.BaseModel):
     configuration_parameter_name: str
     configuration_parameter_value: str
@@ -29,9 +20,8 @@ class ConfigurationParameterPossibleValueRead(pydantic.BaseModel):
 class CoverageConfigurationReadListItem(pydantic.BaseModel):
     url: pydantic.AnyHttpUrl
     id: uuid.UUID
-    identifier: str
-    coverage_id_pattern: str
     name: str
+    coverage_id_pattern: str
     possible_values: list[ConfigurationParameterPossibleValueRead]
 
     @classmethod

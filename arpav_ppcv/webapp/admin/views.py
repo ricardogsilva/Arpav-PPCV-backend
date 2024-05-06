@@ -32,6 +32,16 @@ logger = logging.getLogger(__name__)
 
 
 class UuidField(starlette_admin.StringField):
+    """Custom field for handling item identifiers.
+
+    This field, in conjuction with the custom collection template, ensures
+    that we can have related fields be edited inline, by sending the item's `id`
+    as a form hidden field.
+    """
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.input_type = "hidden"
 
     async def serialize_value(
         self, request: Request, value: Any, action: RequestAction
@@ -88,7 +98,7 @@ class ConfigurationParameterView(ModelView):
                     UuidField(
                         "id",
                         read_only=True,
-                        disabled=True,
+                        # disabled=True,
                         exclude_from_list=True,
                         exclude_from_detail=True,
                         exclude_from_create=True,
@@ -132,7 +142,13 @@ class ConfigurationParameterView(ModelView):
                 config_param_create
             )
             configuration_parameter_read = read_schemas.ConfigurationParameterRead(
-                **db_configuration_parameter.model_dump()
+                **db_configuration_parameter.model_dump(
+                    exclude={"allowed_values"}
+                ),
+                allowed_values=[
+                    read_schemas.ConfigurationParameterValueRead(**av.model_dump())
+                    for av in db_configuration_parameter.allowed_values
+                ]
             )
             logger.debug("About to leave the create instance")
             logger.debug(f"{configuration_parameter_read=}")
@@ -149,7 +165,7 @@ class ConfigurationParameterView(ModelView):
                 description=data.get("description"),
                 allowed_values=[
                     coverages.ConfigurationParameterValueUpdateEmbeddedInConfigurationParameterEdit(
-                        id=av["id"],
+                        id=av["id"] or None,
                         name=av.get("name"),
                         description=av.get("description")
                     ) for av in data["allowed_values"]
@@ -175,6 +191,7 @@ class ConfigurationParameterView(ModelView):
             )
             return conf_param_read
         except Exception as e:
+            logger.exception("something went wrong")
             self.handle_exception(e)
 
     async def find_by_pk(
@@ -247,7 +264,6 @@ class CoverageConfigurationView(ModelView):
         UuidField("id"),
         starlette_admin.StringField("name"),
         starlette_admin.StringField("thredds_url_pattern"),
-        starlette_admin.StringField("identifier", disabled=True),
         starlette_admin.StringField("coverage_id_pattern", disabled=True),
         starlette_admin.StringField("unit"),
         starlette_admin.StringField("palette"),
@@ -261,6 +277,12 @@ class CoverageConfigurationView(ModelView):
 
     exclude_fields_from_list = (
         "id",
+        "coverage_id_pattern",
+        "possible_values",
+        "unit",
+        "palette",
+        "color_scale_min",
+        "color_scale_max",
     )
 
     async def get_pk_value(self, request: Request, obj: Any) -> Any:
@@ -354,7 +376,17 @@ class CoverageConfigurationView(ModelView):
                 session, cov_conf_create)
 
             coverage_configuration_read = read_schemas.CoverageConfigurationRead(
-                **db_cov_conf.model_dump())
+                **db_cov_conf.model_dump(
+                    exclude={"possible_values"}
+                ),
+                possible_values=[
+                    read_schemas.ConfigurationParameterPossibleValueRead(
+                        configuration_parameter_value_id=pv.configuration_parameter_value_id,
+                        configuration_parameter_value_name=pv.configuration_parameter_value.name
+                    )
+                    for pv in db_cov_conf.possible_values
+                ]
+            )
             return coverage_configuration_read
         except Exception as e:
             return self.handle_exception(e)
@@ -395,7 +427,16 @@ class CoverageConfigurationView(ModelView):
                 cov_conv_update
             )
             cov_conf_read = read_schemas.CoverageConfigurationRead(
-                **db_coverage_configuration.model_dump(),
+                **db_coverage_configuration.model_dump(
+                    exclude={"possible_values"}
+                ),
+                possible_values=[
+                    read_schemas.ConfigurationParameterPossibleValueRead(
+                        configuration_parameter_value_id=pv.configuration_parameter_value_id,
+                        configuration_parameter_value_name=pv.configuration_parameter_value.name
+                    )
+                    for pv in db_coverage_configuration.possible_values
+                ]
             )
             return cov_conf_read
         except Exception as e:

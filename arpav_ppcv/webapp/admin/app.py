@@ -2,6 +2,7 @@ import logging
 
 from starlette.middleware import Middleware
 from starlette_admin.contrib.sqlmodel import Admin
+from starlette_admin.views import Link
 
 from ...import (
     config,
@@ -19,6 +20,7 @@ def create_admin(settings: config.ArpavPpcvSettings) -> Admin:
     admin = Admin(
         engine,
         debug=settings.debug,
+        templates_dir=str(settings.templates_dir / 'admin'),
         middlewares=[
             Middleware(SqlModelDbSessionMiddleware, engine=engine)
         ]
@@ -27,4 +29,12 @@ def create_admin(settings: config.ArpavPpcvSettings) -> Admin:
         views.ConfigurationParameterView(coverages.ConfigurationParameter))
     admin.add_view(
         views.CoverageConfigurationView(coverages.CoverageConfiguration))
+    admin.add_view(
+        Link(
+            "V2 API docs",
+            icon="fa fa-link",
+            url=f"{settings.public_url}{settings.v2_api_mount_prefix}/docs",
+            target="blank_"
+        )
+    )
     return admin

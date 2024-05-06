@@ -12,7 +12,7 @@ import sqlalchemy
 import sqlmodel
 
 logger = logging.getLogger(__name__)
-_NAME_PATTERN: Final[str] = r"^\w+$"
+_NAME_PATTERN: Final[str] = r"^[a-z][a-z0-9_]+$"
 
 
 class ConfigurationParameterValue(sqlmodel.SQLModel, table=True):
@@ -96,7 +96,10 @@ class ConfigurationParameterValueUpdateEmbeddedInConfigurationParameterEdit(sqlm
 
 
 class ConfigurationParameterUpdate(sqlmodel.SQLModel):
-    name: Annotated[Optional[str], pydantic.Field(pattern=_NAME_PATTERN)] = None
+    name: Annotated[
+        Optional[str],
+        pydantic.Field(pattern=_NAME_PATTERN)
+    ] = None
     description: Optional[str] = None
 
     allowed_values: list[
@@ -131,20 +134,66 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
 
     @pydantic.computed_field()
     @property
-    def identifier(self) -> str:
-        return self.name.translate(str.maketrans({" ": "_", "-": "_"})).lower()
-
-    @pydantic.computed_field()
-    @property
     def coverage_id_pattern(self) -> str:
-        id_parts = ["{identifier}"]
+        id_parts = ["{name}"]
         for match_obj in re.finditer(r"(\{\w+\})", self.thredds_url_pattern):
             id_parts.append(match_obj.group(1))
         return "-".join(id_parts)
 
+    def get_thredds_url_fragment(self, coverage_identifier: str) -> str:
+        used_values = self.retrieve_used_values(coverage_identifier)
+        rendered = self.thredds_url_pattern
+        for used_value in used_values:
+            param_name = used_value.configuration_parameter_value.configuration_parameter.name
+            rendered = rendered.replace(
+                f"{{{param_name}}}", used_value.configuration_parameter_value.name)
+        return rendered
+
+    def retrieve_used_values(
+            self,
+            coverage_identifier: str
+    ) -> list["ConfigurationParameterPossibleValue"]:
+        parsed_parameters = self.retrieve_configuration_parameters(coverage_identifier)
+        result = []
+        for param_name, value in parsed_parameters.items():
+            for pv in self.possible_values:
+                matches_param_name = (
+                    pv.configuration_parameter_value.configuration_parameter.name == param_name
+                )
+                matches_param_value = pv.configuration_parameter_value.name == value
+                if matches_param_name and matches_param_value:
+                    result.append(pv)
+                    break
+            else:
+                raise ValueError(
+                    f"Invalid parameter/value pair: {(param_name, value)}")
+        return result
+
+    def retrieve_configuration_parameters(self, coverage_identifier) -> dict[str, str]:
+        pattern_parts = re.finditer(
+            r"\{(\w+)\}",
+            self.coverage_id_pattern.partition("-")[-1])
+        id_parts = coverage_identifier.split("-")[1:]
+        result = {}
+        for index, pattern_match_obj in enumerate(pattern_parts):
+            id_part = id_parts[index]
+            configuration_parameter_name = pattern_match_obj.group(1)
+            result[configuration_parameter_name] = id_part
+        return result
+
 
 class CoverageConfigurationCreate(sqlmodel.SQLModel):
-    name: str
+
+    name: Annotated[
+        str,
+        pydantic.Field(
+            pattern=_NAME_PATTERN,
+            help=(
+                "Coverage configuration name. Only alphanumeric characters and the "
+                "underscore are allowed. Example: my_name"
+            )
+        )
+    ]
     thredds_url_pattern: str
     unit: str
     palette: str
@@ -163,7 +212,12 @@ class CoverageConfigurationCreate(sqlmodel.SQLModel):
 
 
 class CoverageConfigurationUpdate(sqlmodel.SQLModel):
-    name: Optional[str] = None
+    name: Annotated[
+        Optional[str],
+        pydantic.Field(
+            pattern=_NAME_PATTERN
+        )
+    ] = None
     thredds_url_pattern: Optional[str] = None
     unit: Optional[str] = None
     palette: Optional[str] = None

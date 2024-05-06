@@ -494,7 +494,7 @@ def update_configuration_parameter(
         else:
             # this is an existing allowed value, lets update
             db_allowed_value = get_configuration_parameter_value(session, av.id)
-            for prop, value in av.model_dump(exclude_none=True, exclude_unset=True).items():
+            for prop, value in av.model_dump(exclude={"id"}, exclude_none=True, exclude_unset=True).items():
                 setattr(db_allowed_value, prop, value)
         session.add(db_allowed_value)
         to_refresh.append(db_allowed_value)
@@ -515,6 +515,21 @@ def get_coverage_configuration(
         coverage_configuration_id: uuid.UUID
 ) -> Optional[coverages.CoverageConfiguration]:
     return session.get(coverages.CoverageConfiguration, coverage_configuration_id)
+
+
+def get_coverage_configuration_by_name(
+        session: sqlmodel.Session,
+        coverage_configuration_name: str
+) -> Optional[coverages.CoverageConfiguration]:
+    """Get a coverage configuration by its name.
+
+    Since a coverage configuration name is unique, it can be used to uniquely
+    identify it.
+    """
+    return session.exec(
+        sqlmodel.select(coverages.CoverageConfiguration)
+        .where(coverages.CoverageConfiguration.name == coverage_configuration_name)
+    ).first()
 
 
 def list_coverage_configurations(
@@ -646,7 +661,7 @@ def list_allowed_coverage_identifiers(
             if len(container) == 0:
                 values_to_combine[index] = [pattern_parts[index]]
         for combination in itertools.product(*values_to_combine):
-            dataset_id = "-".join((db_cov_conf.identifier, *combination))
+            dataset_id = "-".join((db_cov_conf.name, *combination))
             result.append(dataset_id)
     return result
 
