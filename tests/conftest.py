@@ -1,5 +1,4 @@
 import datetime as dt
-import os
 import random
 
 import geojson_pydantic
@@ -23,7 +22,7 @@ from arpav_ppcv.schemas import models
 from arpav_ppcv.webapp import dependencies
 from arpav_ppcv.webapp.app import create_app_from_settings
 from arpav_ppcv.webapp.legacy.django_settings import get_custom_django_settings
-from arpav_ppcv.webapp.v2.app import create_app as create_v2_app
+from arpav_ppcv.webapp.api_v2.app import create_app as create_v2_app
 
 
 @pytest.hookimpl
