@@ -4,14 +4,14 @@ import os
 
 from fastapi import APIRouter
 
-from . import schemas
+from ..schemas.base import AppInformation
 
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/", response_model=schemas.AppInformation)
+@router.get("/", response_model=AppInformation)
 async def get_app_info():
     """Return information about the ARPAV-PPCV application."""
     return {

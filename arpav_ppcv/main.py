@@ -136,7 +136,7 @@ def run_server(ctx: typer.Context):
     serving_str = (
         f"[dim]Serving at:[/dim] [link]http://{settings.bind_host}:{settings.bind_port}[/link]\n\n"
         f"[dim]Public URL:[/dim] [link]{settings.public_url}[/link]\n\n"
-        f"[dim]API docs:[/dim] [link]{settings.public_url}/docs[/link]"
+        f"[dim]API docs:[/dim] [link]{settings.public_url}{settings.v2_api_mount_prefix}/docs[/link]"
     )
     panel = Panel(
         (

@@ -1,44 +1,41 @@
 import fastapi
 from fastapi.middleware.wsgi import WSGIMiddleware
-from fastapi.staticfiles import StaticFiles
+from starlette.applications import Starlette
+from starlette.staticfiles import StaticFiles
+from starlette.templating import Jinja2Templates
 
 from .. import config
-from .v2.app import create_app as create_v2_app
-from .v1.app import create_app as create_v1_app
+from .api_v2.app import create_app as create_v2_app
+from .admin.app import create_admin
+from .api_v1.app import create_app as create_v1_app
 from .legacy.app import create_django_app
-from .routers import router
+from .routes import routes
 
 
 def create_app_from_settings(settings: config.ArpavPpcvSettings) -> fastapi.FastAPI:
-    v2_app = create_v2_app(settings)
-    v2_docs_url = "".join(
-        (settings.public_url, settings.v2_mount_prefix, v2_app.docs_url))
-    v1_app = create_v1_app(settings)
-    v1_docs_url = "".join(
-        (settings.public_url, settings.v1_mount_prefix, v1_app.docs_url))
-    django_app = create_django_app(settings)
-    app = fastapi.FastAPI(
+    app = Starlette(
         debug=settings.debug,
-        title="ARPAV PPCV backend",
-        description=(
-            f"### Developer API for ARPAV-PPCV backend\n"
-            f"This is the root of the ARPAV-PPCV application - please head over "
-            f"to either:\n"
-            f"- <{v2_docs_url}> for info on version 2 of the API\n"
-            f"- <{v1_docs_url}> for info on version 1 of the API\n"
-            f"- <{''.join((settings.public_url, settings.django_app.mount_prefix))}> "
-            f"for accessing the older django-rest-framework API - "
-            f"There is no docs URL for this unfortunately\n"
-        ),
-        contact={
-            "name": settings.contact.name,
-            "url": settings.contact.url,
-            "email": settings.contact.email
-        },
+        routes=routes,
     )
-    app.include_router(router)
-    app.mount(settings.v1_mount_prefix, v1_app)
-    app.mount(settings.v2_mount_prefix, v2_app)
+    settings.static_dir.mkdir(parents=True, exist_ok=True)
+    app.mount("/static", StaticFiles(directory=settings.static_dir), name="static")
+    admin = create_admin(settings)
+    admin.mount_to(app, settings)
+    v2_api = create_v2_app(settings)
+    v1_api = create_v1_app(settings)
+    django_app = create_django_app(settings)
+    app.state.settings = settings
+    app.state.templates = Jinja2Templates(
+        str(settings.templates_dir)
+    )
+    app.state.v1_api_docs_url = "".join(
+        (settings.public_url, settings.v1_api_mount_prefix, v1_api.docs_url))
+    app.state.v2_api_docs_url = "".join(
+        (settings.public_url, settings.v2_api_mount_prefix, v2_api.docs_url))
+    app.state.legacy_base_url = "".join(
+        (settings.public_url, settings.django_app.mount_prefix))
+    app.mount(settings.v1_api_mount_prefix, v1_api)
+    app.mount(settings.v2_api_mount_prefix, v2_api)
     app.mount(settings.django_app.mount_prefix, WSGIMiddleware(django_app))
     settings.django_app.static_root.mkdir(parents=True, exist_ok=True)
     app.mount(

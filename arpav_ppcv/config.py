@@ -119,7 +119,8 @@ class DjangoAppSettings(pydantic.BaseModel):
     secret_key: str = "changeme"
     mount_prefix: str = "/legacy"
     static_root: Path = Path.home() / "django_static"
-    static_mount_prefix: str = "/static/legacy"
+    # static_mount_prefix: str = "/static/legacy"
+    static_mount_prefix: str = "/legacy-static"
     db_engine: str = "django.contrib.gis.db.backends.postgis"
     db_dsn: pydantic.PostgresDsn = pydantic.PostgresDsn(
         "postgresql://django_user:django_password@localhost:5432/django_db")
@@ -127,6 +128,17 @@ class DjangoAppSettings(pydantic.BaseModel):
     redis_dsn: pydantic.RedisDsn = pydantic.RedisDsn("redis://localhost:6379")
     thredds: DjangoThreddsSettings = DjangoThreddsSettings()
 
+
+class AdminUserSettings(pydantic.BaseModel):
+    username: str = "arpavadmin"
+    password: str = "arpavpassword"
+    name: str = "Admin"
+    avatar: Optional[str] = None
+    company_logo_url: Optional[str] = None
+    roles: list[str] = pydantic.Field(
+        default_factory=lambda: [
+            "read", "create", "edit", "delete", "action_make_published"]
+    )
 
 
 class ArpavPpcvSettings(BaseSettings):  # noqa
@@ -145,11 +157,15 @@ class ArpavPpcvSettings(BaseSettings):  # noqa
     test_db_dsn: Optional[pydantic.PostgresDsn] = None
     verbose_db_logs: bool = False
     contact: ContactSettings = ContactSettings()
+    templates_dir: Optional[Path] = Path(__file__).parent / "webapp/templates"
+    static_dir: Optional[Path] = Path(__file__).parent / "webapp/static"
     thredds_server: ThreddsServerSettings = ThreddsServerSettings()
-    v1_mount_prefix: str = "/v1/api"
-    v2_mount_prefix: str = "/v2/api"
+    v1_api_mount_prefix: str = "/api/v1"
+    v2_api_mount_prefix: str = "/api/v2"
     django_app: DjangoAppSettings = DjangoAppSettings()
     log_config_file: Path | None = None
+    session_secret_key: str = "changeme"
+    admin_user: AdminUserSettings = AdminUserSettings()
 
     @pydantic.model_validator(mode="after")
     def ensure_test_db_dsn(self):

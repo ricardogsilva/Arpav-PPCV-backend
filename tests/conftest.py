@@ -1,5 +1,4 @@
 import datetime as dt
-import os
 import random
 
 import geojson_pydantic
@@ -23,7 +22,7 @@ from arpav_ppcv.schemas import models
 from arpav_ppcv.webapp import dependencies
 from arpav_ppcv.webapp.app import create_app_from_settings
 from arpav_ppcv.webapp.legacy.django_settings import get_custom_django_settings
-from arpav_ppcv.webapp.v2.app import create_app as create_v2_app
+from arpav_ppcv.webapp.api_v2.app import create_app as create_v2_app
 
 
 @pytest.hookimpl
@@ -46,11 +45,7 @@ def settings() -> config.ArpavPpcvSettings:
 
 @pytest.fixture
 def app(settings):
-    app = create_app_from_settings(settings)
-    app.dependency_overrides[dependencies.get_db_session] = _override_get_db_session
-    app.dependency_overrides[dependencies.get_db_engine] = _override_get_db_engine
-    app.dependency_overrides[dependencies.get_settings] = _override_get_settings
-    yield app
+    yield create_app_from_settings(settings)
 
 
 @pytest.fixture

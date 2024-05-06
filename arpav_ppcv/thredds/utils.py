@@ -43,7 +43,8 @@ async def proxy_request(url: str, http_client: httpx.AsyncClient) -> httpx.Respo
 
 def tweak_wms_get_map_request(
         query_params: dict[str, str],
-        dataset_configuration: config.ThreddsDatasetSettings,
+        ncwms_palette: str,
+        ncwms_color_scale_range: tuple[float, float],
         uncertainty_visualization_scale_range: tuple[float, float]
 ) -> dict[str, str]:
     # which layer type is being requested?
@@ -61,12 +62,12 @@ def tweak_wms_get_map_request(
         query_params["NUMCOLORBANDS"] = num_color_bands
     else:
         if "uncertainty_group" in layer_name:
-            palette = dataset_configuration.palette
+            palette = ncwms_palette
         else:
-            palette = f"default/{dataset_configuration.palette.rpartition('/')[-1]}"
+            palette = f"default/{ncwms_palette.rpartition('/')[-1]}"
 
         if not (requested_color_scale_range := query_params.get("colorscalerange")):
-            color_scale_range = ",".join(str(f) for f in dataset_configuration.range)
+            color_scale_range = ",".join(str(f) for f in ncwms_color_scale_range)
             if "stippled" in palette:
                 uncert_scale_range = ",".join(
                     str(f) for f in uncertainty_visualization_scale_range)
