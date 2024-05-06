@@ -1,5 +1,8 @@
 """Database utilities."""
 
+import itertools
+import logging
+import re
 import uuid
 from typing import (
     Optional,
@@ -17,6 +20,8 @@ from .schemas import (
     coverages,
     models,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def get_engine(
@@ -355,6 +360,294 @@ def collect_all_monthly_measurements(
         month_filter=month_filter,
         include_total=False
     )
+    return result
+
+
+def get_configuration_parameter_value(
+        session: sqlmodel.Session,
+        configuration_parameter_value_id: uuid.UUID
+) -> Optional[coverages.ConfigurationParameterValue]:
+    return session.get(
+        coverages.ConfigurationParameterValue, configuration_parameter_value_id)
+
+
+def list_configuration_parameter_values(
+        session: sqlmodel.Session,
+        *,
+        limit: int = 20,
+        offset: int = 0,
+        include_total: bool = False,
+) -> tuple[Sequence[coverages.ConfigurationParameterValue], Optional[int]]:
+    """List existing configuration parameters."""
+    statement = sqlmodel.select(coverages.ConfigurationParameterValue).order_by(
+        coverages.ConfigurationParameterValue.name)
+    items = session.exec(statement.offset(offset).limit(limit)).all()
+    num_items = (
+        _get_total_num_records(session, statement) if include_total else None)
+    return items, num_items
+
+
+def collect_all_configuration_parameter_values(
+        session: sqlmodel.Session,
+) -> Sequence[coverages.ConfigurationParameterValue]:
+    _, num_total = list_configuration_parameter_values(session, limit=1, include_total=True)
+    result, _ = list_configuration_parameter_values(
+        session, limit=num_total, include_total=False)
+    return result
+
+
+def get_configuration_parameter(
+        session: sqlmodel.Session,
+        configuration_parameter_id: uuid.UUID
+) -> Optional[coverages.ConfigurationParameter]:
+    return session.get(coverages.ConfigurationParameter, configuration_parameter_id)
+
+
+def get_configuration_parameter_by_name(
+        session: sqlmodel.Session,
+        configuration_parameter_name: str
+) -> Optional[coverages.ConfigurationParameter]:
+    """Get a configuration parameter by its name.
+
+    Since a configuration parameter's name is unique, it can be used to uniquely
+    identify it.
+    """
+    return session.exec(
+        sqlmodel.select(coverages.ConfigurationParameter)
+        .where(coverages.ConfigurationParameter.name == configuration_parameter_name)
+    ).first()
+
+
+def list_configuration_parameters(
+        session: sqlmodel.Session,
+        *,
+        limit: int = 20,
+        offset: int = 0,
+        include_total: bool = False,
+) -> tuple[Sequence[coverages.ConfigurationParameter], Optional[int]]:
+    """List existing configuration parameters."""
+    statement = sqlmodel.select(coverages.ConfigurationParameter).order_by(
+        coverages.ConfigurationParameter.name)
+    items = session.exec(statement.offset(offset).limit(limit)).all()
+    num_items = (
+        _get_total_num_records(session, statement) if include_total else None)
+    return items, num_items
+
+
+def collect_all_configuration_parameters(
+        session: sqlmodel.Session,
+) -> Sequence[coverages.ConfigurationParameter]:
+    _, num_total = list_configuration_parameters(session, limit=1, include_total=True)
+    result, _ = list_configuration_parameters(
+        session, limit=num_total, include_total=False)
+    return result
+
+
+def create_configuration_parameter(
+        session: sqlmodel.Session,
+        configuration_parameter_create: coverages.ConfigurationParameterCreate
+) -> coverages.ConfigurationParameter:
+    logger.debug(f"inside database.create_configuration_parameter - {locals()=}")
+    to_refresh = []
+    db_configuration_parameter = coverages.ConfigurationParameter(
+        name=configuration_parameter_create.name,
+        description=configuration_parameter_create.description
+    )
+    to_refresh.append(db_configuration_parameter)
+    for allowed in configuration_parameter_create.allowed_values:
+        db_conf_param_value = coverages.ConfigurationParameterValue(
+            name=allowed.name,
+            description=allowed.description,
+        )
+        db_configuration_parameter.allowed_values.append(db_conf_param_value)
+        to_refresh.append(db_conf_param_value)
+    session.add(db_configuration_parameter)
+    session.commit()
+    for item in to_refresh:
+        session.refresh(item)
+    return db_configuration_parameter
+
+
+def update_configuration_parameter(
+        session: sqlmodel.Session,
+        db_configuration_parameter: coverages.ConfigurationParameter,
+        configuration_parameter_update: coverages.ConfigurationParameterUpdate
+) -> coverages.ConfigurationParameter:
+    """Update a configuration parameter."""
+    to_refresh = []
+    # account for allowed values being: added/modified/deleted
+    for existing_allowed_value in db_configuration_parameter.allowed_values:
+        has_been_requested_to_remove = (
+                existing_allowed_value.id not in
+                [i.id for i in configuration_parameter_update.allowed_values]
+        )
+        if has_been_requested_to_remove:
+            session.delete(existing_allowed_value)
+    for av in configuration_parameter_update.allowed_values:
+        if av.id is None:
+            # this is a new allowed value, need to create it
+            db_allowed_value = coverages.ConfigurationParameterValue(
+                name=av.name,
+                description=av.description,
+            )
+            db_configuration_parameter.allowed_values.append(db_allowed_value)
+        else:
+            # this is an existing allowed value, lets update
+            db_allowed_value = get_configuration_parameter_value(session, av.id)
+            for prop, value in av.model_dump(exclude_none=True, exclude_unset=True).items():
+                setattr(db_allowed_value, prop, value)
+        session.add(db_allowed_value)
+        to_refresh.append(db_allowed_value)
+    data_ = configuration_parameter_update.model_dump(
+        exclude={"allowed_values"}, exclude_unset=True, exclude_none=True)
+    for key, value in data_.items():
+        setattr(db_configuration_parameter, key, value)
+    session.add(db_configuration_parameter)
+    to_refresh.append(db_configuration_parameter)
+    session.commit()
+    for item in to_refresh:
+        session.refresh(item)
+    return db_configuration_parameter
+
+
+def get_coverage_configuration(
+        session: sqlmodel.Session,
+        coverage_configuration_id: uuid.UUID
+) -> Optional[coverages.CoverageConfiguration]:
+    return session.get(coverages.CoverageConfiguration, coverage_configuration_id)
+
+
+def list_coverage_configurations(
+        session: sqlmodel.Session,
+        *,
+        limit: int = 20,
+        offset: int = 0,
+        include_total: bool = False,
+) -> tuple[Sequence[coverages.CoverageConfiguration], Optional[int]]:
+    """List existing coverage configurations."""
+    statement = sqlmodel.select(coverages.CoverageConfiguration).order_by(
+        coverages.CoverageConfiguration.name)
+    items = session.exec(statement.offset(offset).limit(limit)).all()
+    num_items = (
+        _get_total_num_records(session, statement) if include_total else None)
+    return items, num_items
+
+
+def collect_all_coverage_configurations(
+        session: sqlmodel.Session,
+) -> Sequence[coverages.CoverageConfiguration]:
+    _, num_total = list_coverage_configurations(session, limit=1, include_total=True)
+    result, _ = list_coverage_configurations(
+        session, limit=num_total, include_total=False)
+    return result
+
+
+def create_coverage_configuration(
+        session: sqlmodel.Session,
+        coverage_configuration_create: coverages.CoverageConfigurationCreate
+) -> coverages.CoverageConfiguration:
+    logger.debug(f"inside database.create_coverage_configuration - {locals()=}")
+    to_refresh = []
+    db_coverage_configuration = coverages.CoverageConfiguration(
+        name=coverage_configuration_create.name,
+        thredds_url_pattern=coverage_configuration_create.thredds_url_pattern,
+        unit=coverage_configuration_create.unit,
+        palette=coverage_configuration_create.palette,
+        color_scale_min=coverage_configuration_create.color_scale_min,
+        color_scale_max=coverage_configuration_create.color_scale_max,
+    )
+    session.add(db_coverage_configuration)
+    to_refresh.append(db_coverage_configuration)
+    for possible in coverage_configuration_create.possible_values:
+        db_conf_param_value = get_configuration_parameter_value(
+            session, possible.configuration_parameter_value_id)
+        possible_value = coverages.ConfigurationParameterPossibleValue(
+            coverage_configuration=db_coverage_configuration,
+            configuration_parameter_value=db_conf_param_value
+        )
+        session.add(possible_value)
+        to_refresh.append(possible_value)
+    session.commit()
+    for item in to_refresh:
+        session.refresh(item)
+    return db_coverage_configuration
+
+
+def update_coverage_configuration(
+        session: sqlmodel.Session,
+        db_coverage_configuration: coverages.CoverageConfiguration,
+        coverage_configuration_update: coverages.CoverageConfigurationUpdate
+) -> coverages.CoverageConfiguration:
+    """Update a coverage configuration."""
+    to_refresh = []
+    # account for possible values being: added/deleted
+    for existing_possible_value in db_coverage_configuration.possible_values:
+        has_been_requested_to_remove = (
+                existing_possible_value.configuration_parameter_value_id not in
+                [
+                    i.configuration_parameter_value_id
+                    for i in coverage_configuration_update.possible_values
+                ]
+        )
+        if has_been_requested_to_remove:
+            session.delete(existing_possible_value)
+    for pvc in coverage_configuration_update.possible_values:
+        already_possible = (
+                pvc.configuration_parameter_value_id
+                in [
+                    i.configuration_parameter_value_id
+                    for i in db_coverage_configuration.possible_values
+                ]
+        )
+        if not already_possible:
+            db_possible_value = coverages.ConfigurationParameterPossibleValue(
+                coverage_configuration=db_coverage_configuration,
+                configuration_parameter_value_id=pvc.configuration_parameter_value_id
+            )
+            session.add(db_possible_value)
+            to_refresh.append(db_possible_value)
+    data_ = coverage_configuration_update.model_dump(
+        exclude={"possible_values"}, exclude_unset=True, exclude_none=True)
+    for key, value in data_.items():
+        setattr(db_coverage_configuration, key, value)
+    session.add(db_coverage_configuration)
+    to_refresh.append(db_coverage_configuration)
+    session.commit()
+    for item in to_refresh:
+        session.refresh(item)
+    return db_coverage_configuration
+
+
+def list_allowed_coverage_identifiers(
+        session: sqlmodel.Session,
+        *,
+        coverage_configuration_id: uuid.UUID,
+) -> list[str]:
+    """Build list of legal coverage identifiers."""
+    result = []
+    db_cov_conf = get_coverage_configuration(session, coverage_configuration_id)
+    if db_cov_conf is not None:
+        pattern_parts = re.findall(
+            r"\{(\w+)\}",
+            db_cov_conf.coverage_id_pattern.partition("-")[-1])
+        values_to_combine = []
+        for part in pattern_parts:
+            part_values = []
+            for possible_value in db_cov_conf.possible_values:
+                param_name_matches = (
+                        possible_value.configuration_parameter_value.configuration_parameter.name == part
+                )
+                if param_name_matches:
+                    part_values.append(possible_value.configuration_parameter_value.name)
+            values_to_combine.append(part_values)
+        # account for the possibility that there is an error in the
+        # coverage_id_pattern, where some of the parts are not actually configured
+        for index, container in enumerate(values_to_combine):
+            if len(container) == 0:
+                values_to_combine[index] = [pattern_parts[index]]
+        for combination in itertools.product(*values_to_combine):
+            dataset_id = "-".join((db_cov_conf.identifier, *combination))
+            result.append(dataset_id)
     return result
 
 

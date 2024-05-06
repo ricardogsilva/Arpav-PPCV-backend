@@ -11,6 +11,11 @@ logger = logging.getLogger(__name__)
 R = typing.TypeVar("R", bound="ApiReadableModel")
 
 
+class AppInformation(pydantic.BaseModel):
+    version: str
+    git_commit: str
+
+
 @typing.runtime_checkable
 class ApiReadableModel(typing.Protocol):
     """Protocol to be used by all schema models that represent API resources.

@@ -9,6 +9,8 @@ import os
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 from ... import config
 
 
@@ -16,7 +18,11 @@ def get_custom_django_settings(
         settings: config.ArpavPpcvSettings) -> dict[str, Any]:
     base_dir = str(Path(__file__).parents[3] / "backend")
     time_zone = "UTC"
-    return {
+    if (config_file_path := settings.log_config_file) is not None:
+        log_config = yaml.safe_load(Path(config_file_path).read_text())
+    else:
+        log_config = None
+    result = {
         "SECRET_KEY": settings.django_app.secret_key,
         "DEBUG": settings.debug,
         "ALLOWED_HOSTS": ["*"],
@@ -155,21 +161,6 @@ def get_custom_django_settings(
         "EMAIL_HOST_USER": settings.django_app.email.host_user,
         "EMAIL_HOST_PASSWORD": settings.django_app.email.host_password,
         "EMAIL_PORT": settings.django_app.email.port,
-        "LOGGING": {
-            "version": 1,
-            "handlers": {
-                "console": {
-                    "level": "DEBUG",
-                    "class": "logging.StreamHandler",
-                },
-            },
-            "loggers": {
-                "django": {
-                    "handlers": ["console"],
-                    "propagate": True,
-                },
-            },
-        },
         "ACCEPTED_UPLOAD_MEDIA_TYPES": [
             "text/plain",
             "application/x-dbf",
@@ -210,3 +201,6 @@ def get_custom_django_settings(
             "proxy": settings.django_app.thredds.proxy,
         },
     }
+    if log_config is not None:
+        result["LOGGING"] = log_config
+    return result

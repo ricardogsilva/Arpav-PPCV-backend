@@ -50,6 +50,7 @@ alembic = "^1.13.1"
 geojson-pydantic = "^1.0.2"
 shapely = "^2.0.3"
 pyproj = "^3.6.1"
+starlette-admin = "^0.13.2"
 
 
 [tool.poetry.group.dev.dependencies]
