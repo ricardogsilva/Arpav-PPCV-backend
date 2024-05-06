@@ -3,11 +3,11 @@ import logging
 from starlette.middleware import Middleware
 from starlette_admin.contrib.sqlmodel import Admin
 
-from ....import (
+from ...import (
     config,
     database,
 )
-from ....schemas import coverages
+from ...schemas import coverages
 from . import views
 from .middlewares import SqlModelDbSessionMiddleware
 

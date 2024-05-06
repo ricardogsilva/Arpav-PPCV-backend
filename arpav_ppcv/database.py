@@ -1,6 +1,8 @@
 """Database utilities."""
 
+import itertools
 import logging
+import re
 import uuid
 from typing import (
     Optional,
@@ -614,6 +616,39 @@ def update_coverage_configuration(
     for item in to_refresh:
         session.refresh(item)
     return db_coverage_configuration
+
+
+def list_allowed_coverage_identifiers(
+        session: sqlmodel.Session,
+        *,
+        coverage_configuration_id: uuid.UUID,
+) -> list[str]:
+    """Build list of legal coverage identifiers."""
+    result = []
+    db_cov_conf = get_coverage_configuration(session, coverage_configuration_id)
+    if db_cov_conf is not None:
+        pattern_parts = re.findall(
+            r"\{(\w+)\}",
+            db_cov_conf.coverage_id_pattern.partition("-")[-1])
+        values_to_combine = []
+        for part in pattern_parts:
+            part_values = []
+            for possible_value in db_cov_conf.possible_values:
+                param_name_matches = (
+                        possible_value.configuration_parameter_value.configuration_parameter.name == part
+                )
+                if param_name_matches:
+                    part_values.append(possible_value.configuration_parameter_value.name)
+            values_to_combine.append(part_values)
+        # account for the possibility that there is an error in the
+        # coverage_id_pattern, where some of the parts are not actually configured
+        for index, container in enumerate(values_to_combine):
+            if len(container) == 0:
+                values_to_combine[index] = [pattern_parts[index]]
+        for combination in itertools.product(*values_to_combine):
+            dataset_id = "-".join((db_cov_conf.identifier, *combination))
+            result.append(dataset_id)
+    return result
 
 
 def _get_total_num_records(session: sqlmodel.Session, statement):

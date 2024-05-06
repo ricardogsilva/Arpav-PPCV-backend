@@ -23,8 +23,8 @@ from starlette.requests import Request
 from starlette_admin import RequestAction
 from starlette_admin.contrib.sqlmodel import ModelView
 
-from .... import database
-from ....schemas import coverages
+from ... import database
+from ...schemas import coverages
 from . import schemas as read_schemas
 
 
@@ -247,6 +247,8 @@ class CoverageConfigurationView(ModelView):
         UuidField("id"),
         starlette_admin.StringField("name"),
         starlette_admin.StringField("thredds_url_pattern"),
+        starlette_admin.StringField("identifier", disabled=True),
+        starlette_admin.StringField("coverage_id_pattern", disabled=True),
         starlette_admin.StringField("unit"),
         starlette_admin.StringField("palette"),
         starlette_admin.FloatField("color_scale_min"),

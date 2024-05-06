@@ -23,6 +23,8 @@ class ConfigurationParameterPossibleValueRead(sqlmodel.SQLModel):
 
 class CoverageConfigurationRead(sqlmodel.SQLModel):
     id: uuid.UUID
+    identifier: str
+    coverage_id_pattern: str
     name: str
     thredds_url_pattern: str
     unit: str

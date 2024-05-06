@@ -1,8 +1,18 @@
+import logging
+import re
 import uuid
-from typing import Optional
+from typing import (
+    Annotated,
+    Optional,
+    Final,
+)
 
+import pydantic
 import sqlalchemy
 import sqlmodel
+
+logger = logging.getLogger(__name__)
+_NAME_PATTERN: Final[str] = r"^\w+$"
 
 
 class ConfigurationParameterValue(sqlmodel.SQLModel, table=True):
@@ -61,7 +71,17 @@ class ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
 
 
 class ConfigurationParameterCreate(sqlmodel.SQLModel):
-    name: str
+    name: Annotated[
+        str,
+        pydantic.Field(
+            pattern=_NAME_PATTERN,
+            help=(
+                "Parameter name. Only alphanumeric characters and the underscore are "
+                "allowed. Example: my_param"
+            )
+        )
+    ]
+    # name: str
     description: str
 
     allowed_values: list[
@@ -76,7 +96,7 @@ class ConfigurationParameterValueUpdateEmbeddedInConfigurationParameterEdit(sqlm
 
 
 class ConfigurationParameterUpdate(sqlmodel.SQLModel):
-    name: Optional[str] = None
+    name: Annotated[Optional[str], pydantic.Field(pattern=_NAME_PATTERN)] = None
     description: Optional[str] = None
 
     allowed_values: list[
@@ -109,6 +129,19 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         }
     )
 
+    @pydantic.computed_field()
+    @property
+    def identifier(self) -> str:
+        return self.name.translate(str.maketrans({" ": "_", "-": "_"})).lower()
+
+    @pydantic.computed_field()
+    @property
+    def coverage_id_pattern(self) -> str:
+        id_parts = ["{identifier}"]
+        for match_obj in re.finditer(r"(\{\w+\})", self.thredds_url_pattern):
+            id_parts.append(match_obj.group(1))
+        return "-".join(id_parts)
+
 
 class CoverageConfigurationCreate(sqlmodel.SQLModel):
     name: str
@@ -119,6 +152,15 @@ class CoverageConfigurationCreate(sqlmodel.SQLModel):
     color_scale_max: float
     possible_values: list["ConfigurationParameterPossibleValueCreate"]
 
+    @pydantic.field_validator("thredds_url_pattern")
+    @classmethod
+    def validate_thredds_url_pattern(cls, v: str) -> str:
+        for match_obj in re.finditer(r"(\{.*?\})", v):
+            logger.debug(f"{match_obj.group(1)[1:-1]=}")
+            if re.match(_NAME_PATTERN, match_obj.group(1)[1:-1]) is None:
+                raise ValueError(f"configuration parameter {v!r} has invalid name")
+        return v
+
 
 class CoverageConfigurationUpdate(sqlmodel.SQLModel):
     name: Optional[str] = None
@@ -128,6 +170,15 @@ class CoverageConfigurationUpdate(sqlmodel.SQLModel):
     color_scale_min: Optional[float] = None
     color_scale_max: Optional[float] = None
     possible_values: list["ConfigurationParameterPossibleValueUpdate"]
+
+    @pydantic.field_validator("thredds_url_pattern")
+    @classmethod
+    def validate_thredds_url_pattern(cls, v: str) -> str:
+        for match_obj in re.finditer(r"(\{.*?\})", v):
+            logger.debug(f"{match_obj.group(1)[1:-1]=}")
+            if re.match(_NAME_PATTERN, match_obj.group(1)[1:-1]) is None:
+                raise ValueError(f"configuration parameter {v!r} has invalid name")
+        return v
 
 
 class ConfigurationParameterPossibleValue(sqlmodel.SQLModel, table=True):
