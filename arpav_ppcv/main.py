@@ -132,6 +132,11 @@ def run_server(ctx: typer.Context):
         uvicorn_args.extend(["--log-level=info"])
     if (log_config_file := settings.log_config_file) is not None:
         uvicorn_args.append(f"--log-config={str(log_config_file)}")
+    if settings.public_url.startswith("https://"):
+        uvicorn_args.extend([
+            "--forwarded-allow-ips=*",
+            "--proxy-headers",
+        ])
 
     serving_str = (
         f"[dim]Serving at:[/dim] [link]http://{settings.bind_host}:{settings.bind_port}[/link]\n\n"
