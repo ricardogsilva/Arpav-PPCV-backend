@@ -20,7 +20,7 @@ def create_app_from_settings(settings: config.ArpavPpcvSettings) -> fastapi.Fast
     settings.static_dir.mkdir(parents=True, exist_ok=True)
     app.mount("/static", StaticFiles(directory=settings.static_dir), name="static")
     admin = create_admin(settings)
-    admin.mount_to(app)
+    admin.mount_to(app, settings)
     v2_api = create_v2_app(settings)
     v1_api = create_v1_app(settings)
     django_app = create_django_app(settings)

@@ -129,6 +129,17 @@ class DjangoAppSettings(pydantic.BaseModel):
     thredds: DjangoThreddsSettings = DjangoThreddsSettings()
 
 
+class AdminUserSettings(pydantic.BaseModel):
+    username: str = "arpavadmin"
+    password: str = "arpavpassword"
+    name: str = "Admin"
+    avatar: Optional[str] = None
+    company_logo_url: Optional[str] = None
+    roles: list[str] = pydantic.Field(
+        default_factory=lambda: [
+            "read", "create", "edit", "delete", "action_make_published"]
+    )
+
 
 class ArpavPpcvSettings(BaseSettings):  # noqa
     model_config = SettingsConfigDict(
@@ -153,6 +164,8 @@ class ArpavPpcvSettings(BaseSettings):  # noqa
     v2_api_mount_prefix: str = "/api/v2"
     django_app: DjangoAppSettings = DjangoAppSettings()
     log_config_file: Path | None = None
+    session_secret_key: str = "changeme"
+    admin_user: AdminUserSettings = AdminUserSettings()
 
     @pydantic.model_validator(mode="after")
     def ensure_test_db_dsn(self):
