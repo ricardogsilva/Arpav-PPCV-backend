@@ -166,11 +166,8 @@ def create_many_stations(
         geom = shapely.io.from_geojson(station_create.geom.model_dump_json())
         wkbelement = from_shape(geom)
         db_station = models.Station(
-            code=station_create.code,
+            **station_create.model_dump(exclude={"geom"}),
             geom=wkbelement,
-            altitude_m=station_create.altitude_m,
-            name=station_create.name,
-            type_=station_create.type_,
         )
         db_records.append(db_station)
         session.add(db_station)
