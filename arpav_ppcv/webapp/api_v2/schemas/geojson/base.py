@@ -33,6 +33,9 @@ class ArpavFeatureCollection(geojson_pydantic.FeatureCollection):
 
     type: str = "FeatureCollection"
     links: ListLinks
+    number_matched: int
+    number_total: int
+    number_returned: int
 
     @classmethod
     def from_items(
@@ -52,9 +55,9 @@ class ArpavFeatureCollection(geojson_pydantic.FeatureCollection):
             ],
             links=cls._get_list_links(
                 request, limit, offset, filtered_total, len(items)),
-            numberMatched=filtered_total,
-            numberTotal=unfiltered_total,
-            numberReturned=len(items),
+            number_matched=filtered_total,
+            number_total=unfiltered_total,
+            number_returned=len(items),
         )
 
     @classmethod
