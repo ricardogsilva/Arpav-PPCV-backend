@@ -10,9 +10,21 @@ def test_station_list(
         sample_stations: list[models.Station]
 ):
     list_response = test_client_v2_app.get(
-        test_client_v2_app.app.url_path_for("list_stations"))
+        test_client_v2_app.app.url_path_for("list_stations"),
+        headers={"accept": "application/json"}
+    )
     assert list_response.status_code == 200
     assert len(list_response.json()["items"]) == 20
+
+
+def test_station_list_geojson(
+        test_client_v2_app: httpx.Client,
+        sample_stations: list[models.Station]
+):
+    list_response = test_client_v2_app.get(
+        test_client_v2_app.app.url_path_for("list_stations"))
+    assert list_response.status_code == 200
+    assert len(list_response.json()["features"]) == 20
 
 
 def test_station_detail(
