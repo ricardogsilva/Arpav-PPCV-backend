@@ -28,6 +28,8 @@ class StationBase(sqlmodel.SQLModel):
         )
     )
     code: str = sqlmodel.Field(unique=True)
+    active_since: Optional[dt.date] = None
+    active_until: Optional[dt.date] = None
 
 
 class Station(StationBase, table=True):
@@ -55,6 +57,8 @@ class StationCreate(sqlmodel.SQLModel):
     altitude_m: Optional[float] = None
     name: Optional[str] = ""
     type_: Optional[str] = ""
+    active_since: Optional[dt.date] = None
+    active_until: Optional[dt.date] = None
 
 
 class StationUpdate(sqlmodel.SQLModel):
@@ -63,6 +67,8 @@ class StationUpdate(sqlmodel.SQLModel):
     altitude_m: Optional[float] = None
     name: Optional[str] = None
     type_: Optional[str] = None
+    active_since: Optional[dt.date] = None
+    active_until: Optional[dt.date] = None
 
 
 class VariableBase(sqlmodel.SQLModel):
