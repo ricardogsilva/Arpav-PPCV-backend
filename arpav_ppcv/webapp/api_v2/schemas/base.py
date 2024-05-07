@@ -83,7 +83,7 @@ class WebResourceList(base_schemas.ResourceList):
             del filters["limit"]
         if "offset" in filters.keys():
             del filters["offset"]
-        pagination_urls = _get_pagination_urls(
+        pagination_urls = get_pagination_urls(
             request.url_for(cls.path_operation_name),
             num_returned_records,
             filtered_total,
@@ -104,7 +104,7 @@ class WebResourceList(base_schemas.ResourceList):
         )
 
 
-def _get_pagination_urls(
+def get_pagination_urls(
         base_url: str,
         returned_records: int,
         total_records: int,

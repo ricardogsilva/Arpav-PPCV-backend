@@ -1,29 +1,14 @@
 import datetime as dt
-import json
 import uuid
-from typing import (
-    Annotated,
-    Optional,
-)
+from typing import Optional
 
 import geojson_pydantic
 import geoalchemy2
 import pydantic
 import sqlalchemy
-import shapely.io
 import sqlmodel
-from pydantic.functional_serializers import PlainSerializer
 
-
-def serialize_wkbelement(wkbelement: geoalchemy2.WKBElement):
-    geom = shapely.io.from_wkb(bytes(wkbelement.data))
-    return json.loads(shapely.io.to_geojson(geom))
-
-
-WkbElement = Annotated[
-    geoalchemy2.WKBElement,
-    PlainSerializer(serialize_wkbelement, return_type=dict, when_used="json")
-]
+from . import fields
 
 
 class StationBase(sqlmodel.SQLModel):
@@ -33,7 +18,7 @@ class StationBase(sqlmodel.SQLModel):
         default_factory=uuid.uuid4,
         primary_key=True
     )
-    geom: WkbElement = sqlmodel.Field(
+    geom: fields.WkbElement = sqlmodel.Field(
         sa_column=sqlalchemy.Column(
             geoalchemy2.Geometry(
                 srid=4326,
