@@ -5,23 +5,45 @@ import pydantic
 from fastapi import (
     APIRouter,
     Depends,
+    Header,
     Request,
 )
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 from sqlmodel import Session
 
 from .... import database
 from ... import dependencies
 from ..schemas import observations
+from ..schemas.geojson import observations as observations_geojson
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/stations", response_model=observations.StationList)
+class GeoJsonResponse(JSONResponse):
+    media_type = "application/geo+json"
+
+
+@router.get(
+    "/stations",
+    response_class=GeoJsonResponse,
+    response_model=observations_geojson.StationFeatureCollection,
+    responses={
+        200: {
+            "content": {"application/json": {}},
+            "description": (
+                "Return a GeoJSON feature collection or a custom JSON "
+                "representation of the stations"
+            )
+        }
+    }
+)
 def list_stations(
         request: Request,
         db_session: Annotated[Session, Depends(dependencies.get_db_session)],
-        list_params: Annotated[dependencies.CommonListFilterParameters, Depends()]
+        list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
+        accept: Annotated[str | None, Header()] = None
 ):
     """List known stations."""
     stations, filtered_total = database.list_stations(
@@ -33,14 +55,29 @@ def list_stations(
     _, unfiltered_total = database.list_stations(
         db_session, limit=1, offset=0, include_total=True
     )
-    return observations.StationList.from_items(
-        stations,
-        request,
-        limit=list_params.limit,
-        offset=list_params.offset,
-        filtered_total=filtered_total,
-        unfiltered_total=unfiltered_total
-    )
+    if accept == "application/json":
+        result = JSONResponse(
+            content=jsonable_encoder(
+                observations.StationList.from_items(
+                    stations,
+                    request,
+                    limit=list_params.limit,
+                    offset=list_params.offset,
+                    filtered_total=filtered_total,
+                    unfiltered_total=unfiltered_total
+                )
+            )
+        )
+    else:
+        result = observations_geojson.StationFeatureCollection.from_items(
+            stations,
+            request,
+            limit=list_params.limit,
+            offset=list_params.offset,
+            filtered_total=filtered_total,
+            unfiltered_total=unfiltered_total
+        )
+    return result
 
 
 @router.get(
