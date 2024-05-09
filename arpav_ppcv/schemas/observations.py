@@ -1,4 +1,5 @@
 import datetime as dt
+import enum
 import uuid
 from typing import Optional
 
@@ -9,6 +10,13 @@ import sqlalchemy
 import sqlmodel
 
 from . import fields
+
+
+class Season(enum.Enum):
+    WINTER = "WINTER"
+    SPRING = "SPRING"
+    SUMMER = "SUMMER"
+    AUTUMN = "AUTUMN"
 
 
 class StationBase(sqlmodel.SQLModel):
@@ -165,3 +173,118 @@ class MonthlyMeasurementCreate(sqlmodel.SQLModel):
 class MonthlyMeasurementUpdate(sqlmodel.SQLModel):
     value: Optional[float] = None
     date: Optional[dt.date] = None
+
+
+class SeasonalMeasurement(sqlmodel.SQLModel, table=True):
+    __table_args__ = (
+        sqlalchemy.ForeignKeyConstraint(
+            ["station_id",],
+            ["station.id",],
+            onupdate="CASCADE",
+            ondelete="CASCADE",  # i.e. delete a measurement if its related station is deleted
+        ),
+        sqlalchemy.ForeignKeyConstraint(
+            ["variable_id", ],
+            ["variable.id", ],
+            onupdate="CASCADE",
+            ondelete="CASCADE",  # i.e. delete a measurement if its related station is deleted
+        ),
+    )
+    id: pydantic.UUID4 = sqlmodel.Field(
+        default_factory=uuid.uuid4,
+        primary_key=True
+    )
+    station_id: pydantic.UUID4
+    variable_id: pydantic.UUID4
+    value: float
+    year: int
+    season: Season
+
+    station: Station = sqlmodel.Relationship(
+        back_populates="monthly_measurements",
+        sa_relationship_kwargs={
+            # retrieve the related resource immediately, by means of a SQL JOIN - this
+            # is instead of the default lazy behavior of only retrieving related
+            # records when they are accessed by the ORM
+            "lazy": "joined",
+        }
+    )
+    variable: Variable = sqlmodel.Relationship(
+        back_populates="monthly_measurements",
+        sa_relationship_kwargs={
+            # retrieve the related resource immediately, by means of a SQL JOIN - this
+            # is instead of the default lazy behavior of only retrieving related
+            # records when they are accessed by the ORM
+            "lazy": "joined",
+        }
+    )
+
+
+class SeasonalMeasurementCreate(sqlmodel.SQLModel):
+    station_id: pydantic.UUID4
+    variable_id: pydantic.UUID4
+    value: float
+    year: int
+    season: Season
+
+
+class SeasonalMeasurementUpdate(sqlmodel.SQLModel):
+    value: Optional[float] = None
+    year: Optional[int] = None
+    season: Optional[Season] = None
+
+
+class YearlyMeasurement(sqlmodel.SQLModel, table=True):
+    __table_args__ = (
+        sqlalchemy.ForeignKeyConstraint(
+            ["station_id",],
+            ["station.id",],
+            onupdate="CASCADE",
+            ondelete="CASCADE",  # i.e. delete a measurement if its related station is deleted
+        ),
+        sqlalchemy.ForeignKeyConstraint(
+            ["variable_id", ],
+            ["variable.id", ],
+            onupdate="CASCADE",
+            ondelete="CASCADE",  # i.e. delete a measurement if its related station is deleted
+        ),
+    )
+    id: pydantic.UUID4 = sqlmodel.Field(
+        default_factory=uuid.uuid4,
+        primary_key=True
+    )
+    station_id: pydantic.UUID4
+    variable_id: pydantic.UUID4
+    value: float
+    year: int
+
+    station: Station = sqlmodel.Relationship(
+        back_populates="monthly_measurements",
+        sa_relationship_kwargs={
+            # retrieve the related resource immediately, by means of a SQL JOIN - this
+            # is instead of the default lazy behavior of only retrieving related
+            # records when they are accessed by the ORM
+            "lazy": "joined",
+        }
+    )
+    variable: Variable = sqlmodel.Relationship(
+        back_populates="monthly_measurements",
+        sa_relationship_kwargs={
+            # retrieve the related resource immediately, by means of a SQL JOIN - this
+            # is instead of the default lazy behavior of only retrieving related
+            # records when they are accessed by the ORM
+            "lazy": "joined",
+        }
+    )
+
+
+class YearlyMeasurementCreate(sqlmodel.SQLModel):
+    station_id: pydantic.UUID4
+    variable_id: pydantic.UUID4
+    value: float
+    year: int
+
+
+class YearlyMeasurementUpdate(sqlmodel.SQLModel):
+    value: Optional[float] = None
+    year: Optional[int] = None

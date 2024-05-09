@@ -32,9 +32,19 @@ class MonthlyMeasurementRead(observations.MonthlyMeasurementBase):
     variable_id: pydantic.UUID4
 
 
+# TODO: remove this
 class MonthlyMeasurementCreate(observations.MonthlyMeasurementCreate):
     ...
 
 
+# TODO: remove this
 class MonthlyMeasurementUpdate(observations.MonthlyMeasurementUpdate):
     ...
+
+
+class SeasonalMeasurementRead(pydantic.BaseModel):
+    station_id: pydantic.UUID4
+    variable_id: pydantic.UUID4
+    year: int
+    season: observations.Season
+    value: float

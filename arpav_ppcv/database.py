@@ -375,6 +375,116 @@ def collect_all_monthly_measurements(
     return result
 
 
+def create_seasonal_measurement(
+        session: sqlmodel.Session,
+        measurement_create: observations.SeasonalMeasurementCreate
+) -> observations.SeasonalMeasurement:
+    """Create a new seasonal measurement."""
+    db_measurement = observations.SeasonalMeasurement(
+        **measurement_create.model_dump())
+    session.add(db_measurement)
+    try:
+        session.commit()
+    except sqlalchemy.exc.DBAPIError:
+        raise
+    else:
+        session.refresh(db_measurement)
+        return db_measurement
+
+
+def create_many_seasonal_measurements(
+        session: sqlmodel.Session,
+        measurements_to_create: Sequence[observations.SeasonalMeasurementCreate],
+) -> list[observations.SeasonalMeasurement]:
+    """Create several seasonal measurements."""
+    db_records = []
+    for measurement_create in measurements_to_create:
+        db_measurement = observations.SeasonalMeasurement(
+            **measurement_create.model_dump())
+        db_records.append(db_measurement)
+        session.add(db_measurement)
+    try:
+        session.commit()
+    except sqlalchemy.exc.DBAPIError:
+        raise
+    else:
+        for db_record in db_records:
+            session.refresh(db_record)
+        return db_records
+
+
+def get_seasonal_measurement(
+        session: sqlmodel.Session,
+        measurement_id: uuid.UUID
+) -> Optional[observations.SeasonalMeasurement]:
+    return session.get(observations.SeasonalMeasurement, measurement_id)
+
+
+def delete_seasonal_measurement(
+        session: sqlmodel.Session, measurement_id: uuid.UUID) -> None:
+    """Delete a seasonal measurement."""
+    db_measurement = get_seasonal_measurement(session, measurement_id)
+    if db_measurement is not None:
+        session.delete(db_measurement)
+        session.commit()
+    else:
+        raise RuntimeError("Seasonal measurement not found")
+
+
+def list_seasonal_measurements(
+        session: sqlmodel.Session,
+        *,
+        limit: int = 20,
+        offset: int = 0,
+        station_id_filter: Optional[uuid.UUID] = None,
+        variable_id_filter: Optional[uuid.UUID] = None,
+        season_filter: Optional[observations.Season] = None,
+        include_total: bool = False,
+) -> tuple[Sequence[observations.SeasonalMeasurement], Optional[int]]:
+    """List existing seasonal measurements."""
+    statement = sqlmodel.select(observations.SeasonalMeasurement).order_by(
+        observations.SeasonalMeasurement.year)
+    if station_id_filter is not None:
+        statement = statement.where(
+            observations.SeasonalMeasurement.station_id == station_id_filter)
+    if variable_id_filter is not None:
+        statement = statement.where(
+            observations.SeasonalMeasurement.variable_id == variable_id_filter)
+    if season_filter is not None:
+        statement = statement.where(
+            observations.SeasonalMeasurement.season == season_filter)
+    items = session.exec(statement.offset(offset).limit(limit)).all()
+    num_items = (
+        _get_total_num_records(session, statement) if include_total else None)
+    return items, num_items
+
+
+def collect_all_seasonal_measurements(
+        session: sqlmodel.Session,
+        *,
+        station_id_filter: Optional[uuid.UUID] = None,
+        variable_id_filter: Optional[uuid.UUID] = None,
+        season_filter: Optional[observations.Season] = None,
+) -> Sequence[observations.SeasonalMeasurement]:
+    _, num_total = list_seasonal_measurements(
+        session,
+        limit=1,
+        station_id_filter=station_id_filter,
+        variable_id_filter=variable_id_filter,
+        season_filter=season_filter,
+        include_total=True
+    )
+    result, _ = list_seasonal_measurements(
+        session,
+        limit=num_total,
+        station_id_filter=station_id_filter,
+        variable_id_filter=variable_id_filter,
+        season_filter=season_filter,
+        include_total=False
+    )
+    return result
+
+
 def get_configuration_parameter_value(
         session: sqlmodel.Session,
         configuration_parameter_value_id: uuid.UUID

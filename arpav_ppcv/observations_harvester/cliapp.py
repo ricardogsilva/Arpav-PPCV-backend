@@ -73,3 +73,59 @@ def refresh_monthly_measurements(
                 for m in created
             )
         )
+
+
+@app.command()
+def refresh_seasonal_measurements(
+        ctx: typer.Context,
+        station: Annotated[
+            str,
+            typer.Option(
+                help=(
+                        "Code of the station to process. If not provided, all "
+                        "stations are processed."
+                )
+            )
+        ] = None,
+        variable: Annotated[
+            str,
+            typer.Option(
+                help=(
+                        "Name of the variable to process. If not provided, all "
+                        "variables are processed."
+                )
+            )
+        ] = None,
+) -> None:
+    client = httpx.Client()
+    with sqlmodel.Session(ctx.obj["engine"]) as session:
+        if station is not None:
+            db_station = database.get_station_by_code(session, station)
+            if db_station is not None:
+                station_id = db_station.id
+            else:
+                raise SystemExit("Invalid station code")
+        else:
+            station_id = None
+        if variable is not None:
+            db_variable = database.get_variable_by_name(session, variable)
+            if db_variable is not None:
+                variable_id = db_variable.id
+            else:
+                raise SystemExit("Invalid variable name")
+        else:
+            variable_id = None
+
+        created = operations.refresh_seasonal_measurements(
+            client,
+            session,
+            station_id=station_id,
+            variable_id=variable_id,
+        )
+        print(f"Created {len(created)} seasonal measurements:")
+        print(
+            "\n".join(
+                f"{m.station.code}-{m.variable.name}-{m.year}-{m.season.value}"
+                for m in created
+            )
+        )

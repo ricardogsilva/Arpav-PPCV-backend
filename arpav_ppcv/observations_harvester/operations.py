@@ -98,14 +98,8 @@ def harvest_monthly_measurements(
         station_id: Optional[uuid.UUID] = None,
         variable_id: Optional[uuid.UUID] = None,
 ) -> list[observations.MonthlyMeasurementCreate]:
-    if station_id is not None:
-        existing_stations = [database.get_station(db_session, station_id)]
-    else:
-        existing_stations = database.collect_all_stations(db_session)
-    if variable_id is not None:
-        existing_variables = [database.get_variable(db_session, variable_id)]
-    else:
-        existing_variables = database.collect_all_variables(db_session)
+    existing_stations = _get_stations(db_session, station_id)
+    existing_variables = _get_variables(db_session, variable_id)
     monthly_measurements_create = []
     for station_idx, station in enumerate(existing_stations):
         logger.info(
@@ -128,7 +122,7 @@ def harvest_monthly_measurements(
                 )
                 existing = {}
                 for db_measurement in existing_measurements:
-                    measurement_id = _build_measurement_id(db_measurement)
+                    measurement_id = _build_monthly_measurement_id(db_measurement)
                     existing[measurement_id] = db_measurement
                 response = client.get(
                     "https://api.arpa.veneto.it/REST/v1/clima_indicatori",
@@ -147,7 +141,7 @@ def harvest_monthly_measurements(
                         value=raw_measurement["valore"],
                         date=dt.date(raw_measurement["anno"], month, 1),
                     )
-                    measurement_id = _build_measurement_id(
+                    measurement_id = _build_monthly_measurement_id(
                         monthly_measurement_create)
                     if measurement_id not in existing:
                         monthly_measurements_create.append(
@@ -173,10 +167,122 @@ def refresh_monthly_measurements(
     return created_monthly_measurements
 
 
-def _build_measurement_id(
+def harvest_seasonal_measurements(
+        client: httpx.Client,
+        db_session: sqlmodel.Session,
+        station_id: Optional[uuid.UUID] = None,
+        variable_id: Optional[uuid.UUID] = None,
+) -> list[observations.SeasonalMeasurementCreate]:
+    existing_stations = _get_stations(db_session, station_id)
+    existing_variables = _get_variables(db_session, variable_id)
+    measurements_create = []
+    for station_idx, station in enumerate(existing_stations):
+        logger.info(
+            f"Processing station {station.code!r} ({station_idx+1}/"
+            f"{len(existing_stations)})..."
+        )
+        for var_idx, variable in enumerate(existing_variables):
+            logger.info(
+                f"\tProcessing variable {variable.name!r} ({var_idx+1}/"
+                f"{len(existing_variables)})..."
+            )
+            for current_season in observations.Season:
+                logger.info(
+                    f"\t\tProcessing season {current_season!r}...")
+                existing_measurements = database.collect_all_seasonal_measurements(
+                    db_session,
+                    station_id_filter=station.id,
+                    variable_id_filter=variable.id,
+                    season_filter=current_season
+                )
+                existing = {}
+                for db_measurement in existing_measurements:
+                    measurement_id = _build_seasonal_measurement_id(db_measurement)
+                    existing[measurement_id] = db_measurement
+
+                season_query_param = {
+                    observations.Season.WINTER: 1,
+                    observations.Season.SPRING: 2,
+                    observations.Season.SUMMER: 3,
+                    observations.Season.AUTUMN: 4,
+                }[current_season]
+                response = client.get(
+                    "https://api.arpa.veneto.it/REST/v1/clima_indicatori",
+                    params={
+                        "statcd": station.code,
+                        "indicatore": variable.name,
+                        "tabella": "S",
+                        "periodo": season_query_param
+                    }
+                )
+                response.raise_for_status()
+                for raw_measurement in response.json().get("data", []):
+                    measurement_create = observations.SeasonalMeasurementCreate(
+                        station_id=station.id,
+                        variable_id=variable.id,
+                        value=raw_measurement["valore"],
+                        year=int(raw_measurement["anno"]),
+                        season=current_season,
+                    )
+                    measurement_id = _build_seasonal_measurement_id(measurement_create)
+                    if measurement_id not in existing:
+                        measurements_create.append(measurement_create)
+    return measurements_create
+
+
+def refresh_seasonal_measurements(
+        client: httpx.Client,
+        db_session: sqlmodel.Session,
+        station_id: Optional[uuid.UUID] = None,
+        variable_id: Optional[uuid.UUID] = None,
+) -> list[observations.SeasonalMeasurement]:
+    to_create = harvest_seasonal_measurements(
+        client,
+        db_session,
+        station_id=station_id,
+        variable_id=variable_id
+    )
+    logger.info(f"About to create {len(to_create)} seasonal measurements...")
+    created_measurements = database.create_many_seasonal_measurements(
+        db_session, to_create)
+    return created_measurements
+
+
+def _build_monthly_measurement_id(
         measurement: observations.MonthlyMeasurement | observations.MonthlyMeasurementCreate
-):
+) -> str:
     return (
         f"{measurement.station_id}-{measurement.variable_id}-"
         f"{measurement.date.strftime('%Y%m')}"
     )
+
+
+def _build_seasonal_measurement_id(
+        measurement: observations.SeasonalMeasurement | observations.SeasonalMeasurementCreate
+) -> str:
+    return (
+        f"{measurement.station_id}-{measurement.variable_id}-"
+        f"{measurement.season.value}"
+    )
+
+
+def _get_stations(
+        db_session: sqlmodel.Session,
+        station_id: Optional[uuid.UUID]
+) -> list[observations.Station]:
+    if station_id is not None:
+        result = [database.get_station(db_session, station_id)]
+    else:
+        result = database.collect_all_stations(db_session)
+    return result
+
+
+def _get_variables(
+        db_session: sqlmodel.Session,
+        variable_id: Optional[uuid.UUID]
+) -> list[observations.Variable]:
+    if variable_id is not None:
+        result = [database.get_variable(db_session, variable_id)]
+    else:
+        result = database.collect_all_variables(db_session)
+    return result
