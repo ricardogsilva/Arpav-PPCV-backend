@@ -3,19 +3,19 @@ import logging
 import pydantic
 from fastapi import Request
 
-from ....schemas import models as app_models
+from ....schemas import observations
 from .base import WebResourceList
 
 logger = logging.getLogger(__name__)
 
 
-class StationReadListItem(app_models.StationBase):
+class StationReadListItem(observations.StationBase):
     url: pydantic.AnyHttpUrl
 
     @classmethod
     def from_db_instance(
             cls,
-            instance: app_models.Station,
+            instance: observations.Station,
             request: Request,
     ) -> "StationReadListItem":
         url = request.url_for("get_station", **{"station_id": instance.id})
@@ -25,13 +25,13 @@ class StationReadListItem(app_models.StationBase):
         )
 
 
-class VariableReadListItem(app_models.VariableBase):
+class VariableReadListItem(observations.VariableBase):
     url: pydantic.AnyHttpUrl
 
     @classmethod
     def from_db_instance(
             cls,
-            instance: app_models.Variable,
+            instance: observations.Variable,
             request: Request,
     ) -> "VariableReadListItem":
         return cls(
@@ -40,7 +40,7 @@ class VariableReadListItem(app_models.VariableBase):
         )
 
 
-class MonthlyMeasurementReadListItem(app_models.MonthlyMeasurementBase):
+class MonthlyMeasurementReadListItem(observations.MonthlyMeasurementBase):
     url: pydantic.AnyHttpUrl
     variable_name: str
     station_code: str
@@ -48,7 +48,7 @@ class MonthlyMeasurementReadListItem(app_models.MonthlyMeasurementBase):
     @classmethod
     def from_db_instance(
             cls,
-            instance: app_models.MonthlyMeasurement,
+            instance: observations.MonthlyMeasurement,
             request: Request,
     ) -> "MonthlyMeasurementReadListItem":
         return cls(

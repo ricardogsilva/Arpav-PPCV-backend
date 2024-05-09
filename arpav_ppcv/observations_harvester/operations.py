@@ -13,14 +13,14 @@ import sqlmodel
 from .. import (
     database,
 )
-from ..schemas import models
+from ..schemas import observations
 
 logger = logging.getLogger(__name__)
 
 
 def harvest_stations(
         client: httpx.Client, db_session: sqlmodel.Session
-) -> list[models.StationCreate]:
+) -> list[observations.StationCreate]:
     existing_stations = {s.code: s for s in database.collect_all_stations(db_session)}
     stations_create = {}
     coord_converter = pyproj.Transformer.from_crs(
@@ -66,7 +66,7 @@ def harvest_stations(
                 pt_4258 = shapely.Point(
                     raw_station["EPSG4258_LON"], raw_station["EPSG4258_LAT"])
                 pt_4326 = shapely.ops.transform(coord_converter, pt_4258)
-                station_create = models.StationCreate(
+                station_create = observations.StationCreate(
                     code=station_code,
                     geom=geojson_pydantic.Point(
                         type="Point",
@@ -85,7 +85,7 @@ def harvest_stations(
 def refresh_stations(
         client: httpx.Client,
         db_session: sqlmodel.Session
-) -> list[models.Station]:
+) -> list[observations.Station]:
     to_create = harvest_stations(client, db_session)
     logger.info(f"About to create {len(to_create)} stations...")
     created_variables = database.create_many_stations(db_session, to_create)
@@ -97,7 +97,7 @@ def harvest_monthly_measurements(
         db_session: sqlmodel.Session,
         station_id: Optional[uuid.UUID] = None,
         variable_id: Optional[uuid.UUID] = None,
-) -> list[models.MonthlyMeasurementCreate]:
+) -> list[observations.MonthlyMeasurementCreate]:
     if station_id is not None:
         existing_stations = [database.get_station(db_session, station_id)]
     else:
@@ -141,7 +141,7 @@ def harvest_monthly_measurements(
                 )
                 response.raise_for_status()
                 for raw_measurement in response.json().get("data", []):
-                    monthly_measurement_create = models.MonthlyMeasurementCreate(
+                    monthly_measurement_create = observations.MonthlyMeasurementCreate(
                         station_id=station.id,
                         variable_id=variable.id,
                         value=raw_measurement["valore"],
@@ -160,7 +160,7 @@ def refresh_monthly_measurements(
         db_session: sqlmodel.Session,
         station_id: Optional[uuid.UUID] = None,
         variable_id: Optional[uuid.UUID] = None,
-) -> list[models.MonthlyMeasurement]:
+) -> list[observations.MonthlyMeasurement]:
     to_create = harvest_monthly_measurements(
         client,
         db_session,
@@ -174,7 +174,8 @@ def refresh_monthly_measurements(
 
 
 def _build_measurement_id(
-        measurement: models.MonthlyMeasurement | models.MonthlyMeasurementCreate):
+        measurement: observations.MonthlyMeasurement | observations.MonthlyMeasurementCreate
+):
     return (
         f"{measurement.station_id}-{measurement.variable_id}-"
         f"{measurement.date.strftime('%Y%m')}"

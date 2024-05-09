@@ -18,7 +18,7 @@ from geoalchemy2.shape import from_shape
 from . import config
 from .schemas import (
     coverages,
-    models,
+    observations,
 )
 
 logger = logging.getLogger(__name__)
@@ -37,10 +37,10 @@ def get_engine(
 
 def create_variable(
         session: sqlmodel.Session,
-        variable_create: models.VariableCreate
-) -> models.Variable:
+        variable_create: observations.VariableCreate
+) -> observations.Variable:
     """Create a new variable."""
-    db_variable = models.Variable(**variable_create.model_dump())
+    db_variable = observations.Variable(**variable_create.model_dump())
     session.add(db_variable)
     try:
         session.commit()
@@ -53,12 +53,12 @@ def create_variable(
 
 def create_many_variables(
         session: sqlmodel.Session,
-        variables_to_create: Sequence[models.VariableCreate],
-) -> list[models.Variable]:
+        variables_to_create: Sequence[observations.VariableCreate],
+) -> list[observations.Variable]:
     """Create several variables."""
     db_records = []
     for variable_create in variables_to_create:
-        db_variable = models.Variable(**variable_create.model_dump())
+        db_variable = observations.Variable(**variable_create.model_dump())
         db_records.append(db_variable)
         session.add(db_variable)
     try:
@@ -72,26 +72,30 @@ def create_many_variables(
 
 
 def get_variable(
-        session: sqlmodel.Session, variable_id: uuid.UUID) -> Optional[models.Variable]:
-    return session.get(models.Variable, variable_id)
+        session: sqlmodel.Session, variable_id: uuid.UUID
+) -> Optional[observations.Variable]:
+    return session.get(observations.Variable, variable_id)
 
 
 def get_variable_by_name(
-        session: sqlmodel.Session, variable_name: str) -> Optional[models.Variable]:
+        session: sqlmodel.Session,
+        variable_name: str
+) -> Optional[observations.Variable]:
     """Get a variable by its name.
 
     Since a variable name is unique, it can be used to uniquely identify a variable.
     """
     return session.exec(
-        sqlmodel.select(models.Variable).where(models.Variable.name == variable_name)
+        sqlmodel.select(observations.Variable)
+        .where(observations.Variable.name == variable_name)
     ).first()
 
 
 def update_variable(
         session: sqlmodel.Session,
-        db_variable: models.Variable,
-        variable_update: models.VariableUpdate
-) -> models.Variable:
+        db_variable: observations.Variable,
+        variable_update: observations.VariableUpdate
+) -> observations.Variable:
     """Update a variable."""
     data_ = variable_update.model_dump(exclude_unset=True)
     for key, value in data_.items():
@@ -118,9 +122,12 @@ def list_variables(
         limit: int = 20,
         offset: int = 0,
         include_total: bool = False,
-) -> tuple[Sequence[models.Variable], Optional[int]]:
+) -> tuple[Sequence[observations.Variable], Optional[int]]:
     """List existing variables."""
-    statement = sqlmodel.select(models.Variable).order_by(models.Variable.name)
+    statement = (
+        sqlmodel.select(observations.Variable)
+        .order_by(observations.Variable.name)
+    )
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = (
         _get_total_num_records(session, statement) if include_total else None)
@@ -129,7 +136,7 @@ def list_variables(
 
 def collect_all_variables(
         session: sqlmodel.Session,
-) -> Sequence[models.Variable]:
+) -> Sequence[observations.Variable]:
     _, num_total = list_variables(session, limit=1, include_total=True)
     result, _ = list_variables(session, limit=num_total, include_total=False)
     return result
@@ -137,12 +144,12 @@ def collect_all_variables(
 
 def create_station(
         session: sqlmodel.Session,
-        station_create: models.StationCreate
-) -> models.Station:
+        station_create: observations.StationCreate
+) -> observations.Station:
     """Create a new station."""
     geom = shapely.io.from_geojson(station_create.geom.model_dump_json())
     wkbelement = from_shape(geom)
-    db_station = models.Station(
+    db_station = observations.Station(
         geom=wkbelement,
         code=station_create.code
     )
@@ -158,14 +165,14 @@ def create_station(
 
 def create_many_stations(
         session: sqlmodel.Session,
-        stations_to_create: Sequence[models.StationCreate],
-) -> list[models.Station]:
+        stations_to_create: Sequence[observations.StationCreate],
+) -> list[observations.Station]:
     """Create several stations."""
     db_records = []
     for station_create in stations_to_create:
         geom = shapely.io.from_geojson(station_create.geom.model_dump_json())
         wkbelement = from_shape(geom)
-        db_station = models.Station(
+        db_station = observations.Station(
             **station_create.model_dump(exclude={"geom"}),
             geom=wkbelement,
         )
@@ -182,26 +189,31 @@ def create_many_stations(
 
 
 def get_station(
-        session: sqlmodel.Session, station_id: uuid.UUID) -> Optional[models.Station]:
-    return session.get(models.Station, station_id)
+        session: sqlmodel.Session,
+        station_id: uuid.UUID
+) -> Optional[observations.Station]:
+    return session.get(observations.Station, station_id)
 
 
 def get_station_by_code(
-        session: sqlmodel.Session, station_code: str) -> Optional[models.Station]:
+        session: sqlmodel.Session,
+        station_code: str
+) -> Optional[observations.Station]:
     """Get a station by its code.
 
     Since a station code is unique, it can be used to uniquely identify a station.
     """
     return session.exec(
-        sqlmodel.select(models.Station).where(models.Station.code == station_code)
+        sqlmodel.select(observations.Station)
+        .where(observations.Station.code == station_code)
     ).first()
 
 
 def update_station(
         session: sqlmodel.Session,
-        db_station: models.Station,
-        station_update: models.StationUpdate
-) -> models.Station:
+        db_station: observations.Station,
+        station_update: observations.StationUpdate
+) -> observations.Station:
     """Update a station."""
     data_ = station_update.model_dump(exclude_unset=True)
     for key, value in data_.items():
@@ -228,9 +240,12 @@ def list_stations(
         limit: int = 20,
         offset: int = 0,
         include_total: bool = False,
-) -> tuple[Sequence[models.Station], Optional[int]]:
+) -> tuple[Sequence[observations.Station], Optional[int]]:
     """List existing stations."""
-    statement = sqlmodel.select(models.Station).order_by(models.Station.code)
+    statement = (
+        sqlmodel.select(observations.Station)
+        .order_by(observations.Station.code)
+    )
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = (
         _get_total_num_records(session, statement) if include_total else None)
@@ -239,7 +254,7 @@ def list_stations(
 
 def collect_all_stations(
         session: sqlmodel.Session,
-) -> Sequence[models.Station]:
+) -> Sequence[observations.Station]:
     _, num_total = list_stations(session, limit=1, include_total=True)
     result, _ = list_stations(session, limit=num_total, include_total=False)
     return result
@@ -247,10 +262,10 @@ def collect_all_stations(
 
 def create_monthly_measurement(
         session: sqlmodel.Session,
-        monthly_measurement_create: models.MonthlyMeasurementCreate
-) -> models.MonthlyMeasurement:
+        monthly_measurement_create: observations.MonthlyMeasurementCreate
+) -> observations.MonthlyMeasurement:
     """Create a new monthly measurement."""
-    db_monthly_measurement = models.MonthlyMeasurement(
+    db_monthly_measurement = observations.MonthlyMeasurement(
         **monthly_measurement_create.model_dump())
     session.add(db_monthly_measurement)
     try:
@@ -264,12 +279,12 @@ def create_monthly_measurement(
 
 def create_many_monthly_measurements(
         session: sqlmodel.Session,
-        monthly_measurements_to_create: Sequence[models.MonthlyMeasurementCreate],
-) -> list[models.MonthlyMeasurement]:
+        monthly_measurements_to_create: Sequence[observations.MonthlyMeasurementCreate],
+) -> list[observations.MonthlyMeasurement]:
     """Create several monthly measurements."""
     db_records = []
     for monthly_measurement_create in monthly_measurements_to_create:
-        db_monthly_measurement = models.MonthlyMeasurement(
+        db_monthly_measurement = observations.MonthlyMeasurement(
             station_id=monthly_measurement_create.station_id,
             variable_id=monthly_measurement_create.variable_id,
             value=monthly_measurement_create.value,
@@ -290,8 +305,8 @@ def create_many_monthly_measurements(
 def get_monthly_measurement(
         session: sqlmodel.Session,
         monthly_measurement_id: uuid.UUID
-) -> Optional[models.MonthlyMeasurement]:
-    return session.get(models.MonthlyMeasurement, monthly_measurement_id)
+) -> Optional[observations.MonthlyMeasurement]:
+    return session.get(observations.MonthlyMeasurement, monthly_measurement_id)
 
 
 def delete_monthly_measurement(
@@ -314,20 +329,20 @@ def list_monthly_measurements(
         variable_id_filter: Optional[uuid.UUID] = None,
         month_filter: Optional[int] = None,
         include_total: bool = False,
-) -> tuple[Sequence[models.MonthlyMeasurement], Optional[int]]:
+) -> tuple[Sequence[observations.MonthlyMeasurement], Optional[int]]:
     """List existing monthly measurements."""
-    statement = sqlmodel.select(models.MonthlyMeasurement).order_by(
-        models.MonthlyMeasurement.date)
+    statement = sqlmodel.select(observations.MonthlyMeasurement).order_by(
+        observations.MonthlyMeasurement.date)
     if station_id_filter is not None:
         statement = statement.where(
-            models.MonthlyMeasurement.station_id == station_id_filter)
+            observations.MonthlyMeasurement.station_id == station_id_filter)
     if variable_id_filter is not None:
         statement = statement.where(
-            models.MonthlyMeasurement.variable_id == variable_id_filter)
+            observations.MonthlyMeasurement.variable_id == variable_id_filter)
     if month_filter is not None:
         statement = statement.where(
             sqlmodel.func.extract(
-                "MONTH", models.MonthlyMeasurement.date) == month_filter)
+                "MONTH", observations.MonthlyMeasurement.date) == month_filter)
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = (
         _get_total_num_records(session, statement) if include_total else None)
@@ -340,7 +355,7 @@ def collect_all_monthly_measurements(
         station_id_filter: Optional[uuid.UUID] = None,
         variable_id_filter: Optional[uuid.UUID] = None,
         month_filter: Optional[int] = None,
-) -> Sequence[models.MonthlyMeasurement]:
+) -> Sequence[observations.MonthlyMeasurement]:
     _, num_total = list_monthly_measurements(
         session,
         limit=1,
@@ -387,7 +402,8 @@ def list_configuration_parameter_values(
 def collect_all_configuration_parameter_values(
         session: sqlmodel.Session,
 ) -> Sequence[coverages.ConfigurationParameterValue]:
-    _, num_total = list_configuration_parameter_values(session, limit=1, include_total=True)
+    _, num_total = list_configuration_parameter_values(
+        session, limit=1, include_total=True)
     result, _ = list_configuration_parameter_values(
         session, limit=num_total, include_total=False)
     return result
@@ -491,7 +507,11 @@ def update_configuration_parameter(
         else:
             # this is an existing allowed value, lets update
             db_allowed_value = get_configuration_parameter_value(session, av.id)
-            for prop, value in av.model_dump(exclude={"id"}, exclude_none=True, exclude_unset=True).items():
+            for prop, value in av.model_dump(
+                    exclude={"id"},
+                    exclude_none=True,
+                    exclude_unset=True
+            ).items():
                 setattr(db_allowed_value, prop, value)
         session.add(db_allowed_value)
         to_refresh.append(db_allowed_value)

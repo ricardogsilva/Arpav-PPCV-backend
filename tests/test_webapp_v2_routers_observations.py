@@ -2,12 +2,12 @@ import uuid
 
 import httpx
 
-from arpav_ppcv.schemas import models
+from arpav_ppcv.schemas import observations
 
 
 def test_station_list(
         test_client_v2_app: httpx.Client,
-        sample_stations: list[models.Station]
+        sample_stations: list[observations.Station]
 ):
     list_response = test_client_v2_app.get(
         test_client_v2_app.app.url_path_for("list_stations"),
@@ -19,7 +19,7 @@ def test_station_list(
 
 def test_station_list_geojson(
         test_client_v2_app: httpx.Client,
-        sample_stations: list[models.Station]
+        sample_stations: list[observations.Station]
 ):
     list_response = test_client_v2_app.get(
         test_client_v2_app.app.url_path_for("list_stations"))
@@ -29,7 +29,7 @@ def test_station_list_geojson(
 
 def test_station_detail(
         test_client_v2_app: httpx.Client,
-        sample_stations: list[models.Station]
+        sample_stations: list[observations.Station]
 ):
     target_station = sample_stations[0]
     detail_response = test_client_v2_app.get(
@@ -43,7 +43,7 @@ def test_station_detail(
 
 def test_variable_list(
         test_client_v2_app: httpx.Client,
-        sample_variables: list[models.Variable]
+        sample_variables: list[observations.Variable]
 ):
     list_response = test_client_v2_app.get(
         test_client_v2_app.app.url_path_for("list_variables"))
@@ -53,7 +53,7 @@ def test_variable_list(
 
 def test_variable_detail(
         test_client_v2_app: httpx.Client,
-        sample_variables: list[models.Variable]
+        sample_variables: list[observations.Variable]
 ):
     target_variable = sample_variables[0]
     detail_response = test_client_v2_app.get(
@@ -67,7 +67,7 @@ def test_variable_detail(
 
 def test_monthly_measurement_list(
         test_client_v2_app: httpx.Client,
-        sample_monthly_measurements: list[models.MonthlyMeasurement]
+        sample_monthly_measurements: list[observations.MonthlyMeasurement]
 ):
     list_response = test_client_v2_app.get(
         test_client_v2_app.app.url_path_for("list_monthly_measurements"))
@@ -77,7 +77,7 @@ def test_monthly_measurement_list(
 
 def test_monthly_measurement_list_filter_by_station_code(
         test_client_v2_app: httpx.Client,
-        sample_monthly_measurements: list[models.MonthlyMeasurement]
+        sample_monthly_measurements: list[observations.MonthlyMeasurement]
 ):
     target_station = sample_monthly_measurements[0].station
     list_response = test_client_v2_app.get(
@@ -95,7 +95,7 @@ def test_monthly_measurement_list_filter_by_station_code(
 
 def test_monthly_measurement_list_filter_by_variable_name(
         test_client_v2_app: httpx.Client,
-        sample_monthly_measurements: list[models.MonthlyMeasurement]
+        sample_monthly_measurements: list[observations.MonthlyMeasurement]
 ):
     target_variable = sample_monthly_measurements[0].variable
     list_response = test_client_v2_app.get(
@@ -113,7 +113,7 @@ def test_monthly_measurement_list_filter_by_variable_name(
 
 def test_monthly_measurement_detail(
         test_client_v2_app: httpx.Client,
-        sample_monthly_measurements: list[models.MonthlyMeasurement]
+        sample_monthly_measurements: list[observations.MonthlyMeasurement]
 ):
     target_measurement = sample_monthly_measurements[0]
     detail_response = test_client_v2_app.get(

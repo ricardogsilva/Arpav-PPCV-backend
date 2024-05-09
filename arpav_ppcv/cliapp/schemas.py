@@ -1,40 +1,40 @@
 import pydantic
 
-from ..schemas import models as app_models
+from ..schemas import observations
 
 
-class StationRead(app_models.StationBase):
+class StationRead(observations.StationBase):
     ...
 
 
-class StationCreate(app_models.StationCreate):
+class StationCreate(observations.StationCreate):
     ...
 
 
-class StationUpdate(app_models.StationUpdate):
+class StationUpdate(observations.StationUpdate):
     ...
 
 
-class VariableRead(app_models.VariableBase):
+class VariableRead(observations.VariableBase):
     ...
 
 
-class VariableCreate(app_models.VariableCreate):
+class VariableCreate(observations.VariableCreate):
     ...
 
 
-class VariableUpdate(app_models.VariableUpdate):
+class VariableUpdate(observations.VariableUpdate):
     ...
 
 
-class MonthlyMeasurementRead(app_models.MonthlyMeasurementBase):
+class MonthlyMeasurementRead(observations.MonthlyMeasurementBase):
     station_id: pydantic.UUID4
     variable_id: pydantic.UUID4
 
 
-class MonthlyMeasurementCreate(app_models.MonthlyMeasurementCreate):
+class MonthlyMeasurementCreate(observations.MonthlyMeasurementCreate):
     ...
 
 
-class MonthlyMeasurementUpdate(app_models.MonthlyMeasurementUpdate):
+class MonthlyMeasurementUpdate(observations.MonthlyMeasurementUpdate):
     ...

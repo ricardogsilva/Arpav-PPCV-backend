@@ -3,7 +3,7 @@ import geojson_pydantic
 import pydantic
 
 from .....schemas import (
-    models as app_models,
+    observations,
     fields,
 )
 from .base import ArpavFeatureCollection
@@ -20,7 +20,7 @@ class StationFeatureCollectionItem(geojson_pydantic.Feature):
     @classmethod
     def from_db_instance(
             cls,
-            instance: app_models.Station,
+            instance: observations.Station,
             request: Request,
     ) -> "StationFeatureCollectionItem":
         url = request.url_for("get_station", **{"station_id": instance.id})
