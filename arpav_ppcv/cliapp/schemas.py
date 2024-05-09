@@ -48,3 +48,10 @@ class SeasonalMeasurementRead(pydantic.BaseModel):
     year: int
     season: observations.Season
     value: float
+
+
+class YearlyMeasurementRead(pydantic.BaseModel):
+    station_id: pydantic.UUID4
+    variable_id: pydantic.UUID4
+    year: int
+    value: float

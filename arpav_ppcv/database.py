@@ -485,6 +485,109 @@ def collect_all_seasonal_measurements(
     return result
 
 
+def create_yearly_measurement(
+        session: sqlmodel.Session,
+        measurement_create: observations.YearlyMeasurementCreate
+) -> observations.YearlyMeasurement:
+    """Create a new yearly measurement."""
+    db_measurement = observations.YearlyMeasurement(
+        **measurement_create.model_dump())
+    session.add(db_measurement)
+    try:
+        session.commit()
+    except sqlalchemy.exc.DBAPIError:
+        raise
+    else:
+        session.refresh(db_measurement)
+        return db_measurement
+
+
+def create_many_yearly_measurements(
+        session: sqlmodel.Session,
+        measurements_to_create: Sequence[observations.YearlyMeasurementCreate],
+) -> list[observations.YearlyMeasurement]:
+    """Create several yearly measurements."""
+    db_records = []
+    for measurement_create in measurements_to_create:
+        db_measurement = observations.YearlyMeasurement(
+            **measurement_create.model_dump())
+        db_records.append(db_measurement)
+        session.add(db_measurement)
+    try:
+        session.commit()
+    except sqlalchemy.exc.DBAPIError:
+        raise
+    else:
+        for db_record in db_records:
+            session.refresh(db_record)
+        return db_records
+
+
+def get_yearly_measurement(
+        session: sqlmodel.Session,
+        measurement_id: uuid.UUID
+) -> Optional[observations.YearlyMeasurement]:
+    return session.get(observations.YearlyMeasurement, measurement_id)
+
+
+def delete_yearly_measurement(
+        session: sqlmodel.Session, measurement_id: uuid.UUID) -> None:
+    """Delete a yearly measurement."""
+    db_measurement = get_yearly_measurement(session, measurement_id)
+    if db_measurement is not None:
+        session.delete(db_measurement)
+        session.commit()
+    else:
+        raise RuntimeError("Yearly measurement not found")
+
+
+def list_yearly_measurements(
+        session: sqlmodel.Session,
+        *,
+        limit: int = 20,
+        offset: int = 0,
+        station_id_filter: Optional[uuid.UUID] = None,
+        variable_id_filter: Optional[uuid.UUID] = None,
+        include_total: bool = False,
+) -> tuple[Sequence[observations.YearlyMeasurement], Optional[int]]:
+    """List existing yearly measurements."""
+    statement = sqlmodel.select(observations.YearlyMeasurement).order_by(
+        observations.YearlyMeasurement.year)
+    if station_id_filter is not None:
+        statement = statement.where(
+            observations.YearlyMeasurement.station_id == station_id_filter)
+    if variable_id_filter is not None:
+        statement = statement.where(
+            observations.YearlyMeasurement.variable_id == variable_id_filter)
+    items = session.exec(statement.offset(offset).limit(limit)).all()
+    num_items = (
+        _get_total_num_records(session, statement) if include_total else None)
+    return items, num_items
+
+
+def collect_all_yearly_measurements(
+        session: sqlmodel.Session,
+        *,
+        station_id_filter: Optional[uuid.UUID] = None,
+        variable_id_filter: Optional[uuid.UUID] = None,
+) -> Sequence[observations.YearlyMeasurement]:
+    _, num_total = list_yearly_measurements(
+        session,
+        limit=1,
+        station_id_filter=station_id_filter,
+        variable_id_filter=variable_id_filter,
+        include_total=True
+    )
+    result, _ = list_yearly_measurements(
+        session,
+        limit=num_total,
+        station_id_filter=station_id_filter,
+        variable_id_filter=variable_id_filter,
+        include_total=False
+    )
+    return result
+
+
 def get_configuration_parameter_value(
         session: sqlmodel.Session,
         configuration_parameter_value_id: uuid.UUID

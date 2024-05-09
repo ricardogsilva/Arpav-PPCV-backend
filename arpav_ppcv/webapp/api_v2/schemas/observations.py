@@ -62,6 +62,55 @@ class MonthlyMeasurementReadListItem(observations.MonthlyMeasurementBase):
         )
 
 
+class SeasonalMeasurementReadListItem(pydantic.BaseModel):
+    url: pydantic.AnyHttpUrl
+    variable_name: str
+    station_code: str
+    year: int
+    season: observations.Season
+    value: float
+
+    @classmethod
+    def from_db_instance(
+            cls,
+            instance: observations.SeasonalMeasurement,
+            request: Request,
+    ) -> "SeasonalMeasurementReadListItem":
+        return cls(
+            **instance.model_dump(),
+            variable_name=instance.variable.name,
+            station_code=instance.station.code,
+            url=str(
+                request.url_for(
+                    "get_seasonal_measurement", seasonal_measurement_id=instance.id)
+            )
+        )
+
+
+class YearlyMeasurementReadListItem(pydantic.BaseModel):
+    url: pydantic.AnyHttpUrl
+    variable_name: str
+    station_code: str
+    year: int
+    value: float
+
+    @classmethod
+    def from_db_instance(
+            cls,
+            instance: observations.YearlyMeasurement,
+            request: Request,
+    ) -> "YearlyMeasurementReadListItem":
+        return cls(
+            **instance.model_dump(),
+            variable_name=instance.variable.name,
+            station_code=instance.station.code,
+            url=str(
+                request.url_for(
+                    "get_yearly_measurement", yearly_measurement_id=instance.id)
+            )
+        )
+
+
 class StationList(WebResourceList):
     items: list[StationReadListItem]
     list_item_type = StationReadListItem
@@ -78,3 +127,15 @@ class MonthlyMeasurementList(WebResourceList):
     items: list[MonthlyMeasurementReadListItem]
     list_item_type = MonthlyMeasurementReadListItem
     path_operation_name = "list_monthly_measurements"
+
+
+class SeasonalMeasurementList(WebResourceList):
+    items: list[SeasonalMeasurementReadListItem]
+    list_item_type = SeasonalMeasurementReadListItem
+    path_operation_name = "list_seasonal_measurements"
+
+
+class YearlyMeasurementList(WebResourceList):
+    items: list[YearlyMeasurementReadListItem]
+    list_item_type = YearlyMeasurementReadListItem
+    path_operation_name = "list_yearly_measurements"
