@@ -1,7 +1,10 @@
 import dataclasses
+import datetime as dt
 import enum
 import fnmatch
 import urllib.parse
+
+import shapely
 
 
 @dataclasses.dataclass
@@ -44,6 +47,26 @@ class ForecastScenario(enum.Enum):
 class AveragingPeriod(enum.Enum):
     YEAR = "year"
     THIRTY_YEAR = "thirty-year"
+
+
+@dataclasses.dataclass
+class ThreddsDatasetDescriptionVariable:
+    name: str
+    description: str
+    units: str
+
+
+@dataclasses.dataclass
+class ThreddsDatasetDescriptionTemporalBounds:
+    start: dt.datetime
+    end: dt.datetime
+
+
+@dataclasses.dataclass
+class ThreddsDatasetDescription:
+    variables: list[ThreddsDatasetDescriptionVariable]
+    spatial_bounds: shapely.Polygon
+    temporal_bounds: ThreddsDatasetDescriptionTemporalBounds
 
 
 @dataclasses.dataclass
