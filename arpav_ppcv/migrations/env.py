@@ -9,7 +9,7 @@ from sqlmodel import SQLModel
 from arpav_ppcv import config as arpav_ppcv_config
 
 # this import is crucial so that SQLModel.metadata be populated with our models
-from arpav_ppcv.schemas import models  # noqa
+from arpav_ppcv.schemas import observations  # noqa
 
 arpav_ppcv_settings = arpav_ppcv_config.get_settings()
 

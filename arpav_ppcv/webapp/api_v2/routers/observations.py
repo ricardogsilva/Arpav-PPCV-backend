@@ -1,6 +1,7 @@
 import logging
 from typing import Annotated
 
+import fastapi
 import pydantic
 from fastapi import (
     APIRouter,
@@ -13,6 +14,7 @@ from fastapi.responses import JSONResponse
 from sqlmodel import Session
 
 from .... import database
+from ....schemas import observations as base_observations
 from ... import dependencies
 from ..schemas import observations
 from ..schemas.geojson import observations as observations_geojson
@@ -140,6 +142,7 @@ def list_monthly_measurements(
         list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
         station_code: str | None = None,
         variable_name: str | None = None,
+        month: Annotated[int | None, fastapi.Query(le=1, ge=12)] = None,
 ):
     """List known monthly measurements."""
     if station_code is not None:
@@ -164,6 +167,7 @@ def list_monthly_measurements(
         offset=list_params.offset,
         station_id_filter=station_id,
         variable_id_filter=variable_id,
+        month_filter=month,
         include_total=True
     )
     _, unfiltered_total = database.list_monthly_measurements(
@@ -192,3 +196,129 @@ def get_monthly_measurement(
         db_session, monthly_measurement_id)
     return observations.MonthlyMeasurementReadListItem.from_db_instance(
         db_monthly_measurement, request)
+
+
+@router.get(
+    "/seasonal-measurements", response_model=observations.SeasonalMeasurementList)
+def list_seasonal_measurements(
+        request: Request,
+        db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+        list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
+        station_code: str | None = None,
+        variable_name: str | None = None,
+        season: base_observations.Season | None = None,
+):
+    """List known seasonal measurements."""
+    if station_code is not None:
+        db_station = database.get_station_by_code(db_session, station_code)
+        if db_station is not None:
+            station_id = db_station.id
+        else:
+            raise ValueError("Invalid station code")
+    else:
+        station_id = None
+    if variable_name is not None:
+        db_variable = database.get_variable_by_name(db_session, variable_name)
+        if db_variable is not None:
+            variable_id = db_variable.id
+        else:
+            raise ValueError("Invalid variable name")
+    else:
+        variable_id = None
+    measurements, filtered_total = database.list_seasonal_measurements(
+        db_session,
+        limit=list_params.limit,
+        offset=list_params.offset,
+        station_id_filter=station_id,
+        variable_id_filter=variable_id,
+        season_filter=season,
+        include_total=True
+    )
+    _, unfiltered_total = database.list_seasonal_measurements(
+        db_session, limit=1, offset=0, include_total=True
+    )
+    return observations.SeasonalMeasurementList.from_items(
+        measurements,
+        request,
+        limit=list_params.limit,
+        offset=list_params.offset,
+        filtered_total=filtered_total,
+        unfiltered_total=unfiltered_total
+    )
+
+
+@router.get(
+    "/seasonal-measurements/{seasonal_measurement_id}",
+    response_model=observations.SeasonalMeasurementReadListItem,
+)
+def get_seasonal_measurement(
+        request: Request,
+        db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+        seasonal_measurement_id: pydantic.UUID4,
+):
+    db_measurement = database.get_seasonal_measurement(
+        db_session, seasonal_measurement_id)
+    return observations.SeasonalMeasurementReadListItem.from_db_instance(
+        db_measurement, request)
+
+
+@router.get(
+    "/yearly-measurements", response_model=observations.YearlyMeasurementList)
+def list_yearly_measurements(
+        request: Request,
+        db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+        list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
+        station_code: str | None = None,
+        variable_name: str | None = None,
+):
+    """List known yearly measurements."""
+    if station_code is not None:
+        db_station = database.get_station_by_code(db_session, station_code)
+        if db_station is not None:
+            station_id = db_station.id
+        else:
+            raise ValueError("Invalid station code")
+    else:
+        station_id = None
+    if variable_name is not None:
+        db_variable = database.get_variable_by_name(db_session, variable_name)
+        if db_variable is not None:
+            variable_id = db_variable.id
+        else:
+            raise ValueError("Invalid variable name")
+    else:
+        variable_id = None
+    measurements, filtered_total = database.list_yearly_measurements(
+        db_session,
+        limit=list_params.limit,
+        offset=list_params.offset,
+        station_id_filter=station_id,
+        variable_id_filter=variable_id,
+        include_total=True
+    )
+    _, unfiltered_total = database.list_yearly_measurements(
+        db_session, limit=1, offset=0, include_total=True
+    )
+    return observations.YearlyMeasurementList.from_items(
+        measurements,
+        request,
+        limit=list_params.limit,
+        offset=list_params.offset,
+        filtered_total=filtered_total,
+        unfiltered_total=unfiltered_total
+    )
+
+
+@router.get(
+    "/yearly-measurements/{yearly_measurement_id}",
+    response_model=observations.YearlyMeasurementReadListItem,
+)
+def get_yearly_measurement(
+        request: Request,
+        db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+        yearly_measurement_id: pydantic.UUID4,
+):
+    db_measurement = database.get_yearly_measurement(
+        db_session, yearly_measurement_id)
+    return observations.YearlyMeasurementReadListItem.from_db_instance(
+        db_measurement, request)

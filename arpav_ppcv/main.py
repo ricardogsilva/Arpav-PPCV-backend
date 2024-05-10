@@ -31,7 +31,7 @@ from . import (
 )
 from .cliapp.app import app as cli_app
 from .observations_harvester.cliapp import app as observations_harvester_app
-from .schemas import models as observations_models
+from .schemas import observations as observations_models
 from .thredds import crawler
 from .webapp.legacy.django_settings import get_custom_django_settings
 

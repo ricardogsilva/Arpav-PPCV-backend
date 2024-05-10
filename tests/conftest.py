@@ -18,7 +18,7 @@ from arpav_ppcv import (
     database,
     main,
 )
-from arpav_ppcv.schemas import models
+from arpav_ppcv.schemas import observations
 from arpav_ppcv.webapp import dependencies
 from arpav_ppcv.webapp.app import create_app_from_settings
 from arpav_ppcv.webapp.legacy.django_settings import get_custom_django_settings
@@ -114,11 +114,11 @@ def cli_app(settings, arpav_db):
 
 
 @pytest.fixture()
-def sample_stations(arpav_db_session) -> list[models.Station]:
+def sample_stations(arpav_db_session) -> list[observations.Station]:
     db_stations = []
     for i in range(50):
         db_stations.append(
-            models.Station(
+            observations.Station(
                 code=f"teststation{i}",
                 geom=from_shape(
                     shapely.io.from_geojson(
@@ -141,11 +141,11 @@ def sample_stations(arpav_db_session) -> list[models.Station]:
 
 
 @pytest.fixture()
-def sample_variables(arpav_db_session) -> list[models.Variable]:
+def sample_variables(arpav_db_session) -> list[observations.Variable]:
     db_variables = []
     for i in range(20):
         db_variables.append(
-            models.Variable(
+            observations.Variable(
                 name=f"testvariable{i}",
                 description=f"Description for test variable {i}",
             )
@@ -163,7 +163,7 @@ def sample_monthly_measurements(
         arpav_db_session,
         sample_variables,
         sample_stations
-) -> list[models.MonthlyMeasurement]:
+) -> list[observations.MonthlyMeasurement]:
     db_monthly_measurements = []
     unique_measurement_instances = set()
     while len(unique_measurement_instances) < 200:
@@ -179,7 +179,7 @@ def sample_monthly_measurements(
 
     for date_, station_id, variable_id in unique_measurement_instances:
         db_monthly_measurements.append(
-            models.MonthlyMeasurement(
+            observations.MonthlyMeasurement(
                 value=random.random() * 20 - 10,
                 date=date_,
                 station_id=station_id,
