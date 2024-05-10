@@ -56,7 +56,7 @@ def refresh_monthly_measurements(
         print(f"Created {len(created)} monthly measurements:")
         print(
             "\n".join(
-                f"{m.station.code}-{m.variable.name}-{m.year}"
+                f"{m.station.code}-{m.variable.name}-{m.date.strftime('%Y-%m-%d')}"
                 for m in created
             )
         )

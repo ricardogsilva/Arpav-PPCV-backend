@@ -57,6 +57,30 @@ class Station(StationBase, table=True):
             "passive_deletes": True
         }
     )
+    seasonal_measurements: list["SeasonalMeasurement"] = sqlmodel.Relationship(
+        back_populates="station",
+        sa_relationship_kwargs={
+            # ORM relationship config, which explicitly includes the
+            # `delete` and `delete-orphan` options because we want the ORM
+            # to try to delete seasonal measurements when their related station
+            # is deleted
+            "cascade": "all, delete-orphan",
+            # expect that the RDBMS handles cascading deletes
+            "passive_deletes": True
+        }
+    )
+    yearly_measurements: list["YearlyMeasurement"] = sqlmodel.Relationship(
+        back_populates="station",
+        sa_relationship_kwargs={
+            # ORM relationship config, which explicitly includes the
+            # `delete` and `delete-orphan` options because we want the ORM
+            # to try to delete yearly measurements when their related station
+            # is deleted
+            "cascade": "all, delete-orphan",
+            # expect that the RDBMS handles cascading deletes
+            "passive_deletes": True
+        }
+    )
 
 
 class StationCreate(sqlmodel.SQLModel):
@@ -96,6 +120,30 @@ class Variable(VariableBase, table=True):
             # ORM relationship config, which explicitly includes the
             # `delete` and `delete-orphan` options because we want the ORM
             # to try to delete monthly measurements when their related variable
+            # is deleted
+            "cascade": "all, delete-orphan",
+            # expect that the RDBMS handles cascading deletes
+            "passive_deletes": True
+        }
+    )
+    seasonal_measurements: list["SeasonalMeasurement"] = sqlmodel.Relationship(
+        back_populates="variable",
+        sa_relationship_kwargs={
+            # ORM relationship config, which explicitly includes the
+            # `delete` and `delete-orphan` options because we want the ORM
+            # to try to delete seasonal measurements when their related variable
+            # is deleted
+            "cascade": "all, delete-orphan",
+            # expect that the RDBMS handles cascading deletes
+            "passive_deletes": True
+        }
+    )
+    yearly_measurements: list["YearlyMeasurement"] = sqlmodel.Relationship(
+        back_populates="variable",
+        sa_relationship_kwargs={
+            # ORM relationship config, which explicitly includes the
+            # `delete` and `delete-orphan` options because we want the ORM
+            # to try to delete yearly measurements when their related variable
             # is deleted
             "cascade": "all, delete-orphan",
             # expect that the RDBMS handles cascading deletes
@@ -201,7 +249,7 @@ class SeasonalMeasurement(sqlmodel.SQLModel, table=True):
     season: Season
 
     station: Station = sqlmodel.Relationship(
-        back_populates="monthly_measurements",
+        back_populates="seasonal_measurements",
         sa_relationship_kwargs={
             # retrieve the related resource immediately, by means of a SQL JOIN - this
             # is instead of the default lazy behavior of only retrieving related
@@ -210,7 +258,7 @@ class SeasonalMeasurement(sqlmodel.SQLModel, table=True):
         }
     )
     variable: Variable = sqlmodel.Relationship(
-        back_populates="monthly_measurements",
+        back_populates="seasonal_measurements",
         sa_relationship_kwargs={
             # retrieve the related resource immediately, by means of a SQL JOIN - this
             # is instead of the default lazy behavior of only retrieving related
@@ -259,7 +307,7 @@ class YearlyMeasurement(sqlmodel.SQLModel, table=True):
     year: int
 
     station: Station = sqlmodel.Relationship(
-        back_populates="monthly_measurements",
+        back_populates="yearly_measurements",
         sa_relationship_kwargs={
             # retrieve the related resource immediately, by means of a SQL JOIN - this
             # is instead of the default lazy behavior of only retrieving related
@@ -268,7 +316,7 @@ class YearlyMeasurement(sqlmodel.SQLModel, table=True):
         }
     )
     variable: Variable = sqlmodel.Relationship(
-        back_populates="monthly_measurements",
+        back_populates="yearly_measurements",
         sa_relationship_kwargs={
             # retrieve the related resource immediately, by means of a SQL JOIN - this
             # is instead of the default lazy behavior of only retrieving related
