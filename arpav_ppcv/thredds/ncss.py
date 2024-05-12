@@ -59,21 +59,22 @@ def query_dataset(
         time_end: dt.datetime | None = None,
 ):
     if time_start is None or time_end is None:
-        dataset_description = get_dataset_description(http_client, thredds_ncss_url)
-        start = time_start or dataset_description.temporal_bounds.start
-        end = time_end or dataset_description.temporal_bounds.end
+        temporal_parameters = {
+            "time": "all",
+        }
     else:
-        start = time_start
-        end = time_end
+        temporal_parameters = {
+            "time_start": time_start.isoformat(),
+            "time_end": time_end.isoformat(),
+        }
     response = http_client.get(
         thredds_ncss_url,
         params={
             "var": variable_name,
-            "time_start": start.isoformat(),
-            "time_end": end.isoformat(),
             "latitude": latitude,
             "longitude": longitude,
-            "accept": "CSV"
+            "accept": "CSV",
+            **temporal_parameters,
         }
     )
     response.raise_for_status()

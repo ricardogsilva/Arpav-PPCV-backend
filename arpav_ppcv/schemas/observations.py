@@ -1,7 +1,10 @@
 import datetime as dt
 import enum
 import uuid
-from typing import Optional
+from typing import (
+    Optional,
+    TYPE_CHECKING,
+)
 
 import geojson_pydantic
 import geoalchemy2
@@ -10,6 +13,9 @@ import sqlalchemy
 import sqlmodel
 
 from . import fields
+
+if TYPE_CHECKING:
+    from . import coverages
 
 
 class Season(enum.Enum):
@@ -114,6 +120,9 @@ class VariableBase(sqlmodel.SQLModel):
 
 
 class Variable(VariableBase, table=True):
+    related_coverage_configurations: list["coverages.CoverageConfiguration"] = sqlmodel.Relationship(
+        back_populates="related_observation_variable"
+    )
     monthly_measurements: list["MonthlyMeasurement"] = sqlmodel.Relationship(
         back_populates="variable",
         sa_relationship_kwargs={

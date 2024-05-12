@@ -1,3 +1,4 @@
+import enum
 import logging
 import re
 import uuid
@@ -5,14 +6,24 @@ from typing import (
     Annotated,
     Optional,
     Final,
+    TYPE_CHECKING,
 )
 
 import pydantic
 import sqlalchemy
 import sqlmodel
 
+if TYPE_CHECKING:
+    from . import observations
+
 logger = logging.getLogger(__name__)
 _NAME_PATTERN: Final[str] = r"^[a-z][a-z0-9_]+$"
+
+
+class ObservationAggregationType(enum.Enum):
+    MONTHLY = "MONTHLY"
+    SEASONAL = "SEASONAL"
+    YEARLY = "YEARLY"
 
 
 class ConfigurationParameterValue(sqlmodel.SQLModel, table=True):
@@ -118,11 +129,17 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         primary_key=True
     )
     name: str = sqlmodel.Field(unique=True, index=True)
+    dataset_name: str
     thredds_url_pattern: str
     unit: str = ""
     palette: str
     color_scale_min: float = 0.0
     color_scale_max: float = 1.0
+    observation_variable_id: Optional[uuid.UUID] = sqlmodel.Field(
+        default=None,
+        foreign_key="variable.id"
+    )
+    observation_variable_aggregation_type: Optional[ObservationAggregationType] = None
 
     possible_values: list["ConfigurationParameterPossibleValue"] = sqlmodel.Relationship(
         back_populates="coverage_configuration",
@@ -130,6 +147,9 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
             "cascade": "all, delete, delete-orphan",
             "passive_deletes": True,
         }
+    )
+    related_observation_variable: "observations.Variable" = sqlmodel.Relationship(
+        back_populates="related_coverage_configurations"
     )
 
     @pydantic.computed_field()

@@ -14,6 +14,7 @@ import shapely.io
 import sqlalchemy.exc
 import sqlmodel
 from geoalchemy2.shape import from_shape
+from sqlalchemy import func
 
 from . import config
 from .schemas import (
@@ -240,12 +241,20 @@ def list_stations(
         limit: int = 20,
         offset: int = 0,
         include_total: bool = False,
+        polygon_intersection_filter: shapely.Polygon = None,
 ) -> tuple[Sequence[observations.Station], Optional[int]]:
     """List existing stations."""
     statement = (
         sqlmodel.select(observations.Station)
         .order_by(observations.Station.code)
     )
+    if polygon_intersection_filter is not None:
+        statement = statement.where(
+            func.ST_Intersects(
+                observations.Station.geom,
+                func.ST_GeomFromWKB(shapely.io.to_wkb(polygon_intersection_filter))
+            )
+        )
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = (
         _get_total_num_records(session, statement) if include_total else None)
@@ -254,9 +263,20 @@ def list_stations(
 
 def collect_all_stations(
         session: sqlmodel.Session,
+        polygon_intersection_filter: shapely.Polygon = None,
 ) -> Sequence[observations.Station]:
-    _, num_total = list_stations(session, limit=1, include_total=True)
-    result, _ = list_stations(session, limit=num_total, include_total=False)
+    _, num_total = list_stations(
+        session,
+        limit=1,
+        include_total=True,
+        polygon_intersection_filter=polygon_intersection_filter
+    )
+    result, _ = list_stations(
+        session,
+        limit=num_total,
+        include_total=False,
+        polygon_intersection_filter=polygon_intersection_filter
+    )
     return result
 
 
