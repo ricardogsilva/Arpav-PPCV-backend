@@ -129,7 +129,7 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         primary_key=True
     )
     name: str = sqlmodel.Field(unique=True, index=True)
-    dataset_name: str
+    netcdf_main_dataset_name: str
     thredds_url_pattern: str
     unit: str = ""
     palette: str

@@ -8,82 +8,62 @@
 #   dev, testing and debugging
 # - mounts code repository inside the relevant container as a bind volume
 
+x-webapp-image: &webapp-image "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend:${CURRENT_GIT_BRANCH:-latest}"
+
+x-common-env: &common-env
+  ARPAV_PPCV__DEBUG: true
+  ARPAV_PPCV__BIND_HOST: 0.0.0.0
+  ARPAV_PPCV__BIND_PORT: 5001
+  ARPAV_PPCV__PUBLIC_URL: http://localhost:5001
+  ARPAV_PPCV__DB_DSN: postgresql://arpav:arpavpassword@db:5432/arpav_ppcv
+  ARPAV_PPCV__TEST_DB_DSN: postgresql://arpavtest:arpavtestpassword@test-db:5432/arpav_ppcv_test
+  ARPAV_PPCV__SESSION_SECRET_KEY: some-key
+  ARPAV_PPCV__ADMIN_USER__USERNAME: admin
+  ARPAV_PPCV__ADMIN_USER__PASSWORD: 12345678
+  ARPAV_PPCV__LOG_CONFIG_FILE: /home/appuser/app/dev-log-config.yml
+  ARPAV_PPCV__DJANGO_APP__DB_DSN: postgres://postgres:postgres@legacy-db:5432/postgres
+  ARPAV_PPCV__DJANGO_APP__THREDDS__PORT: 8081
+  ARPAV_PPCV__DJANGO_APP__REDIS_DSN: redis://redis:6379
+  ARPAV_PPCV__DJANGO_APP__SECRET_KEY: some-dev-key
+  ARPAV_PPCV__THREDDS_SERVER__BASE_URL: http://thredds:8080/thredds
+
+x-common-volumes: &common-volumes
+  - type: bind
+    source: $PWD
+    target: /home/appuser/app
+  - type: bind
+    source: $HOME/data/geobeyond/arpav-ppcv/datasets
+    target: /home/appuser/data/datasets
+  - type: bind
+    source: $HOME/data/geobeyond/arpav-ppcv/netcdf-uncertainty-example
+    target: /home/appuser/data/additional
+
 services:
 
   webapp:
-    image: "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend:${CURRENT_GIT_BRANCH:-latest}"
+    image: *webapp-image
     environment:
-      ARPAV_PPCV__DEBUG: true
-      ARPAV_PPCV__BIND_HOST: 0.0.0.0
-      ARPAV_PPCV__BIND_PORT: 5001
-      ARPAV_PPCV__PUBLIC_URL: http://localhost:5001
-      ARPAV_PPCV__DB_DSN: postgresql://arpav:arpavpassword@db:5432/arpav_ppcv
-      ARPAV_PPCV__TEST_DB_DSN: postgresql://arpavtest:arpavtestpassword@test-db:5432/arpav_ppcv_test
-      ARPAV_PPCV__SESSION_SECRET_KEY: some-key
-      ARPAV_PPCV__ADMIN_USER__USERNAME: admin
-      ARPAV_PPCV__ADMIN_USER__PASSWORD: 12345678
-      ARPAV_PPCV__LOG_CONFIG_FILE: /home/appuser/app/dev-log-config.yml
-      ARPAV_PPCV__DJANGO_APP__DB_DSN: postgres://postgres:postgres@legacy-db:5432/postgres
-      ARPAV_PPCV__DJANGO_APP__THREDDS__PORT: 8081
-      ARPAV_PPCV__DJANGO_APP__REDIS_DSN: redis://redis:6379
-      ARPAV_PPCV__DJANGO_APP__SECRET_KEY: some-dev-key
-      ARPAV_PPCV__THREDDS_SERVER__BASE_URL: http://thredds:8080/thredds
-      ARPAV_PPCV__THREDDS_SERVER__DATASETS: >
-        {
-          "uncertainty_test_giovanni": {
-            "thredds_url_pattern": "tests/giovanni-sample/tas_avgagree_anom_tw2_rcp26_DJF_VFVGTAAn.nc",
-            "palette": "uncert-stippled/seq-YlOrRd",
-            "range": [1, 6]
-          },
-          "uncertainty_test": {
-            "thredds_url_pattern": "tests/test-script-agree.nc",
-            "palette": "uncert-stippled/seq-YlOrRd",
-            "range": [1, 6]
-          },
-          "tas_absolute": {
-            "thredds_url_pattern": "ensymbc/tas_avg_{scenario}_{year_period}_ts19762100_ls.nc",
-            "allowed_values": {
-              "scenario": [
-                "rcp26",
-                "rcp45",
-                "rcp85"
-              ],
-              "year_period": [
-                "winter",
-                "spring",
-                "summer",
-                "autumn"
-              ]
-            },
-            "unit": "ºC",
-            "palette": "default/seq-YlOrRd",
-            "range": [-3, 32]
-          },
-          "tas_anomaly": {
-            "thredds_url_pattern": "ensembletwbc/tas_avg_anom_{time_window}_{scenario}_{year_period}.nc",
-            "allowed_values": {
-              "time_window": ["tw1", "tw2"],
-              "scenario": ["rcp26"],
-              "year_period": ["annual"]
-            },
-            "unit": "ºC",
-            "palette": "seq-YlOrRd",
-            "range": [0, 6]
-          }
-        }
+      *common-env
     ports:
       - target: 5001
         published: 5001
     volumes:
-      - type: bind
-        source: $PWD
-        target: /home/appuser/app
-      - type: bind
-        source: $HOME/data/geobeyond/arpav-ppcv/datasets
-        target: /home/appuser/data/datasets
-      - type: bind
-        source: $HOME/data/geobeyond/arpav-ppcv/netcdf-uncertainty-example
-        target: /home/appuser/data/additional
+      *common-volumes
+
+  # jupyter:
+  #   image: *webapp-image
+  #   environment:
+  #     *common-env
+  #   ports:
+  #     - target: 5001
+  #       published: 5001
+  #   volumes:
+  #     *common-volumes
+  #   entrypoint: ['/bin/bash', '-c']
+  #   command:
+  #     - |
+  #       poetry install --with jupyter
+  #       poetry run jupyter
 
   legacy-db:
     environment:
