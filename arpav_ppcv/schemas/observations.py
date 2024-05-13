@@ -1,5 +1,4 @@
 import datetime as dt
-import enum
 import uuid
 from typing import (
     Optional,
@@ -13,20 +12,23 @@ import sqlalchemy
 import sqlmodel
 
 from . import fields
+from . import base
 
 if TYPE_CHECKING:
     from . import coverages
 
-
-class Season(enum.Enum):
-    WINTER = "WINTER"
-    SPRING = "SPRING"
-    SUMMER = "SUMMER"
-    AUTUMN = "AUTUMN"
-
-
-class ObservationDataSmoothingStrategy(enum.Enum):
-    MOVING_AVERAGE_5_YEARS = "MOVING_AVERAGE_5_YEARS"
+    def get_season(self, value: str):
+        if value.lower() in ("djf",):
+            result = self.WINTER
+        elif value.lower() in ("mam",):
+            result = self.SPRING
+        elif value.lower() in ("jja",):
+            result = self.SUMMER
+        elif value.lower() in ("son",):
+            result = self.AUTUMN
+        else:
+            result = []
+        return result
 
 
 class StationBase(sqlmodel.SQLModel):
@@ -259,7 +261,7 @@ class SeasonalMeasurement(sqlmodel.SQLModel, table=True):
     variable_id: pydantic.UUID4
     value: float
     year: int
-    season: Season
+    season: base.Season
 
     station: Station = sqlmodel.Relationship(
         back_populates="seasonal_measurements",
@@ -286,13 +288,13 @@ class SeasonalMeasurementCreate(sqlmodel.SQLModel):
     variable_id: pydantic.UUID4
     value: float
     year: int
-    season: Season
+    season: base.Season
 
 
 class SeasonalMeasurementUpdate(sqlmodel.SQLModel):
     value: Optional[float] = None
     year: Optional[int] = None
-    season: Optional[Season] = None
+    season: Optional[base.Season] = None
 
 
 class YearlyMeasurement(sqlmodel.SQLModel, table=True):

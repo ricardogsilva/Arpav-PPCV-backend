@@ -1,4 +1,3 @@
-import enum
 import logging
 import re
 import uuid
@@ -13,21 +12,13 @@ import pydantic
 import sqlalchemy
 import sqlmodel
 
+from . import base
+
 if TYPE_CHECKING:
     from . import observations
 
 logger = logging.getLogger(__name__)
 _NAME_PATTERN: Final[str] = r"^[a-z][a-z0-9_]+$"
-
-
-class CoverageDataSmoothingStrategy(enum.Enum):
-    MOVING_AVERAGE_11_YEARS_PLUS_LOESS_SMOOTHING = "MOVING_AVERAGE_11_YEARS_PLUS_LOESS_SMOOTHING"
-
-
-class ObservationAggregationType(enum.Enum):
-    MONTHLY = "MONTHLY"
-    SEASONAL = "SEASONAL"
-    YEARLY = "YEARLY"
 
 
 class ConfigurationParameterValue(sqlmodel.SQLModel, table=True):
@@ -143,7 +134,7 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         default=None,
         foreign_key="variable.id"
     )
-    observation_variable_aggregation_type: Optional[ObservationAggregationType] = None
+    observation_variable_aggregation_type: Optional[base.ObservationAggregationType] = None
 
     possible_values: list["ConfigurationParameterPossibleValue"] = sqlmodel.Relationship(
         back_populates="coverage_configuration",
@@ -219,6 +210,32 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
             result[configuration_parameter_name] = id_part
         return result
 
+    def get_seasonal_aggregation_query_filter(
+            self, coverage_identifier: str) -> Optional[base.Season]:
+        used_values = self.retrieve_used_values(coverage_identifier)
+        for used_value in used_values:
+            is_temporal_aggregation = (
+                    used_value.configuration_parameter_value.configuration_parameter.name in ("year_period",)
+            )
+            if is_temporal_aggregation:
+                value = used_value.configuration_parameter_value.name.lower()
+                if value in ("djf",):
+                    result = base.Season.WINTER
+                elif value in ("mam",):
+                    result = base.Season.SPRING
+                elif value in ("jja",):
+                    result = base.Season.SUMMER
+                elif value in ("son",):
+                    result = base.Season.AUTUMN
+                break
+        else:
+            result = None
+            logger.warning(
+                f"Could not determine appropriate season for coverage "
+                f"identifier {coverage_identifier!r}"
+            )
+        return result
+
 
 class CoverageConfigurationCreate(sqlmodel.SQLModel):
 
@@ -240,7 +257,7 @@ class CoverageConfigurationCreate(sqlmodel.SQLModel):
     color_scale_max: float
     possible_values: list["ConfigurationParameterPossibleValueCreate"]
     observation_variable_id: Optional[uuid.UUID] = None
-    observation_variable_aggregation_type: Optional[ObservationAggregationType] = None
+    observation_variable_aggregation_type: Optional[base.ObservationAggregationType] = None
 
     @pydantic.field_validator("thredds_url_pattern")
     @classmethod
@@ -266,7 +283,7 @@ class CoverageConfigurationUpdate(sqlmodel.SQLModel):
     color_scale_min: Optional[float] = None
     color_scale_max: Optional[float] = None
     observation_variable_id: Optional[uuid.UUID] = None
-    observation_variable_aggregation_type: Optional[ObservationAggregationType] = None
+    observation_variable_aggregation_type: Optional[base.ObservationAggregationType] = None
     possible_values: list["ConfigurationParameterPossibleValueUpdate"]
 
     @pydantic.field_validator("thredds_url_pattern")

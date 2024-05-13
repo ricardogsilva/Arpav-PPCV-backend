@@ -4,6 +4,7 @@ import pydantic
 from fastapi import Request
 
 from ....schemas import observations
+from ....schemas.base import Season
 from .base import WebResourceList
 
 logger = logging.getLogger(__name__)
@@ -67,7 +68,7 @@ class SeasonalMeasurementReadListItem(pydantic.BaseModel):
     variable_name: str
     station_code: str
     year: int
-    season: observations.Season
+    season: Season
     value: float
 
     @classmethod

@@ -24,7 +24,10 @@ from starlette_admin import RequestAction
 from starlette_admin.contrib.sqlmodel import ModelView
 
 from ... import database
-from ...schemas import coverages
+from ...schemas import (
+    coverages,
+    base,
+)
 from . import schemas as read_schemas
 
 
@@ -107,7 +110,15 @@ class ConfigurationParameterView(ModelView):
 
     fields = (
         UuidField("id"),
-        starlette_admin.StringField("name"),
+        starlette_admin.StringField(
+            "name",
+            help_text=(
+                "Name for the configuration parameter. Must only use alphanumeric "
+                "characters and the underscore. If you use the special name "
+                "'year_period', then the system will use this parameter to "
+                "perform database queries."
+            )
+        ),
         starlette_admin.StringField("description"),
         starlette_admin.ListField(
             field=starlette_admin.CollectionField(
@@ -301,7 +312,7 @@ class CoverageConfigurationView(ModelView):
         ),
         starlette_admin.EnumField(
             "observation_variable_aggregation_type",
-            enum=coverages.ObservationAggregationType
+            enum=base.ObservationAggregationType
         ),
         starlette_admin.ListField(
             field=PossibleConfigurationParameterValuesField(

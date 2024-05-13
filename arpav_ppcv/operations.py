@@ -1,6 +1,7 @@
 import datetime as dt
 import functools
 import io
+import logging
 from typing import Optional
 
 import httpx
@@ -15,12 +16,15 @@ from pyproj.enums import TransformDirection
 from shapely.ops import transform
 
 from . import database
+from .config import ArpavPpcvSettings
 from .schemas import (
+    base,
     coverages,
     observations,
 )
-from .config import ArpavPpcvSettings
 from .thredds import ncss
+
+logger = logging.getLogger(__name__)
 
 
 def get_coverage_time_series(
@@ -33,20 +37,20 @@ def get_coverage_time_series(
         temporal_range: str,
         include_coverage_data: bool = True,
         include_observation_data: bool = False,
-        coverage_data_smoothing: coverages.CoverageDataSmoothingStrategy | None = None,
-        observation_data_smoothing: observations.ObservationDataSmoothingStrategy | None = None,
+        coverage_data_smoothing: base.CoverageDataSmoothingStrategy | None = None,
+        observation_data_smoothing: base.ObservationDataSmoothingStrategy | None = None,
         include_coverage_uncertainty: bool = False,
         include_coverage_related_data: bool = False,
 ) -> dict[str, pd.DataFrame]:
     start, end = _parse_temporal_range(temporal_range)
-    ncss_url = "/".join((
+    coverage_data_ncss_url = "/".join((
         settings.thredds_server.base_url,
         settings.thredds_server.netcdf_subset_service_url_fragment,
         coverage_configuration.get_thredds_url_fragment(coverage_identifier)
     ))
     raw_coverage_data = ncss.query_dataset(
         http_client,
-        thredds_ncss_url=ncss_url,
+        thredds_ncss_url=coverage_data_ncss_url,
         variable_name=coverage_configuration.netcdf_main_dataset_name,
         longitude=point_geom.x,
         latitude=point_geom.y,
@@ -65,33 +69,125 @@ def get_coverage_time_series(
             )
             measurements[coverage_configuration.name] = coverage_data
         if include_observation_data:
-            point_buffer_geom = _get_spatial_buffer(
-                point_geom, settings.nearest_station_radius_meters)
-            nearby_stations = database.collect_all_stations(
-                session, polygon_intersection_filter=point_buffer_geom)
-            if len(nearby_stations) > 0:
-                sorted_stations = sorted(
-                    nearby_stations, key=lambda s: to_shape(s.geom).distance(point_geom))
-                # order nearby stations by distance and then iterate through them in order to
-                # try to get measurements for the relevant variable and temporal aggregation
-                for station in sorted_stations:
-                    ...
-            else:
-                ...
+            station_data = _get_station_data(
+                session,
+                settings,
+                point_geom,
+                coverage_configuration,
+                coverage_identifier,
+            )
+            if station_data is not None:
+                raw_station_data, station = station_data
+                data_ = _process_station_data(
+                    raw_station_data,
+                    data_smoothing=observation_data_smoothing,
+                    time_start=start,
+                    time_end=end
+                )
+                measurements[station.name] = data_
+        if include_coverage_uncertainty:
+            # TODO: how to map to uncertainty related data?
+            ...
+        if include_coverage_related_data:
+            # TODO: how to map to related data?
+            ...
     else:
         raise RuntimeError("Could not retrieve coverage data")
     return measurements
 
 
-def _process_coverage_data(
-        raw_data: str,
+def _get_station_data(
+        session: sqlmodel.Session,
+        settings: ArpavPpcvSettings,
+        point_geom: shapely.Point,
         coverage_configuration: coverages.CoverageConfiguration,
-        data_smoothing: Optional[coverages.CoverageDataSmoothingStrategy],
+        coverage_identifier: str,
+) -> Optional[
+    tuple[
+        list[
+            observations.MonthlyMeasurement |
+            observations.SeasonalMeasurement |
+            observations.YearlyMeasurement
+            ],
+        observations.Station
+    ]
+]:
+    point_buffer_geom = _get_spatial_buffer(
+        point_geom, settings.nearest_station_radius_meters)
+    nearby_stations = database.collect_all_stations(
+        session, polygon_intersection_filter=point_buffer_geom)
+    if len(nearby_stations) > 0:
+        retriever_kwargs = {
+            "variable_id_filter": coverage_configuration.observation_variable_id
+        }
+        aggregation_type = coverage_configuration.observation_variable_aggregation_type
+        if aggregation_type == base.ObservationAggregationType.MONTHLY:
+            retriever = functools.partial(
+                database.collect_all_monthly_measurements,
+                session,
+                **retriever_kwargs,
+                month_filter=None
+            )
+        elif aggregation_type == base.ObservationAggregationType.SEASONAL:
+            retriever = functools.partial(
+                database.collect_all_seasonal_measurements,
+                session,
+                **retriever_kwargs,
+                season_filter=coverage_configuration.get_seasonal_aggregation_query_filter(
+                    coverage_identifier)
+            )
+        else:  # ANNUAL
+            retriever = functools.partial(
+                database.collect_all_yearly_measurements,
+                session,
+                **retriever_kwargs,
+            )
+        sorted_stations = sorted(
+            nearby_stations, key=lambda s: to_shape(s.geom).distance(point_geom))
+        # order nearby stations by distance and then iterate through them in order to
+        # try to get measurements for the relevant variable and temporal aggregation
+        for station in sorted_stations:
+            raw_station_data = retriever(station_id_filter=station.id)
+            if len(raw_station_data) > 0:
+                # stop with the first station that has data
+                result = (raw_station_data, station)
+                break
+        else:
+            result = None
+            logger.info(f"Nearby stations do not have data")
+    else:
+        logger.info(
+            f"There are no nearby stations from {shapely.io.to_wkt(point_geom)}")
+        result = None
+    return result
+
+
+def _process_station_data(
+        raw_data: list[
+            observations.SeasonalMeasurement |
+            observations.MonthlyMeasurement |
+            observations.YearlyMeasurement
+        ],
+        data_smoothing: Optional[base.CoverageDataSmoothingStrategy],
         time_start: Optional[dt.datetime],
         time_end: Optional[dt.datetime],
 ) -> pd.DataFrame:
-    # - filter out columns we don't care about
-    # - filter out values outside the temporal range
+    df = pd.DataFrame(
+        [i.model_dump() for i in raw_data]
+    )
+    # throw out unneeded columns
+    # convert into proper timestamps
+    # filter out
+    return df
+
+
+def _process_coverage_data(
+        raw_data: str,
+        coverage_configuration: coverages.CoverageConfiguration,
+        data_smoothing: Optional[base.CoverageDataSmoothingStrategy],
+        time_start: Optional[dt.datetime],
+        time_end: Optional[dt.datetime],
+) -> pd.DataFrame:
     df = pd.read_csv(io.StringIO(raw_data), parse_dates=["time"])
 
     # get name of the colum that holds the main variable

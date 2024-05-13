@@ -21,8 +21,7 @@ from .... import (
 )
 from ....config import ArpavPpcvSettings
 from ....thredds import utils as thredds_utils
-from ....schemas import coverages as base_coverages
-from ....schemas import observations as base_observations
+from ....schemas import base
 from ... import dependencies
 from ..schemas import coverages as coverage_schemas
 
@@ -215,11 +214,11 @@ def get_time_series(
         db_session, coverage_configuration_name)
     if db_coverage_configuration is not None:
         cov_smoothing = (
-            base_coverages.CoverageDataSmoothingStrategy.MOVING_AVERAGE_11_YEARS_PLUS_LOESS_SMOOTHING
+            base.CoverageDataSmoothingStrategy.MOVING_AVERAGE_11_YEARS_PLUS_LOESS_SMOOTHING
             if coverage_data_smoothing else None
         )
         obs_smoothing = (
-            base_observations.ObservationDataSmoothingStrategy.MOVING_AVERAGE_5_YEARS
+            base.ObservationDataSmoothingStrategy.MOVING_AVERAGE_5_YEARS
             if observation_data_smoothing else None
         )
         geom = shapely.io.from_wkt(coords)

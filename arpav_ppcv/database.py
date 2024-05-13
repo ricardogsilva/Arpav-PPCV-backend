@@ -18,6 +18,7 @@ from sqlalchemy import func
 
 from . import config
 from .schemas import (
+    base,
     coverages,
     observations,
 )
@@ -458,7 +459,7 @@ def list_seasonal_measurements(
         offset: int = 0,
         station_id_filter: Optional[uuid.UUID] = None,
         variable_id_filter: Optional[uuid.UUID] = None,
-        season_filter: Optional[observations.Season] = None,
+        season_filter: Optional[base.Season] = None,
         include_total: bool = False,
 ) -> tuple[Sequence[observations.SeasonalMeasurement], Optional[int]]:
     """List existing seasonal measurements."""
@@ -484,7 +485,7 @@ def collect_all_seasonal_measurements(
         *,
         station_id_filter: Optional[uuid.UUID] = None,
         variable_id_filter: Optional[uuid.UUID] = None,
-        season_filter: Optional[observations.Season] = None,
+        season_filter: Optional[base.Season] = None,
 ) -> Sequence[observations.SeasonalMeasurement]:
     _, num_total = list_seasonal_measurements(
         session,

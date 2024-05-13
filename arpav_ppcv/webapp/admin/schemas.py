@@ -3,7 +3,7 @@ import uuid
 
 import sqlmodel
 
-from ...schemas.coverages import ObservationAggregationType
+from ...schemas.base import ObservationAggregationType
 
 
 class ConfigurationParameterValueRead(sqlmodel.SQLModel):
