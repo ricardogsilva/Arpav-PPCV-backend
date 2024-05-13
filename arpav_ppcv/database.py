@@ -815,11 +815,14 @@ def create_coverage_configuration(
     to_refresh = []
     db_coverage_configuration = coverages.CoverageConfiguration(
         name=coverage_configuration_create.name,
+        netcdf_main_dataset_name=coverage_configuration_create.netcdf_main_dataset_name,
         thredds_url_pattern=coverage_configuration_create.thredds_url_pattern,
         unit=coverage_configuration_create.unit,
         palette=coverage_configuration_create.palette,
         color_scale_min=coverage_configuration_create.color_scale_min,
         color_scale_max=coverage_configuration_create.color_scale_max,
+        related_observation_variable=coverage_configuration_create.related_observation_variable,
+        observation_variable_aggregation_type=coverage_configuration_create.observation_variable_aggregation_type,
     )
     session.add(db_coverage_configuration)
     to_refresh.append(db_coverage_configuration)
@@ -872,7 +875,10 @@ def update_coverage_configuration(
             session.add(db_possible_value)
             to_refresh.append(db_possible_value)
     data_ = coverage_configuration_update.model_dump(
-        exclude={"possible_values"}, exclude_unset=True, exclude_none=True)
+        exclude={"possible_values"},
+        exclude_unset=True,
+        exclude_none=True
+    )
     for key, value in data_.items():
         setattr(db_coverage_configuration, key, value)
     session.add(db_coverage_configuration)

@@ -4,6 +4,7 @@ from typing import Annotated
 
 import httpx
 import pydantic
+import shapely.io
 from fastapi import (
     APIRouter,
     Depends,
@@ -14,11 +15,16 @@ from fastapi import (
 )
 from sqlmodel import Session
 
-from .... import database
+from .... import (
+    database,
+    operations,
+)
 from ....config import ArpavPpcvSettings
 from ....thredds import utils as thredds_utils
+from ....schemas import coverages as base_coverages
+from ....schemas import observations as base_observations
 from ... import dependencies
-from ..schemas import coverages
+from ..schemas import coverages as coverage_schemas
 
 
 logger = logging.getLogger(__name__)
@@ -27,7 +33,7 @@ router = APIRouter()
 
 @router.get(
     "/coverage-configurations",
-    response_model=coverages.CoverageConfigurationList
+    response_model=coverage_schemas.CoverageConfigurationList
 )
 async def list_coverage_configurations(
         request: Request,
@@ -78,7 +84,7 @@ async def list_coverage_configurations(
     _, unfiltered_total = database.list_coverage_configurations(
         db_session, limit=1, offset=0, include_total=True
     )
-    return coverages.CoverageConfigurationList.from_items(
+    return coverage_schemas.CoverageConfigurationList.from_items(
         coverage_configurations,
         request,
         limit=list_params.limit,
@@ -90,7 +96,7 @@ async def list_coverage_configurations(
 
 @router.get(
     "/coverage-configurations/{coverage_configuration_id}",
-    response_model=coverages.CoverageConfigurationReadDetail,
+    response_model=coverage_schemas.CoverageConfigurationReadDetail,
 )
 def get_coverage_configuration(
         request: Request,
@@ -101,7 +107,7 @@ def get_coverage_configuration(
         db_session, coverage_configuration_id)
     allowed_coverage_identifiers = database.list_allowed_coverage_identifiers(
         db_session, coverage_configuration_id=db_coverage_configuration.id)
-    return coverages.CoverageConfigurationReadDetail.from_db_instance(
+    return coverage_schemas.CoverageConfigurationReadDetail.from_db_instance(
         db_coverage_configuration, allowed_coverage_identifiers, request)
 
 
@@ -186,3 +192,77 @@ async def wms_endpoint(
             return response
     else:
         raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
+
+
+@router.get(
+    "/time-series/{coverage_identifier}", response_model=coverage_schemas.TimeSeries)
+def get_time_series(
+        db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+        settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
+        http_client: Annotated[httpx.Client, Depends(dependencies.get_sync_http_client)],
+        coverage_identifier: str,
+        coords: str,
+        datetime: str,
+        include_coverage_data: bool = True,
+        include_observation_data: bool = False,
+        coverage_data_smoothing: bool = True,
+        observation_data_smoothing: bool = True,
+        include_coverage_uncertainty: bool = False,
+        include_coverage_related_data: bool = False,
+):
+    coverage_configuration_name = coverage_identifier.partition("-")[0]
+    db_coverage_configuration = database.get_coverage_configuration_by_name(
+        db_session, coverage_configuration_name)
+    if db_coverage_configuration is not None:
+        cov_smoothing = (
+            base_coverages.CoverageDataSmoothingStrategy.MOVING_AVERAGE_11_YEARS_PLUS_LOESS_SMOOTHING
+            if coverage_data_smoothing else None
+        )
+        obs_smoothing = (
+            base_observations.ObservationDataSmoothingStrategy.MOVING_AVERAGE_5_YEARS
+            if observation_data_smoothing else None
+        )
+        geom = shapely.io.from_wkt(coords)
+        if geom.geom_type == "MultiPoint":
+            logger.warning(
+                f"Expected coords parameter to be a WKT Point but "
+                f"got {geom.geom_type!r} instead - Using the first point"
+            )
+            point_geom = geom.geoms[0]
+        elif geom.geom_type == "Point":
+            point_geom = geom
+        else:
+            logger.warning(
+                f"Expected coords parameter to be a WKT Point but "
+                f"got {geom.geom_type!r} instead - Using the centroid instead"
+            )
+            point_geom = geom.centroid
+        time_series = operations.get_coverage_time_series(
+            settings,
+            db_session,
+            http_client,
+            coverage_configuration=db_coverage_configuration,
+            coverage_identifier=coverage_identifier,
+            point_geom=point_geom,
+            temporal_range=datetime,
+            include_coverage_data=include_coverage_data,
+            include_observation_data=include_observation_data,
+            coverage_data_smoothing=cov_smoothing,
+            observation_data_smoothing=obs_smoothing,
+            include_coverage_uncertainty=include_coverage_uncertainty,
+            include_coverage_related_data=include_coverage_related_data,
+        )
+        measurements = []
+        for name, df in time_series.items():
+            serialized_time_series = df.to_dict()[db_coverage_configuration.netcdf_main_dataset_name]
+            for timestamp, value in serialized_time_series.items():
+                measurement = coverage_schemas.TimeSeriesItem(
+                    value=value,
+                    series=name,
+                    datetime=timestamp,
+                )
+                measurements.append(measurement)
+        return coverage_schemas.TimeSeries(values=measurements)
+    else:
+        raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
+

@@ -1,6 +1,9 @@
+from typing import Optional
 import uuid
 
 import sqlmodel
+
+from ...schemas.coverages import ObservationAggregationType
 
 
 class ConfigurationParameterValueRead(sqlmodel.SQLModel):
@@ -24,6 +27,7 @@ class ConfigurationParameterPossibleValueRead(sqlmodel.SQLModel):
 class CoverageConfigurationRead(sqlmodel.SQLModel):
     id: uuid.UUID
     name: str
+    netcdf_main_dataset_name: str
     coverage_id_pattern: str
     thredds_url_pattern: str
     unit: str
@@ -31,3 +35,10 @@ class CoverageConfigurationRead(sqlmodel.SQLModel):
     color_scale_min: float
     color_scale_max: float
     possible_values: list[ConfigurationParameterPossibleValueRead]
+    observation_variable_aggregation_type: ObservationAggregationType
+    observation_variable: Optional["ObservationVariableRead"]
+
+
+class ObservationVariableRead(sqlmodel.SQLModel):
+    id: uuid.UUID
+    name: str

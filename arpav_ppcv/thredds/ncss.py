@@ -6,12 +6,16 @@ https://docs.unidata.ucar.edu/tds/current/userguide/netcdf_subset_service_ref.ht
 
 """
 import datetime as dt
+import logging
 import xml.etree.ElementTree as etree
+from typing import Optional
 
 import httpx
 import shapely
 
 from . import models
+
+logger = logging.getLogger(__name__)
 
 
 def get_dataset_description(
@@ -57,7 +61,8 @@ def query_dataset(
         latitude: float,
         time_start: dt.datetime | None = None,
         time_end: dt.datetime | None = None,
-):
+) -> Optional[str]:
+    """Query THREDDS for the specified variable."""
     if time_start is None or time_end is None:
         temporal_parameters = {
             "time": "all",
@@ -77,6 +82,11 @@ def query_dataset(
             **temporal_parameters,
         }
     )
-    response.raise_for_status()
-    raw_data = response.text
-    return raw_data
+    try:
+        response.raise_for_status()
+    except httpx.HTTPError:
+        logger.exception(msg="Could not retrieve data")
+        result = None
+    else:
+        result = response.text
+    return result

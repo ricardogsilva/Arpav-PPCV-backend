@@ -25,6 +25,10 @@ class Season(enum.Enum):
     AUTUMN = "AUTUMN"
 
 
+class ObservationDataSmoothingStrategy(enum.Enum):
+    MOVING_AVERAGE_5_YEARS = "MOVING_AVERAGE_5_YEARS"
+
+
 class StationBase(sqlmodel.SQLModel):
     model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 

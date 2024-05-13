@@ -20,6 +20,10 @@ logger = logging.getLogger(__name__)
 _NAME_PATTERN: Final[str] = r"^[a-z][a-z0-9_]+$"
 
 
+class CoverageDataSmoothingStrategy(enum.Enum):
+    MOVING_AVERAGE_11_YEARS_PLUS_LOESS_SMOOTHING = "MOVING_AVERAGE_11_YEARS_PLUS_LOESS_SMOOTHING"
+
+
 class ObservationAggregationType(enum.Enum):
     MONTHLY = "MONTHLY"
     SEASONAL = "SEASONAL"
@@ -169,6 +173,20 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
                 f"{{{param_name}}}", used_value.configuration_parameter_value.name)
         return rendered
 
+    def build_coverage_identifier(
+            self, parameters: list["ConfigurationParameterPossibleValue"]) -> str:
+        id_parts = ["{name}"]
+        for match_obj in re.finditer(r"(\{\w+\})", self.coverage_id_pattern):
+            param_name = match_obj.group(1)[1:-1]
+            for possible_param in parameters:
+                conf_param = possible_param.configuration_parameter_value.configuration_parameter
+                if conf_param.name == param_name:
+                    id_parts.append(possible_param.configuration_parameter_value.name)
+                    break
+            else:
+                raise ValueError(f"Invalid param_name {param_name!r}")
+        return "-".join(id_parts)
+
     def retrieve_used_values(
             self,
             coverage_identifier: str
@@ -214,12 +232,15 @@ class CoverageConfigurationCreate(sqlmodel.SQLModel):
             )
         )
     ]
+    netcdf_main_dataset_name: str
     thredds_url_pattern: str
     unit: str
     palette: str
     color_scale_min: float
     color_scale_max: float
     possible_values: list["ConfigurationParameterPossibleValueCreate"]
+    observation_variable_id: Optional[uuid.UUID] = None
+    observation_variable_aggregation_type: Optional[ObservationAggregationType] = None
 
     @pydantic.field_validator("thredds_url_pattern")
     @classmethod
@@ -238,11 +259,14 @@ class CoverageConfigurationUpdate(sqlmodel.SQLModel):
             pattern=_NAME_PATTERN
         )
     ] = None
+    netcdf_main_dataset_name: Optional[str] = None
     thredds_url_pattern: Optional[str] = None
     unit: Optional[str] = None
     palette: Optional[str] = None
     color_scale_min: Optional[float] = None
     color_scale_max: Optional[float] = None
+    observation_variable_id: Optional[uuid.UUID] = None
+    observation_variable_aggregation_type: Optional[ObservationAggregationType] = None
     possible_values: list["ConfigurationParameterPossibleValueUpdate"]
 
     @pydantic.field_validator("thredds_url_pattern")

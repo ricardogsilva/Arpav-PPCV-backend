@@ -73,6 +73,24 @@ class PossibleConfigurationParameterValuesField(starlette_admin.EnumField):
         return self._get_label(value, request)
 
 
+class RelatedObservationsVariableField(starlette_admin.EnumField):
+
+    def _get_label(
+            self,
+            value: read_schemas.ObservationVariableRead,
+            request: Request
+    ) -> Any:
+        return value.name
+
+    async def serialize_value(
+            self,
+            request: Request,
+            value: read_schemas.ObservationVariableRead,
+            action: RequestAction
+    ) -> Any:
+        return self._get_label(value, request)
+
+
 class ConfigurationParameterView(ModelView):
     identity = "configuration_parameters"
     name = "Configuration Parameter"
@@ -254,6 +272,12 @@ def possible_values_choices_loader(request: Request) -> Sequence[tuple[str, str]
     return result
 
 
+def related_observation_variable_choices_loader(
+        request: Request) -> Sequence[tuple[str, str]]:
+    all_obs_variables = database.collect_all_variables(request.state.session)
+    return [(v.name, v.name) for v in all_obs_variables]
+
+
 class CoverageConfigurationView(ModelView):
     identity = "coverage_configurations"
     name = "Coverage Configuration"
@@ -263,12 +287,22 @@ class CoverageConfigurationView(ModelView):
     fields = (
         UuidField("id"),
         starlette_admin.StringField("name"),
+        starlette_admin.StringField("netcdf_main_dataset_name"),
         starlette_admin.StringField("thredds_url_pattern"),
         starlette_admin.StringField("coverage_id_pattern", disabled=True),
         starlette_admin.StringField("unit"),
         starlette_admin.StringField("palette"),
         starlette_admin.FloatField("color_scale_min"),
         starlette_admin.FloatField("color_scale_max"),
+        RelatedObservationsVariableField(
+            "observation_variable",
+            help_text="Related observation variable",
+            choices_loader=related_observation_variable_choices_loader,
+        ),
+        starlette_admin.EnumField(
+            "observation_variable_aggregation_type",
+            enum=coverages.ObservationAggregationType
+        ),
         starlette_admin.ListField(
             field=PossibleConfigurationParameterValuesField(
                 "possible_values", choices_loader=possible_values_choices_loader)
@@ -277,12 +311,18 @@ class CoverageConfigurationView(ModelView):
 
     exclude_fields_from_list = (
         "id",
+        "netcdf_main_dataset_name",
         "coverage_id_pattern",
         "possible_values",
         "unit",
         "palette",
         "color_scale_min",
         "color_scale_max",
+        "observation_variable",
+        "observation_variable_aggregation_type",
+    )
+    exclude_fields_from_edit = (
+        "coverage_id_pattern",
     )
 
     async def get_pk_value(self, request: Request, obj: Any) -> Any:
@@ -292,6 +332,31 @@ class CoverageConfigurationView(ModelView):
         # calling the respective field's `serialize_value()` method
         result = await super().get_pk_value(request, obj)
         return str(result)
+
+    def _serialize_instance(self, instance: coverages.CoverageConfiguration):
+        obs_variable = instance.related_observation_variable
+        if obs_variable is not None:
+            observation_variable = read_schemas.ObservationVariableRead(
+                **obs_variable.model_dump())
+        else:
+            observation_variable = None
+        return read_schemas.CoverageConfigurationRead(
+            **instance.model_dump(
+                exclude={"observation_variable_aggregation_type"}
+            ),
+            observation_variable_aggregation_type=(
+                    instance.observation_variable_aggregation_type or
+                    coverages.ObservationAggregationType.YEARLY
+            ),
+            observation_variable=observation_variable,
+            possible_values=[
+                read_schemas.ConfigurationParameterPossibleValueRead(
+                    configuration_parameter_value_id=pv.configuration_parameter_value_id,
+                    configuration_parameter_value_name=pv.configuration_parameter_value.name)
+                for pv in instance.possible_values
+            ]
+        )
+
 
     async def find_by_pk(
             self,
@@ -303,15 +368,7 @@ class CoverageConfigurationView(ModelView):
             request.state.session,
             pk
         )
-        return read_schemas.CoverageConfigurationRead(
-            **db_cov_conf.model_dump(),
-            possible_values=[
-                read_schemas.ConfigurationParameterPossibleValueRead(
-                    configuration_parameter_value_id=pv.configuration_parameter_value_id,
-                    configuration_parameter_value_name=pv.configuration_parameter_value.name)
-                for pv in db_cov_conf.possible_values
-            ]
-        )
+        return self._serialize_instance(db_cov_conf)
 
     async def find_all(
             self,
@@ -331,18 +388,7 @@ class CoverageConfigurationView(ModelView):
             list_cov_confs, request.state.session)
         result = []
         for db_cov_conf in db_cov_confs:
-            result.append(
-                read_schemas.CoverageConfigurationRead(
-                    **db_cov_conf.model_dump(),
-                    possible_values=[
-                        read_schemas.ConfigurationParameterPossibleValueRead(
-                            configuration_parameter_value_id=pv.configuration_parameter_value.id,
-                            configuration_parameter_value_name=pv.configuration_parameter_value.name,
-                        )
-                        for pv in db_cov_conf.possible_values
-                    ]
-                )
-            )
+            result.append(self._serialize_instance(db_cov_conf))
         return result
 
     async def create(self, request: Request, data: Dict[str, Any]) -> Any:
@@ -363,31 +409,25 @@ class CoverageConfigurationView(ModelView):
                     coverages.ConfigurationParameterPossibleValueCreate(
                         configuration_parameter_value_id=conf_param_value.id)
                 )
+            related_obs_variable = database.get_variable_by_name(
+                session, data["observation_variable"])
             cov_conf_create = coverages.CoverageConfigurationCreate(
                 name=data["name"],
+                netcdf_main_dataset_name=data["netcdf_main_dataset_name"],
                 thredds_url_pattern=data["thredds_url_pattern"],
                 unit=data["unit"],
                 palette=data["palette"],
                 color_scale_min=data["color_scale_min"],
                 color_scale_max=data["color_scale_max"],
-                possible_values=possible_values_create
+                possible_values=possible_values_create,
+                observation_variable_id=(
+                    related_obs_variable.id if related_obs_variable else None),
+                observation_variable_aggregation_type=data.get(
+                    "observation_variable_aggregation_type"),
             )
             db_cov_conf = database.create_coverage_configuration(
                 session, cov_conf_create)
-
-            coverage_configuration_read = read_schemas.CoverageConfigurationRead(
-                **db_cov_conf.model_dump(
-                    exclude={"possible_values"}
-                ),
-                possible_values=[
-                    read_schemas.ConfigurationParameterPossibleValueRead(
-                        configuration_parameter_value_id=pv.configuration_parameter_value_id,
-                        configuration_parameter_value_name=pv.configuration_parameter_value.name
-                    )
-                    for pv in db_cov_conf.possible_values
-                ]
-            )
-            return coverage_configuration_read
+            return self._serialize_instance(db_cov_conf)
         except Exception as e:
             return self.handle_exception(e)
 
@@ -406,14 +446,21 @@ class CoverageConfigurationView(ModelView):
                     coverages.ConfigurationParameterPossibleValueUpdate(
                         configuration_parameter_value_id=conf_param_value.id)
                 )
+            related_obs_variable = database.get_variable_by_name(
+                session, data["observation_variable"])
             cov_conv_update = coverages.CoverageConfigurationUpdate(
                 name=data.get("name"),
+                netcdf_main_dataset_name=data.get("netcdf_main_dataset_name"),
                 thredds_url_pattern=data.get("thredds_url_pattern"),
                 unit=data.get("data"),
                 palette=data.get("palette"),
                 color_scale_min=data.get("color_scale_min"),
                 color_scale_max=data.get("color_scale_max"),
-                possible_values=possible_values
+                possible_values=possible_values,
+                observation_variable_id=(
+                    related_obs_variable.id if related_obs_variable else None),
+                observation_variable_aggregation_type=data.get(
+                    "observation_variable_aggregation_type"),
             )
             db_coverage_configuration = await anyio.to_thread.run_sync(
                 database.get_coverage_configuration,
@@ -426,18 +473,6 @@ class CoverageConfigurationView(ModelView):
                 db_coverage_configuration,
                 cov_conv_update
             )
-            cov_conf_read = read_schemas.CoverageConfigurationRead(
-                **db_coverage_configuration.model_dump(
-                    exclude={"possible_values"}
-                ),
-                possible_values=[
-                    read_schemas.ConfigurationParameterPossibleValueRead(
-                        configuration_parameter_value_id=pv.configuration_parameter_value_id,
-                        configuration_parameter_value_name=pv.configuration_parameter_value.name
-                    )
-                    for pv in db_coverage_configuration.possible_values
-                ]
-            )
-            return cov_conf_read
+            return self._serialize_instance(db_coverage_configuration)
         except Exception as e:
             self.handle_exception(e)
