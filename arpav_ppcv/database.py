@@ -244,7 +244,11 @@ def list_stations(
         include_total: bool = False,
         polygon_intersection_filter: shapely.Polygon = None,
 ) -> tuple[Sequence[observations.Station], Optional[int]]:
-    """List existing stations."""
+    """List existing stations.
+
+    The ``polygon_intersetion_filter`` parameter is expected to be a polygon
+    geometry in the EPSG:4326 CRS.
+    """
     statement = (
         sqlmodel.select(observations.Station)
         .order_by(observations.Station.code)
@@ -253,7 +257,10 @@ def list_stations(
         statement = statement.where(
             func.ST_Intersects(
                 observations.Station.geom,
-                func.ST_GeomFromWKB(shapely.io.to_wkb(polygon_intersection_filter))
+                func.ST_GeomFromWKB(
+                    shapely.io.to_wkb(polygon_intersection_filter),
+                    4326
+                )
             )
         )
     items = session.exec(statement.offset(offset).limit(limit)).all()
@@ -266,6 +273,11 @@ def collect_all_stations(
         session: sqlmodel.Session,
         polygon_intersection_filter: shapely.Polygon = None,
 ) -> Sequence[observations.Station]:
+    """Collect all stations.
+
+    The ``polygon_intersetion_filter`` parameter is expected to be a polygon
+    geometry in the EPSG:4326 CRS.
+    """
     _, num_total = list_stations(
         session,
         limit=1,
@@ -781,6 +793,17 @@ def get_coverage_configuration_by_name(
         sqlmodel.select(coverages.CoverageConfiguration)
         .where(coverages.CoverageConfiguration.name == coverage_configuration_name)
     ).first()
+
+
+def get_coverage_configuration_by_coverage_identifier(
+        session: sqlmodel.Session,
+        coverage_identifier: str
+) -> Optional[coverages.CoverageConfiguration]:
+    """
+    Get a coverage configuration by the identifier of one of its possible coverages.
+    """
+    coverage_configuration_name = coverage_identifier.partition("-")[0]
+    return get_coverage_configuration_by_name(session, coverage_configuration_name)
 
 
 def list_coverage_configurations(

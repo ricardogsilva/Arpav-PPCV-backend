@@ -21,7 +21,8 @@ class ObservationAggregationType(enum.Enum):
 
 
 class CoverageDataSmoothingStrategy(enum.Enum):
-    MOVING_AVERAGE_11_YEARS_PLUS_LOESS_SMOOTHING = "MOVING_AVERAGE_11_YEARS_PLUS_LOESS_SMOOTHING"
+    LOESS_SMOOTHING = "LOESS_SMOOTHING"
+    MOVING_AVERAGE_11_YEARS = "MOVING_AVERAGE_11"
 
 
 class ResourceList(pydantic.BaseModel):

@@ -12,6 +12,7 @@ import shapely.io
 import sqlmodel
 from dateutil.parser import isoparse
 from geoalchemy2.shape import to_shape
+from loess.loess_1d import loess_1d
 from pyproj.enums import TransformDirection
 from shapely.ops import transform
 
@@ -78,13 +79,19 @@ def get_coverage_time_series(
             )
             if station_data is not None:
                 raw_station_data, station = station_data
-                data_ = _process_station_data(
+                data_ = _process_seasonal_station_data(
                     raw_station_data,
                     data_smoothing=observation_data_smoothing,
                     time_start=start,
                     time_end=end
                 )
-                measurements[station.name] = data_
+                station_data_series_key = "-".join((
+                    "variable",
+                    str(coverage_configuration.observation_variable_id),
+                    "station",
+                    str(station.id)
+                ))
+                measurements[station_data_series_key] = data_
         if include_coverage_uncertainty:
             # TODO: how to map to uncertainty related data?
             ...
@@ -146,8 +153,10 @@ def _get_station_data(
             nearby_stations, key=lambda s: to_shape(s.geom).distance(point_geom))
         # order nearby stations by distance and then iterate through them in order to
         # try to get measurements for the relevant variable and temporal aggregation
+        logger.debug(f"{sorted_stations=}")
         for station in sorted_stations:
             raw_station_data = retriever(station_id_filter=station.id)
+            logger.debug(f"Processing station {station.id}...")
             if len(raw_station_data) > 0:
                 # stop with the first station that has data
                 result = (raw_station_data, station)
@@ -162,22 +171,34 @@ def _get_station_data(
     return result
 
 
-def _process_station_data(
-        raw_data: list[
-            observations.SeasonalMeasurement |
-            observations.MonthlyMeasurement |
-            observations.YearlyMeasurement
-        ],
-        data_smoothing: Optional[base.CoverageDataSmoothingStrategy],
+def _process_seasonal_station_data(
+        raw_data: list[observations.SeasonalMeasurement],
+        data_smoothing: Optional[base.ObservationDataSmoothingStrategy],
         time_start: Optional[dt.datetime],
         time_end: Optional[dt.datetime],
 ) -> pd.DataFrame:
     df = pd.DataFrame(
         [i.model_dump() for i in raw_data]
     )
-    # throw out unneeded columns
-    # convert into proper timestamps
-    # filter out
+    df = df[["value", "season", "year"]]
+    df["season_month"] = df["season"].astype("string").replace({
+        "Season.WINTER": "01",
+        "Season.SPRING": "04",
+        "Season.SUMMER": "07",
+        "Season.AUTUMN": "10"
+    })
+    df["time"] = pd.to_datetime(
+        df["year"].astype("string") + "-" + df["season_month"] + "-01",
+        utc=True
+    )
+    df = df[["value", "time"]]
+    df.set_index("time", inplace=True)
+    if time_start is not None:
+        df = df[time_start:]
+    if time_end is not None:
+        df = df[:time_end]
+    if data_smoothing == base.ObservationDataSmoothingStrategy.MOVING_AVERAGE_5_YEARS:
+        df["smoothed_value"] = df["value"].rolling(window=5, min_periods=1).mean()
     return df
 
 
@@ -210,9 +231,14 @@ def _process_coverage_data(
             df = df[time_start:]
         if time_end is not None:
             df = df[:time_end]
-
-        if data_smoothing is not None:
-            ...
+        if data_smoothing == base.CoverageDataSmoothingStrategy.MOVING_AVERAGE_11_YEARS:
+            df["smoothed_value"] = df[variable_name].rolling(window=11, min_periods=1).mean()
+        elif data_smoothing == base.CoverageDataSmoothingStrategy.LOESS_SMOOTHING:
+            _, loess_smoothed, _ = loess_1d(
+                df.index.astype("int64"),
+                df[variable_name],
+            )
+            df["smoothed_value"] = loess_smoothed
     return df
 
 

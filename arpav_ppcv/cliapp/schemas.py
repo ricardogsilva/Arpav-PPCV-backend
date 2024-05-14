@@ -1,6 +1,9 @@
 import pydantic
 
-from ..schemas import observations
+from ..schemas import (
+    base,
+    observations
+)
 
 
 class StationRead(observations.StationBase):
@@ -46,7 +49,7 @@ class SeasonalMeasurementRead(pydantic.BaseModel):
     station_id: pydantic.UUID4
     variable_id: pydantic.UUID4
     year: int
-    season: observations.Season
+    season: base.Season
     value: float
 
 

@@ -16,7 +16,7 @@ from fastapi import (
 from sqlmodel import Session
 
 from .... import (
-    database,
+    database as db,
     operations,
 )
 from ....config import ArpavPpcvSettings
@@ -74,13 +74,13 @@ async def list_coverage_configurations(
     endpoint.
 
     """
-    coverage_configurations, filtered_total = database.list_coverage_configurations(
+    coverage_configurations, filtered_total = db.list_coverage_configurations(
         db_session,
         limit=list_params.limit,
         offset=list_params.offset,
         include_total=True
     )
-    _, unfiltered_total = database.list_coverage_configurations(
+    _, unfiltered_total = db.list_coverage_configurations(
         db_session, limit=1, offset=0, include_total=True
     )
     return coverage_schemas.CoverageConfigurationList.from_items(
@@ -102,9 +102,9 @@ def get_coverage_configuration(
         db_session: Annotated[Session, Depends(dependencies.get_db_session)],
         coverage_configuration_id: pydantic.UUID4
 ):
-    db_coverage_configuration = database.get_coverage_configuration(
+    db_coverage_configuration = db.get_coverage_configuration(
         db_session, coverage_configuration_id)
-    allowed_coverage_identifiers = database.list_allowed_coverage_identifiers(
+    allowed_coverage_identifiers = db.list_allowed_coverage_identifiers(
         db_session, coverage_configuration_id=db_coverage_configuration.id)
     return coverage_schemas.CoverageConfigurationReadDetail.from_db_instance(
         db_coverage_configuration, allowed_coverage_identifiers, request)
@@ -123,9 +123,8 @@ async def wms_endpoint(
 
     Pass additional relevant WMS query parameters directly to this endpoint.
     """
-    coverage_configuration_name = coverage_identifier.partition("-")[0]
-    db_coverage_configuration = database.get_coverage_configuration_by_name(
-        db_session, coverage_configuration_name)
+    db_coverage_configuration = db.get_coverage_configuration_by_coverage_identifier(
+        db_session, coverage_identifier)
     if db_coverage_configuration is not None:
         try:
             thredds_url_fragment = db_coverage_configuration.get_thredds_url_fragment(coverage_identifier)
@@ -209,9 +208,8 @@ def get_time_series(
         include_coverage_uncertainty: bool = False,
         include_coverage_related_data: bool = False,
 ):
-    coverage_configuration_name = coverage_identifier.partition("-")[0]
-    db_coverage_configuration = database.get_coverage_configuration_by_name(
-        db_session, coverage_configuration_name)
+    db_coverage_configuration = db.get_coverage_configuration_by_coverage_identifier(
+        db_session, coverage_identifier)
     if db_coverage_configuration is not None:
         cov_smoothing = (
             base.CoverageDataSmoothingStrategy.MOVING_AVERAGE_11_YEARS_PLUS_LOESS_SMOOTHING
