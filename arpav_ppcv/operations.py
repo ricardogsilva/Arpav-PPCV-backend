@@ -36,10 +36,10 @@ def get_coverage_time_series(
         coverage_identifier: str,
         point_geom: shapely.Point,
         temporal_range: str,
+        coverage_data_smoothing: base.CoverageDataSmoothingStrategy,
+        observation_data_smoothing: base.ObservationDataSmoothingStrategy,
         include_coverage_data: bool = True,
         include_observation_data: bool = False,
-        coverage_data_smoothing: base.CoverageDataSmoothingStrategy | None = None,
-        observation_data_smoothing: base.ObservationDataSmoothingStrategy | None = None,
         include_coverage_uncertainty: bool = False,
         include_coverage_related_data: bool = False,
 ) -> dict[str, pd.DataFrame]:
@@ -64,11 +64,12 @@ def get_coverage_time_series(
             coverage_data = _process_coverage_data(
                 raw_coverage_data,
                 coverage_configuration,
+                coverage_identifier,
                 coverage_data_smoothing,
                 start,
                 end
             )
-            measurements[coverage_configuration.name] = coverage_data
+            measurements[coverage_identifier] = coverage_data
         if include_observation_data:
             station_data = _get_station_data(
                 session,
@@ -80,16 +81,16 @@ def get_coverage_time_series(
             if station_data is not None:
                 raw_station_data, station = station_data
                 data_ = _process_seasonal_station_data(
+                    coverage_configuration.related_observation_variable,
                     raw_station_data,
                     data_smoothing=observation_data_smoothing,
                     time_start=start,
                     time_end=end
                 )
                 station_data_series_key = "-".join((
-                    "variable",
-                    str(coverage_configuration.observation_variable_id),
                     "station",
-                    str(station.id)
+                    str(station.id),
+                    coverage_configuration.related_observation_variable.name,
                 ))
                 measurements[station_data_series_key] = data_
         if include_coverage_uncertainty:
@@ -155,8 +156,8 @@ def _get_station_data(
         # try to get measurements for the relevant variable and temporal aggregation
         logger.debug(f"{sorted_stations=}")
         for station in sorted_stations:
-            raw_station_data = retriever(station_id_filter=station.id)
             logger.debug(f"Processing station {station.id}...")
+            raw_station_data = retriever(station_id_filter=station.id)
             if len(raw_station_data) > 0:
                 # stop with the first station that has data
                 result = (raw_station_data, station)
@@ -172,8 +173,9 @@ def _get_station_data(
 
 
 def _process_seasonal_station_data(
+        variable: observations.Variable,
         raw_data: list[observations.SeasonalMeasurement],
-        data_smoothing: Optional[base.ObservationDataSmoothingStrategy],
+        data_smoothing: base.ObservationDataSmoothingStrategy,
         time_start: Optional[dt.datetime],
         time_end: Optional[dt.datetime],
 ) -> pd.DataFrame:
@@ -181,6 +183,8 @@ def _process_seasonal_station_data(
         [i.model_dump() for i in raw_data]
     )
     df = df[["value", "season", "year"]]
+    df = df.rename(columns={"value": variable.name})
+
     df["season_month"] = df["season"].astype("string").replace({
         "Season.WINTER": "01",
         "Season.SPRING": "04",
@@ -191,21 +195,24 @@ def _process_seasonal_station_data(
         df["year"].astype("string") + "-" + df["season_month"] + "-01",
         utc=True
     )
-    df = df[["value", "time"]]
+    df = df[[variable.name, "time"]]
     df.set_index("time", inplace=True)
     if time_start is not None:
         df = df[time_start:]
     if time_end is not None:
         df = df[:time_end]
+    smoothed_key = f"smoothed_{variable.name}"
     if data_smoothing == base.ObservationDataSmoothingStrategy.MOVING_AVERAGE_5_YEARS:
-        df["smoothed_value"] = df["value"].rolling(window=5, min_periods=1).mean()
+        df[smoothed_key] = df[variable.name].rolling(window=5, center=True).mean()
+        df = df.dropna()
     return df
 
 
 def _process_coverage_data(
         raw_data: str,
         coverage_configuration: coverages.CoverageConfiguration,
-        data_smoothing: Optional[base.CoverageDataSmoothingStrategy],
+        coverage_identifier: str,
+        data_smoothing: base.CoverageDataSmoothingStrategy,
         time_start: Optional[dt.datetime],
         time_end: Optional[dt.datetime],
 ) -> pd.DataFrame:
@@ -223,7 +230,7 @@ def _process_coverage_data(
     else:
         # keep only time and main variable - we don't care about other stuff
         df = df[["time", col_name]]
-        df = df.rename(columns={col_name: variable_name})
+        df = df.rename(columns={col_name: coverage_identifier})
 
         # - filter out values outside the temporal range
         df.set_index("time", inplace=True)
@@ -231,14 +238,18 @@ def _process_coverage_data(
             df = df[time_start:]
         if time_end is not None:
             df = df[:time_end]
-        if data_smoothing == base.CoverageDataSmoothingStrategy.MOVING_AVERAGE_11_YEARS:
-            df["smoothed_value"] = df[variable_name].rolling(window=11, min_periods=1).mean()
-        elif data_smoothing == base.CoverageDataSmoothingStrategy.LOESS_SMOOTHING:
-            _, loess_smoothed, _ = loess_1d(
-                df.index.astype("int64"),
-                df[variable_name],
-            )
-            df["smoothed_value"] = loess_smoothed
+        if data_smoothing != base.CoverageDataSmoothingStrategy.NO_SMOOTHING:
+            smoothed_key = f"smoothed_{coverage_identifier}"
+            if data_smoothing == base.CoverageDataSmoothingStrategy.MOVING_AVERAGE_11_YEARS:
+                df[smoothed_key] = df[coverage_identifier].rolling(
+                    center=True, window=11).mean()
+            elif data_smoothing == base.CoverageDataSmoothingStrategy.LOESS_SMOOTHING:
+                _, loess_smoothed, _ = loess_1d(
+                    df.index.astype("int64"),
+                    df[coverage_identifier],
+                )
+                df[smoothed_key] = loess_smoothed
+            df = df.dropna()
     return df
 
 

@@ -1,6 +1,9 @@
 import logging
 import urllib.parse
-from typing import Annotated
+from typing import (
+    Annotated,
+    Optional,
+)
 
 import httpx
 import pydantic
@@ -200,25 +203,19 @@ def get_time_series(
         http_client: Annotated[httpx.Client, Depends(dependencies.get_sync_http_client)],
         coverage_identifier: str,
         coords: str,
-        datetime: str,
+        datetime: Optional[str] = "../..",
         include_coverage_data: bool = True,
         include_observation_data: bool = False,
-        coverage_data_smoothing: bool = True,
-        observation_data_smoothing: bool = True,
+        coverage_data_smoothing: base.CoverageDataSmoothingStrategy = (
+                base.CoverageDataSmoothingStrategy.NO_SMOOTHING),
+        observation_data_smoothing: base.ObservationDataSmoothingStrategy = (
+                base.ObservationDataSmoothingStrategy.NO_SMOOTHING),
         include_coverage_uncertainty: bool = False,
         include_coverage_related_data: bool = False,
 ):
     db_coverage_configuration = db.get_coverage_configuration_by_coverage_identifier(
         db_session, coverage_identifier)
     if db_coverage_configuration is not None:
-        cov_smoothing = (
-            base.CoverageDataSmoothingStrategy.MOVING_AVERAGE_11_YEARS_PLUS_LOESS_SMOOTHING
-            if coverage_data_smoothing else None
-        )
-        obs_smoothing = (
-            base.ObservationDataSmoothingStrategy.MOVING_AVERAGE_5_YEARS
-            if observation_data_smoothing else None
-        )
         geom = shapely.io.from_wkt(coords)
         if geom.geom_type == "MultiPoint":
             logger.warning(
@@ -244,21 +241,49 @@ def get_time_series(
             temporal_range=datetime,
             include_coverage_data=include_coverage_data,
             include_observation_data=include_observation_data,
-            coverage_data_smoothing=cov_smoothing,
-            observation_data_smoothing=obs_smoothing,
+            coverage_data_smoothing=coverage_data_smoothing,
+            observation_data_smoothing=observation_data_smoothing,
             include_coverage_uncertainty=include_coverage_uncertainty,
             include_coverage_related_data=include_coverage_related_data,
         )
         measurements = []
-        for name, df in time_series.items():
-            serialized_time_series = df.to_dict()[db_coverage_configuration.netcdf_main_dataset_name]
-            for timestamp, value in serialized_time_series.items():
-                measurement = coverage_schemas.TimeSeriesItem(
-                    value=value,
-                    series=name,
-                    datetime=timestamp,
+        coverage_df = time_series[coverage_identifier]
+        if include_coverage_data:
+            series_key = (
+                f"smoothed_{coverage_identifier}" if
+                coverage_data_smoothing != base.CoverageDataSmoothingStrategy.NO_SMOOTHING
+                else coverage_identifier
+            )
+            for timestamp, value in coverage_df.to_dict()[series_key].items():
+                measurements.append(
+                    coverage_schemas.TimeSeriesItem(
+                        value=value,
+                        series=coverage_identifier,
+                        datetime=timestamp
+                    )
                 )
-                measurements.append(measurement)
+        if include_observation_data:
+            variable = db_coverage_configuration.related_observation_variable
+            obs_df_name = [
+                n for n in time_series.keys() if n.startswith('station-')][0]
+            obs_df = time_series[obs_df_name]
+            series_key = (
+                f"smoothed_{variable.name}"
+                if observation_data_smoothing != base.ObservationDataSmoothingStrategy.NO_SMOOTHING
+                else variable.name
+            )
+            for timestamp, value in obs_df.to_dict()[series_key].items():
+                measurements.append(
+                    coverage_schemas.TimeSeriesItem(
+                        value=value,
+                        series=variable.name,
+                        datetime=timestamp
+                    )
+                )
+        if include_coverage_uncertainty:
+            ...
+        if include_coverage_related_data:
+            ...
         return coverage_schemas.TimeSeries(values=measurements)
     else:
         raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
