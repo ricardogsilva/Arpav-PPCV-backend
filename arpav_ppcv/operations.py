@@ -32,27 +32,27 @@ def get_coverage_time_series(
         settings: ArpavPpcvSettings,
         session: sqlmodel.Session,
         http_client: httpx.Client,
-        coverage_configuration: coverages.CoverageConfiguration,
-        coverage_identifier: str,
+        coverage: coverages.CoverageInternal,
         point_geom: shapely.Point,
         temporal_range: str,
-        coverage_data_smoothing: list[base.CoverageDataSmoothingStrategy],
-        observation_data_smoothing: list[base.ObservationDataSmoothingStrategy],
+        coverage_smoothing_strategies: list[base.CoverageDataSmoothingStrategy],
+        observation_smoothing_strategies: list[base.ObservationDataSmoothingStrategy],
         include_coverage_data: bool = True,
         include_observation_data: bool = False,
         include_coverage_uncertainty: bool = False,
         include_coverage_related_data: bool = False,
 ) -> dict[str, pd.DataFrame]:
+    """Retrieve time series for a coverage."""
     start, end = _parse_temporal_range(temporal_range)
     coverage_data_ncss_url = "/".join((
         settings.thredds_server.base_url,
         settings.thredds_server.netcdf_subset_service_url_fragment,
-        coverage_configuration.get_thredds_url_fragment(coverage_identifier)
+        coverage.configuration.get_thredds_url_fragment(coverage.identifier)
     ))
     raw_coverage_data = ncss.query_dataset(
         http_client,
         thredds_ncss_url=coverage_data_ncss_url,
-        variable_name=coverage_configuration.netcdf_main_dataset_name,
+        variable_name=coverage.configuration.netcdf_main_dataset_name,
         longitude=point_geom.x,
         latitude=point_geom.y,
         time_start=start,
@@ -62,35 +62,45 @@ def get_coverage_time_series(
     if include_coverage_data:
         coverage_data = _process_coverage_data(
             raw_coverage_data,
-            coverage_configuration,
-            coverage_identifier,
-            coverage_data_smoothing,
+            coverage,
+            coverage_smoothing_strategies,
             start,
             end
         )
-        measurements[coverage_identifier] = coverage_data
+        measurements[coverage.identifier] = coverage_data
+        if include_coverage_uncertainty:
+            has_uncertainty_cov_confs = any((
+                coverage.configuration.uncertainty_lower_bounds_coverage_configuration,
+                coverage.configuration.uncertainty_upper_bounds_coverage_configuration,
+            ))
+            if has_uncertainty_cov_confs:
+                uncertainty_data = _get_coverage_uncertainty_time_series(
+                    settings, http_client, coverage.configuration, coverage.identifier,
+                    point_geom, start, end, coverage_smoothing_strategies,
+                )
+                measurements.update(**uncertainty_data)
+        if include_coverage_related_data:
+            # TODO: how to map to related data?
+            ...
     if include_observation_data:
-        if coverage_configuration.related_observation_variable is not None:
+        if coverage.configuration.related_observation_variable is not None:
             station_data = _get_station_data(
                 session,
                 settings,
                 point_geom,
-                coverage_configuration,
-                coverage_identifier,
+                coverage.configuration,
+                coverage.identifier,
             )
             if station_data is not None:
                 raw_station_data, station = station_data
                 data_ = _process_seasonal_station_data(
-                    coverage_configuration.related_observation_variable,
-                    raw_station_data,
-                    data_smoothing=observation_data_smoothing,
-                    time_start=start,
-                    time_end=end
+                    coverage.configuration.related_observation_variable,
+                    raw_station_data, observation_smoothing_strategies, start, end
                 )
                 station_data_series_key = "_".join((
                     "station",
                     str(station.id),
-                    coverage_configuration.related_observation_variable.name,
+                    coverage.configuration.related_observation_variable.name,
                 ))
                 measurements[station_data_series_key] = data_
             else:
@@ -100,13 +110,6 @@ def get_coverage_time_series(
                 "Cannot include observation data - no observation variable is related "
                 "to this coverage configuration"
             )
-
-    if include_coverage_uncertainty:
-        # TODO: how to map to uncertainty related data?
-        ...
-    if include_coverage_related_data:
-        # TODO: how to map to related data?
-        ...
     return measurements
 
 
@@ -181,7 +184,7 @@ def _get_station_data(
 def _process_seasonal_station_data(
         variable: observations.Variable,
         raw_data: list[observations.SeasonalMeasurement],
-        data_smoothing: list[base.ObservationDataSmoothingStrategy],
+        smoothing_strategies: list[base.ObservationDataSmoothingStrategy],
         time_start: Optional[dt.datetime],
         time_end: Optional[dt.datetime],
 ) -> pd.DataFrame:
@@ -207,7 +210,7 @@ def _process_seasonal_station_data(
         df = df[time_start:]
     if time_end is not None:
         df = df[:time_end]
-    for strategy in data_smoothing:
+    for strategy in smoothing_strategies:
         column_name = "__".join((variable.name, strategy.value))
         if strategy == base.ObservationDataSmoothingStrategy.NO_SMOOTHING:
             df[column_name] = df[variable.name]
@@ -220,16 +223,15 @@ def _process_seasonal_station_data(
 
 def _process_coverage_data(
         raw_data: str,
-        coverage_configuration: coverages.CoverageConfiguration,
-        coverage_identifier: str,
-        data_smoothing: list[base.CoverageDataSmoothingStrategy],
+        coverage: coverages.CoverageInternal,
+        smoothing_strategies: list[base.CoverageDataSmoothingStrategy],
         time_start: Optional[dt.datetime],
         time_end: Optional[dt.datetime],
 ) -> pd.DataFrame:
     df = pd.read_csv(io.StringIO(raw_data), parse_dates=["time"])
 
     # get name of the colum that holds the main variable
-    variable_name = coverage_configuration.netcdf_main_dataset_name
+    variable_name = coverage.configuration.netcdf_main_dataset_name
     try:
         col_name = [c for c in df.columns if c.startswith(f"{variable_name}[")][0]
     except IndexError:
@@ -240,7 +242,7 @@ def _process_coverage_data(
     else:
         # keep only time and main variable - we don't care about other stuff
         df = df[["time", col_name]]
-        df = df.rename(columns={col_name: coverage_identifier})
+        df = df.rename(columns={col_name: coverage.identifier})
 
         # - filter out values outside the temporal range
         df.set_index("time", inplace=True)
@@ -248,22 +250,91 @@ def _process_coverage_data(
             df = df[time_start:]
         if time_end is not None:
             df = df[:time_end]
-        for strategy in data_smoothing:
-            column_name = "__".join((coverage_identifier, strategy.value))
+        for strategy in smoothing_strategies:
+            column_name = "__".join((coverage.identifier, strategy.value))
             if strategy == base.CoverageDataSmoothingStrategy.NO_SMOOTHING:
-                df[column_name] = df[coverage_identifier]
+                df[column_name] = df[coverage.identifier]
             elif strategy == base.CoverageDataSmoothingStrategy.MOVING_AVERAGE_11_YEARS:
-                df[column_name] = df[coverage_identifier].rolling(
+                df[column_name] = df[coverage.identifier].rolling(
                     center=True, window=11).mean()
             elif strategy == base.CoverageDataSmoothingStrategy.LOESS_SMOOTHING:
                 _, loess_smoothed, _ = loess_1d(
                     df.index.astype("int64"),
-                    df[coverage_identifier],
+                    df[coverage.identifier],
                 )
                 df[column_name] = loess_smoothed
-        df = df.drop(columns=[coverage_identifier])
+        df = df.drop(columns=[coverage.identifier])
         df = df.dropna()
         return df
+
+
+def _get_individual_uncertainty_time_series(
+        settings: ArpavPpcvSettings,
+        http_client: httpx.Client,
+        used_values: list[coverages.ConfigurationParameterValue],
+        uncert_coverage_configuration: coverages.CoverageConfiguration,
+        point_geom: shapely.Point,
+        time_start: Optional[dt.datetime],
+        time_end: Optional[dt.datetime],
+        smoothing_strategies: list[base.CoverageDataSmoothingStrategy],
+) -> pd.DataFrame:
+    cov_identifier = (
+        uncert_coverage_configuration.build_coverage_identifier(used_values)
+    )
+    ncss_url = "/".join((
+        settings.thredds_server.base_url,
+        settings.thredds_server.netcdf_subset_service_url_fragment,
+        uncert_coverage_configuration.get_thredds_url_fragment(cov_identifier)
+    ))
+    raw_coverage_data = ncss.query_dataset(
+        http_client,
+        thredds_ncss_url=ncss_url,
+        variable_name=uncert_coverage_configuration.netcdf_main_dataset_name,
+        longitude=point_geom.x,
+        latitude=point_geom.y,
+        time_start=time_start,
+        time_end=time_end,
+    )
+    return _process_coverage_data(
+        raw_coverage_data,
+        uncert_coverage_configuration,
+        cov_identifier,
+        smoothing_strategies,
+        time_start,
+        time_end
+    )
+
+
+def _get_coverage_uncertainty_time_series(
+        settings: ArpavPpcvSettings,
+        http_client: httpx.Client,
+        coverage_conf: coverages.CoverageConfiguration,
+        coverage_identifier: str,
+        point_geom: shapely.Point,
+        time_start: Optional[dt.datetime],
+        time_end: Optional[dt.datetime],
+        smoothing_strategies: list[base.CoverageDataSmoothingStrategy],
+) -> dict[str, pd.DataFrame]:
+    used_possible_values = coverage_conf.retrieve_used_values(
+        coverage_identifier)
+    result = {}
+    used_values = [
+        pv.configuration_parameter_value for pv in used_possible_values]
+    if lower_conf := coverage_conf.uncertainty_upper_bounds_coverage_configuration:
+        result[f"{coverage_identifier}_uncertainty_lower_bounds"] = (
+            _get_individual_uncertainty_time_series(
+                settings, http_client, used_values, lower_conf,
+                point_geom, time_start, time_end, smoothing_strategies
+            )
+        )
+    if upper_conf := coverage_conf.uncertainty_upper_bounds_coverage_configuration:
+        result[f"{coverage_identifier}_uncertainty_lower_bounds"] = (
+            _get_individual_uncertainty_time_series(
+                settings, http_client, used_values, upper_conf,
+                point_geom, time_start, time_end, smoothing_strategies
+            )
+        )
+    return result
 
 
 def _parse_temporal_range(

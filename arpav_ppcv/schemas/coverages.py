@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 import re
 import uuid
@@ -206,14 +207,14 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         return rendered
 
     def build_coverage_identifier(
-            self, parameters: list["ConfigurationParameterPossibleValue"]) -> str:
+            self, parameters: list[ConfigurationParameterValue]) -> str:
         id_parts = ["{name}"]
         for match_obj in re.finditer(r"(\{\w+\})", self.coverage_id_pattern):
             param_name = match_obj.group(1)[1:-1]
-            for possible_param in parameters:
-                conf_param = possible_param.configuration_parameter_value.configuration_parameter
+            for conf_param_value in parameters:
+                conf_param = conf_param_value.configuration_parameter
                 if conf_param.name == param_name:
-                    id_parts.append(possible_param.configuration_parameter_value.name)
+                    id_parts.append(conf_param_value.name)
                     break
             else:
                 raise ValueError(f"Invalid param_name {param_name!r}")
@@ -387,13 +388,8 @@ class ConfigurationParameterPossibleValueCreate(sqlmodel.SQLModel):
 class ConfigurationParameterPossibleValueUpdate(sqlmodel.SQLModel):
     configuration_parameter_value_id: uuid.UUID
 
-# def _get_subclasses(cls):
-#     for subclass in cls.__subclasses__():
-#         yield from _get_subclasses(subclass)
-#         yield subclass
-#
-#
-# _models_dict = {cls.__name__: cls for cls in _get_subclasses(sqlmodel.SQLModel)}
-#
-# for cls in _models_dict.values():
-#     cls.model_rebuild(_types_namespace=_models_dict)
+
+@dataclasses.dataclass
+class CoverageInternal:
+    configuration: CoverageConfiguration
+    identifier: str
