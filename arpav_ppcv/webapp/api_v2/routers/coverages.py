@@ -1,5 +1,6 @@
 import logging
 import urllib.parse
+import uuid
 from typing import (
     Annotated,
     Optional,
@@ -12,6 +13,7 @@ from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
+    Query,
     Request,
     Response,
     status,
@@ -24,7 +26,10 @@ from .... import (
 )
 from ....config import ArpavPpcvSettings
 from ....thredds import utils as thredds_utils
-from ....schemas import base
+from ....schemas.base import (
+    CoverageDataSmoothingStrategy,
+    ObservationDataSmoothingStrategy,
+)
 from ... import dependencies
 from ..schemas import coverages as coverage_schemas
 
@@ -196,7 +201,7 @@ async def wms_endpoint(
 
 
 @router.get(
-    "/time-series/{coverage_identifier}", response_model=coverage_schemas.TimeSeries)
+    "/time-series/{coverage_identifier}", response_model=coverage_schemas.TimeSeriesList)
 def get_time_series(
         db_session: Annotated[Session, Depends(dependencies.get_db_session)],
         settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
@@ -206,10 +211,14 @@ def get_time_series(
         datetime: Optional[str] = "../..",
         include_coverage_data: bool = True,
         include_observation_data: bool = False,
-        coverage_data_smoothing: base.CoverageDataSmoothingStrategy = (
-                base.CoverageDataSmoothingStrategy.NO_SMOOTHING),
-        observation_data_smoothing: base.ObservationDataSmoothingStrategy = (
-                base.ObservationDataSmoothingStrategy.NO_SMOOTHING),
+        coverage_data_smoothing: Annotated[
+            list[CoverageDataSmoothingStrategy],
+            Query()
+        ] = [ObservationDataSmoothingStrategy.NO_SMOOTHING],  # noqa
+        observation_data_smoothing: Annotated[
+            list[ObservationDataSmoothingStrategy],
+            Query()
+        ] = [ObservationDataSmoothingStrategy.NO_SMOOTHING],  # noqa
         include_coverage_uncertainty: bool = False,
         include_coverage_related_data: bool = False,
 ):
@@ -246,45 +255,74 @@ def get_time_series(
             include_coverage_uncertainty=include_coverage_uncertainty,
             include_coverage_related_data=include_coverage_related_data,
         )
-        measurements = []
         coverage_df = time_series[coverage_identifier]
+        series = []
         if include_coverage_data:
-            series_key = (
-                f"smoothed_{coverage_identifier}" if
-                coverage_data_smoothing != base.CoverageDataSmoothingStrategy.NO_SMOOTHING
-                else coverage_identifier
-            )
-            for timestamp, value in coverage_df.to_dict()[series_key].items():
-                measurements.append(
-                    coverage_schemas.TimeSeriesItem(
-                        value=value,
-                        series=coverage_identifier,
-                        datetime=timestamp
+            for series_name, series_measurements in coverage_df.to_dict().items():
+                name_prefix, smoothing_strategy = series_name.rpartition("__")[::2]
+                smoothed_with = CoverageDataSmoothingStrategy(smoothing_strategy)
+                if (
+                        smoothed_with == CoverageDataSmoothingStrategy.NO_SMOOTHING and
+                        CoverageDataSmoothingStrategy.NO_SMOOTHING not in coverage_data_smoothing
+                ):
+                    continue  # client did not ask for the NO_SMOOTHING strategy
+                else:
+                    measurements = []
+                    for timestamp, value in series_measurements.items():
+                        measurements.append(
+                            coverage_schemas.TimeSeriesItem(
+                                value=value, datetime=timestamp)
+                        )
+                    series.append(
+                        coverage_schemas.TimeSeries(
+                            name=series_name,
+                            values=measurements,
+                            info={
+                                "coverage_identifier": coverage_identifier,
+                                "smoothing": smoothing_strategy.lower()
+                            }
+                        )
                     )
-                )
+
         if include_observation_data:
             variable = db_coverage_configuration.related_observation_variable
-            obs_df_name = [
-                n for n in time_series.keys() if n.startswith('station-')][0]
-            obs_df = time_series[obs_df_name]
-            series_key = (
-                f"smoothed_{variable.name}"
-                if observation_data_smoothing != base.ObservationDataSmoothingStrategy.NO_SMOOTHING
-                else variable.name
-            )
-            for timestamp, value in obs_df.to_dict()[series_key].items():
-                measurements.append(
-                    coverage_schemas.TimeSeriesItem(
-                        value=value,
-                        series=variable.name,
-                        datetime=timestamp
-                    )
-                )
+            for df_name, df in time_series.items():
+                if df_name.startswith("station_"):
+                    station_id = uuid.UUID(df_name.split("_")[1])
+                    db_station = db.get_station(db_session, station_id)
+                    for series_name, series_measurements in df.to_dict().items():
+                        name_prefix, smoothing_strategy = series_name.rpartition("__")[::2]
+                        smoothed_with = ObservationDataSmoothingStrategy(smoothing_strategy)
+                        if (
+                                smoothed_with == ObservationDataSmoothingStrategy.NO_SMOOTHING and
+                                ObservationDataSmoothingStrategy.NO_SMOOTHING not in observation_data_smoothing
+                        ):
+                            continue  # client did not ask for the NO_SMOOTHING strategy
+                        else:
+                            measurements = []
+                            for timestamp, value in series_measurements.items():
+                                measurements.append(
+                                    coverage_schemas.TimeSeriesItem(
+                                        value=value, datetime=timestamp)
+                                )
+                            series.append(
+                                coverage_schemas.TimeSeries(
+                                    name=series_name,
+                                    values=measurements,
+                                    info={
+                                        "station_id": str(db_station.id),
+                                        "station_name": db_station.name,
+                                        "variable_name": variable.name,
+                                        "variable_description": variable.description,
+                                        "smoothing": smoothing_strategy.lower()
+                                    }
+                                ),
+                            )
         if include_coverage_uncertainty:
             ...
         if include_coverage_related_data:
             ...
-        return coverage_schemas.TimeSeries(values=measurements)
+        return coverage_schemas.TimeSeriesList(series=series)
     else:
         raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
 

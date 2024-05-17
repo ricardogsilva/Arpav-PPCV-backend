@@ -36,8 +36,8 @@ def get_coverage_time_series(
         coverage_identifier: str,
         point_geom: shapely.Point,
         temporal_range: str,
-        coverage_data_smoothing: base.CoverageDataSmoothingStrategy,
-        observation_data_smoothing: base.ObservationDataSmoothingStrategy,
+        coverage_data_smoothing: list[base.CoverageDataSmoothingStrategy],
+        observation_data_smoothing: list[base.ObservationDataSmoothingStrategy],
         include_coverage_data: bool = True,
         include_observation_data: bool = False,
         include_coverage_uncertainty: bool = False,
@@ -87,7 +87,7 @@ def get_coverage_time_series(
                     time_start=start,
                     time_end=end
                 )
-                station_data_series_key = "-".join((
+                station_data_series_key = "_".join((
                     "station",
                     str(station.id),
                     coverage_configuration.related_observation_variable.name,
@@ -175,7 +175,7 @@ def _get_station_data(
 def _process_seasonal_station_data(
         variable: observations.Variable,
         raw_data: list[observations.SeasonalMeasurement],
-        data_smoothing: base.ObservationDataSmoothingStrategy,
+        data_smoothing: list[base.ObservationDataSmoothingStrategy],
         time_start: Optional[dt.datetime],
         time_end: Optional[dt.datetime],
 ) -> pd.DataFrame:
@@ -201,10 +201,14 @@ def _process_seasonal_station_data(
         df = df[time_start:]
     if time_end is not None:
         df = df[:time_end]
-    smoothed_key = f"smoothed_{variable.name}"
-    if data_smoothing == base.ObservationDataSmoothingStrategy.MOVING_AVERAGE_5_YEARS:
-        df[smoothed_key] = df[variable.name].rolling(window=5, center=True).mean()
-        df = df.dropna()
+    for strategy in data_smoothing:
+        column_name = "__".join((variable.name, strategy.value))
+        if strategy == base.ObservationDataSmoothingStrategy.NO_SMOOTHING:
+            df[column_name] = df[variable.name]
+        elif strategy == base.ObservationDataSmoothingStrategy.MOVING_AVERAGE_5_YEARS:
+            df[column_name] = df[variable.name].rolling(window=5, center=True).mean()
+    df = df.drop(columns=[variable.name])
+    df = df.dropna()
     return df
 
 
@@ -212,7 +216,7 @@ def _process_coverage_data(
         raw_data: str,
         coverage_configuration: coverages.CoverageConfiguration,
         coverage_identifier: str,
-        data_smoothing: base.CoverageDataSmoothingStrategy,
+        data_smoothing: list[base.CoverageDataSmoothingStrategy],
         time_start: Optional[dt.datetime],
         time_end: Optional[dt.datetime],
 ) -> pd.DataFrame:
@@ -238,19 +242,22 @@ def _process_coverage_data(
             df = df[time_start:]
         if time_end is not None:
             df = df[:time_end]
-        if data_smoothing != base.CoverageDataSmoothingStrategy.NO_SMOOTHING:
-            smoothed_key = f"smoothed_{coverage_identifier}"
-            if data_smoothing == base.CoverageDataSmoothingStrategy.MOVING_AVERAGE_11_YEARS:
-                df[smoothed_key] = df[coverage_identifier].rolling(
+        for strategy in data_smoothing:
+            column_name = "__".join((coverage_identifier, strategy.value))
+            if strategy == base.CoverageDataSmoothingStrategy.NO_SMOOTHING:
+                df[column_name] = df[coverage_identifier]
+            elif strategy == base.CoverageDataSmoothingStrategy.MOVING_AVERAGE_11_YEARS:
+                df[column_name] = df[coverage_identifier].rolling(
                     center=True, window=11).mean()
-            elif data_smoothing == base.CoverageDataSmoothingStrategy.LOESS_SMOOTHING:
+            elif strategy == base.CoverageDataSmoothingStrategy.LOESS_SMOOTHING:
                 _, loess_smoothed, _ = loess_1d(
                     df.index.astype("int64"),
                     df[coverage_identifier],
                 )
-                df[smoothed_key] = loess_smoothed
-            df = df.dropna()
-    return df
+                df[column_name] = loess_smoothed
+        df = df.drop(columns=[coverage_identifier])
+        df = df.dropna()
+        return df
 
 
 def _parse_temporal_range(
