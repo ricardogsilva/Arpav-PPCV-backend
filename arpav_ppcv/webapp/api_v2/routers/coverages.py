@@ -37,6 +37,34 @@ from ..schemas import coverages as coverage_schemas
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+@router.get(
+    "/configuration-parameters",
+    response_model=coverage_schemas.ConfigurationParameterList
+)
+async def list_configuration_parameters(
+        request: Request,
+        db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+        list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
+):
+    """List configuration parameters."""
+    config_params, filtered_total = db.list_configuration_parameters(
+        db_session,
+        limit=list_params.limit,
+        offset=list_params.offset,
+        include_total=True
+    )
+    _, unfiltered_total = db.list_configuration_parameters(
+        db_session, limit=1, offset=0, include_total=True
+    )
+    return coverage_schemas.ConfigurationParameterList.from_items(
+        config_params,
+        request,
+        limit=list_params.limit,
+        offset=list_params.offset,
+        filtered_total=filtered_total,
+        unfiltered_total=unfiltered_total
+    )
+
 
 @router.get(
     "/coverage-configurations",
