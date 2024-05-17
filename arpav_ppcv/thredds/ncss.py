@@ -13,6 +13,7 @@ from typing import Optional
 import httpx
 import shapely
 
+from ..exceptions import CoverageDataRetrievalError
 from . import models
 
 logger = logging.getLogger(__name__)
@@ -61,7 +62,7 @@ def query_dataset(
         latitude: float,
         time_start: dt.datetime | None = None,
         time_end: dt.datetime | None = None,
-) -> Optional[str]:
+) -> str:
     """Query THREDDS for the specified variable."""
     if time_start is None or time_end is None:
         temporal_parameters = {
@@ -84,9 +85,9 @@ def query_dataset(
     )
     try:
         response.raise_for_status()
-    except httpx.HTTPError:
+    except httpx.HTTPError as err:
         logger.exception(msg="Could not retrieve data")
-        result = None
+        raise CoverageDataRetrievalError() from err
     else:
         result = response.text
     return result

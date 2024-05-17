@@ -22,6 +22,7 @@ from sqlmodel import Session
 
 from .... import (
     database as db,
+    exceptions,
     operations,
 )
 from ....config import ArpavPpcvSettings
@@ -253,6 +254,12 @@ def get_time_series(
     db_coverage_configuration = db.get_coverage_configuration_by_coverage_identifier(
         db_session, coverage_identifier)
     if db_coverage_configuration is not None:
+        allowed_cov_ids = db.list_allowed_coverage_identifiers(
+            db_session,
+            coverage_configuration_id=db_coverage_configuration.id
+        )
+        if coverage_identifier not in allowed_cov_ids:
+            raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
         geom = shapely.io.from_wkt(coords)
         if geom.geom_type == "MultiPoint":
             logger.warning(
@@ -268,21 +275,27 @@ def get_time_series(
                 f"got {geom.geom_type!r} instead - Using the centroid instead"
             )
             point_geom = geom.centroid
-        time_series = operations.get_coverage_time_series(
-            settings,
-            db_session,
-            http_client,
-            coverage_configuration=db_coverage_configuration,
-            coverage_identifier=coverage_identifier,
-            point_geom=point_geom,
-            temporal_range=datetime,
-            include_coverage_data=include_coverage_data,
-            include_observation_data=include_observation_data,
-            coverage_data_smoothing=coverage_data_smoothing,
-            observation_data_smoothing=observation_data_smoothing,
-            include_coverage_uncertainty=include_coverage_uncertainty,
-            include_coverage_related_data=include_coverage_related_data,
-        )
+        try:
+            time_series = operations.get_coverage_time_series(
+                settings,
+                db_session,
+                http_client,
+                coverage_configuration=db_coverage_configuration,
+                coverage_identifier=coverage_identifier,
+                point_geom=point_geom,
+                temporal_range=datetime,
+                include_coverage_data=include_coverage_data,
+                include_observation_data=include_observation_data,
+                coverage_data_smoothing=coverage_data_smoothing,
+                observation_data_smoothing=observation_data_smoothing,
+                include_coverage_uncertainty=include_coverage_uncertainty,
+                include_coverage_related_data=include_coverage_related_data,
+            )
+        except exceptions.CoverageDataRetrievalError as err:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="Could not retrieve data"
+            )
         coverage_df = time_series[coverage_identifier]
         series = []
         if include_coverage_data:

@@ -12,6 +12,7 @@ import pydantic
 import sqlalchemy
 import sqlmodel
 
+from .. import exceptions
 from . import base
 
 if TYPE_CHECKING:
@@ -135,6 +136,14 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         foreign_key="variable.id"
     )
     observation_variable_aggregation_type: Optional[base.ObservationAggregationType] = None
+    uncertainty_lower_bounds_coverage_configuration_id: Optional[uuid.UUID] = sqlmodel.Field(
+        default=None,
+        foreign_key="coverageconfiguration.id"
+    )
+    uncertainty_upper_bounds_coverage_configuration_id: Optional[uuid.UUID] = sqlmodel.Field(
+        default=None,
+        foreign_key="coverageconfiguration.id"
+    )
 
     possible_values: list["ConfigurationParameterPossibleValue"] = sqlmodel.Relationship(
         back_populates="coverage_configuration",
@@ -147,6 +156,34 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         back_populates="related_coverage_configurations"
     )
 
+    uncertainty_lower_bounds_coverage_configuration: Optional["CoverageConfiguration"] = sqlmodel.Relationship(
+        back_populates="is_lower_bounds_coverage_configuration_to",
+        sa_relationship_kwargs={
+            "foreign_keys": "CoverageConfiguration.uncertainty_lower_bounds_coverage_configuration_id",
+            "remote_side": "CoverageConfiguration.id",
+        }
+    )
+    is_lower_bounds_coverage_configuration_to: Optional["CoverageConfiguration"] = sqlmodel.Relationship(
+        back_populates="uncertainty_lower_bounds_coverage_configuration",
+        sa_relationship_kwargs={
+            "foreign_keys": "CoverageConfiguration.uncertainty_lower_bounds_coverage_configuration_id",
+        }
+    )
+
+    uncertainty_upper_bounds_coverage_configuration: Optional["CoverageConfiguration"] = sqlmodel.Relationship(
+        back_populates="is_upper_bounds_coverage_configuration_to",
+        sa_relationship_kwargs={
+            "foreign_keys": "CoverageConfiguration.uncertainty_upper_bounds_coverage_configuration_id",
+            "remote_side": "CoverageConfiguration.id",
+        }
+    )
+    is_upper_bounds_coverage_configuration_to: Optional["CoverageConfiguration"] = sqlmodel.Relationship(
+        back_populates="uncertainty_upper_bounds_coverage_configuration",
+        sa_relationship_kwargs={
+            "foreign_keys": "CoverageConfiguration.uncertainty_upper_bounds_coverage_configuration_id",
+        }
+    )
+
     @pydantic.computed_field()
     @property
     def coverage_id_pattern(self) -> str:
@@ -156,7 +193,11 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         return "-".join(id_parts)
 
     def get_thredds_url_fragment(self, coverage_identifier: str) -> str:
-        used_values = self.retrieve_used_values(coverage_identifier)
+        try:
+            used_values = self.retrieve_used_values(coverage_identifier)
+        except IndexError as err:
+            logger.exception("Could not retrieve used values")
+            raise exceptions.InvalidCoverageIdentifierException() from err
         rendered = self.thredds_url_pattern
         for used_value in used_values:
             param_name = used_value.configuration_parameter_value.configuration_parameter.name
@@ -258,6 +299,8 @@ class CoverageConfigurationCreate(sqlmodel.SQLModel):
     possible_values: list["ConfigurationParameterPossibleValueCreate"]
     observation_variable_id: Optional[uuid.UUID] = None
     observation_variable_aggregation_type: Optional[base.ObservationAggregationType] = None
+    uncertainty_lower_bounds_coverage_configuration_id: Optional[uuid.UUID] = None
+    uncertainty_upper_bounds_coverage_configuration_id: Optional[uuid.UUID] = None
 
     @pydantic.field_validator("thredds_url_pattern")
     @classmethod
@@ -266,7 +309,7 @@ class CoverageConfigurationCreate(sqlmodel.SQLModel):
             logger.debug(f"{match_obj.group(1)[1:-1]=}")
             if re.match(_NAME_PATTERN, match_obj.group(1)[1:-1]) is None:
                 raise ValueError(f"configuration parameter {v!r} has invalid name")
-        return v
+        return v.strip()
 
 
 class CoverageConfigurationUpdate(sqlmodel.SQLModel):
@@ -285,6 +328,8 @@ class CoverageConfigurationUpdate(sqlmodel.SQLModel):
     observation_variable_id: Optional[uuid.UUID] = None
     observation_variable_aggregation_type: Optional[base.ObservationAggregationType] = None
     possible_values: list["ConfigurationParameterPossibleValueUpdate"]
+    uncertainty_lower_bounds_coverage_configuration_id: Optional[uuid.UUID] = None
+    uncertainty_upper_bounds_coverage_configuration_id: Optional[uuid.UUID] = None
 
     @pydantic.field_validator("thredds_url_pattern")
     @classmethod
@@ -293,7 +338,7 @@ class CoverageConfigurationUpdate(sqlmodel.SQLModel):
             logger.debug(f"{match_obj.group(1)[1:-1]=}")
             if re.match(_NAME_PATTERN, match_obj.group(1)[1:-1]) is None:
                 raise ValueError(f"configuration parameter {v!r} has invalid name")
-        return v
+        return v.strip()
 
 
 class ConfigurationParameterPossibleValue(sqlmodel.SQLModel, table=True):

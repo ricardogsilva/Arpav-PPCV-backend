@@ -59,18 +59,18 @@ def get_coverage_time_series(
         time_end=end,
     )
     measurements = {}
-    if raw_coverage_data is not None:
-        if include_coverage_data:
-            coverage_data = _process_coverage_data(
-                raw_coverage_data,
-                coverage_configuration,
-                coverage_identifier,
-                coverage_data_smoothing,
-                start,
-                end
-            )
-            measurements[coverage_identifier] = coverage_data
-        if include_observation_data:
+    if include_coverage_data:
+        coverage_data = _process_coverage_data(
+            raw_coverage_data,
+            coverage_configuration,
+            coverage_identifier,
+            coverage_data_smoothing,
+            start,
+            end
+        )
+        measurements[coverage_identifier] = coverage_data
+    if include_observation_data:
+        if coverage_configuration.related_observation_variable is not None:
             station_data = _get_station_data(
                 session,
                 settings,
@@ -93,14 +93,20 @@ def get_coverage_time_series(
                     coverage_configuration.related_observation_variable.name,
                 ))
                 measurements[station_data_series_key] = data_
-        if include_coverage_uncertainty:
-            # TODO: how to map to uncertainty related data?
-            ...
-        if include_coverage_related_data:
-            # TODO: how to map to related data?
-            ...
-    else:
-        raise RuntimeError("Could not retrieve coverage data")
+            else:
+                logger.info("No station data found, skipping...")
+        else:
+            logger.info(
+                "Cannot include observation data - no observation variable is related "
+                "to this coverage configuration"
+            )
+
+    if include_coverage_uncertainty:
+        # TODO: how to map to uncertainty related data?
+        ...
+    if include_coverage_related_data:
+        # TODO: how to map to related data?
+        ...
     return measurements
 
 
