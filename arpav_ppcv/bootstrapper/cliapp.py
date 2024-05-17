@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from .. import database
 from ..schemas import (
+    base,
     coverages,
     observations,
 )
@@ -194,7 +195,7 @@ def bootstrap_coverage_configurations(
                 ),
             ],
             observation_variable_id=v.id if (v := variables.get("TDd")) is not None else None,
-            observation_variable_aggregation_type=coverages.ObservationAggregationType.SEASONAL
+            observation_variable_aggregation_type=base.ObservationAggregationType.SEASONAL
         ),
     ]
     for cov_conf_create in coverage_configurations:

@@ -845,7 +845,7 @@ def create_coverage_configuration(
         palette=coverage_configuration_create.palette,
         color_scale_min=coverage_configuration_create.color_scale_min,
         color_scale_max=coverage_configuration_create.color_scale_max,
-        related_observation_variable=coverage_configuration_create.related_observation_variable,
+        observation_variable_id=coverage_configuration_create.observation_variable_id,
         observation_variable_aggregation_type=coverage_configuration_create.observation_variable_aggregation_type,
     )
     session.add(db_coverage_configuration)
