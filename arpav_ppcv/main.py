@@ -15,7 +15,6 @@ import alembic.config
 import anyio
 import django
 import httpx
-import sqlmodel
 import typer
 import yaml
 from django.conf import settings as django_settings
@@ -23,27 +22,25 @@ from django.core import management
 from rich import print
 from rich.padding import Padding
 from rich.panel import Panel
-from sqlalchemy.exc import IntegrityError
 
 from . import (
     config,
     database,
 )
 from .cliapp.app import app as cli_app
+from .bootstrapper.cliapp import app as bootstrapper_app
 from .observations_harvester.cliapp import app as observations_harvester_app
-from .schemas import observations as observations_models
 from .thredds import crawler
 from .webapp.legacy.django_settings import get_custom_django_settings
 
 app = typer.Typer()
 db_app = typer.Typer()
 dev_app = typer.Typer()
-bootstrap_app = typer.Typer()
 app.add_typer(cli_app, name="app")
 app.add_typer(db_app, name="db")
 app.add_typer(dev_app, name="dev")
 app.add_typer(observations_harvester_app, name="observations-harvester")
-app.add_typer(bootstrap_app, name="bootstrap")
+app.add_typer(bootstrapper_app, name="bootstrap")
 
 
 @app.callback()
@@ -89,10 +86,14 @@ def generate_migration(ctx: typer.Context, migration_message: str):
 
 
 @db_app.command(name="upgrade")
-def upgrade_db(ctx: typer.Context) -> None:
+def upgrade_db(
+        ctx: typer.Context,
+        revision_identifier: Optional[str] = None
+) -> None:
     """Apply any pending migration files."""
     print("Upgrading database...")
-    alembic.command.upgrade(ctx.obj["alembic_config"], "head")
+    revision_arg = "head" if revision_identifier is None else revision_identifier
+    alembic.command.upgrade(ctx.obj["alembic_config"], revision_arg)
     print("Done!")
 
 
@@ -235,59 +236,3 @@ def import_thredds_datasets(
                 wildcard_filter,
                 force_download,
             )
-
-
-@bootstrap_app.command("observation-variables")
-def bootstrap_observation_variables(
-        ctx: typer.Context,
-):
-    """Create initial observation variables."""
-    variables = [
-        observations_models.VariableCreate(
-            name="TDd",
-            description="Mean temperature",
-            unit="ºC"
-        ),
-        observations_models.VariableCreate(
-            name="TXd",
-            description="Max temperature",
-            unit="ºC"
-        ),
-        observations_models.VariableCreate(
-            name="TNd",
-            description="Min temperature",
-            unit="ºC"
-        ),
-        observations_models.VariableCreate(
-            name="PRCPTOT",
-            description="Total precipitation",
-            unit="mm"
-        ),
-        observations_models.VariableCreate(
-            name="TR",
-            description="Tropical nights",
-            unit="mm"
-        ),
-        observations_models.VariableCreate(
-            name="SU30",
-            description="Hot days",
-            unit="mm"
-        ),
-        observations_models.VariableCreate(
-            name="FD",
-            description="Cold days",
-            unit="mm"
-        ),
-    ]
-    with sqlmodel.Session(ctx.obj["engine"]) as session:
-        for var_create in variables:
-            try:
-                db_variable = database.create_variable(session, var_create)
-                print(f"Created observation variable {db_variable.name!r}")
-            except IntegrityError as err:
-                print(
-                    f"Could not create observation "
-                    f"variable {var_create.name!r}: {err}"
-                )
-                session.rollback()
-    print("Done!")

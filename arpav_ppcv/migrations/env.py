@@ -1,5 +1,8 @@
 from logging.config import fileConfig
 
+# DO NOT REMOVE - this import is needed in order to enjoy proper enum support
+import alembic_postgresql_enum  # noqa
+
 from sqlalchemy import create_engine
 
 from alembic import context

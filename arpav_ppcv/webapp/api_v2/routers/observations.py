@@ -14,7 +14,7 @@ from fastapi.responses import JSONResponse
 from sqlmodel import Session
 
 from .... import database
-from ....schemas import observations as base_observations
+from ....schemas import base
 from ... import dependencies
 from ..schemas import observations
 from ..schemas.geojson import observations as observations_geojson
@@ -206,7 +206,7 @@ def list_seasonal_measurements(
         list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
         station_code: str | None = None,
         variable_name: str | None = None,
-        season: base_observations.Season | None = None,
+        season: base.Season | None = None,
 ):
     """List known seasonal measurements."""
     if station_code is not None:

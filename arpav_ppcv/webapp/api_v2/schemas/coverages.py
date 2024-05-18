@@ -1,4 +1,6 @@
+import datetime as dt
 import uuid
+from typing import Optional
 
 import pydantic
 from fastapi import Request
@@ -92,3 +94,18 @@ class CoverageIdentifierList(WebResourceList):
 
 class ForecastModelScenarioList(WebResourceList):
     items: list[ForecastModelScenario]
+
+
+class TimeSeriesItem(pydantic.BaseModel):
+    value: float
+    datetime: dt.datetime
+
+
+class TimeSeries(pydantic.BaseModel):
+    name: str
+    values: list[TimeSeriesItem]
+    info: Optional[dict[str, str]] = None
+
+
+class TimeSeriesList(pydantic.BaseModel):
+    series: list[TimeSeries]

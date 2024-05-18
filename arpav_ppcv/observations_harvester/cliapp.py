@@ -26,14 +26,15 @@ def refresh_stations(ctx: typer.Context) -> None:
 def refresh_monthly_measurements(
         ctx: typer.Context,
         station: Annotated[
-            str,
+            list[str],
             typer.Option(
+                default_factory=list,
                 help=(
                         "Code of the station to process. If not provided, all "
                         "stations are processed."
                 )
             )
-        ] = None,
+        ],
         variable: Annotated[
             str,
             typer.Option(
@@ -46,34 +47,37 @@ def refresh_monthly_measurements(
 ) -> None:
     client = httpx.Client()
     with sqlmodel.Session(ctx.obj["engine"]) as session:
-        created = _refresh_measurements(
-            session,
-            client,
-            variable,
-            station,
-            "monthly"
-        )
-        print(f"Created {len(created)} monthly measurements:")
-        print(
-            "\n".join(
-                f"{m.station.code}-{m.variable.name}-{m.date.strftime('%Y-%m-%d')}"
-                for m in created
+        for station_code in station:
+            print(f"Processing station: {station_code!r}...")
+            created = _refresh_measurements(
+                session,
+                client,
+                variable,
+                station_code,
+                "monthly"
             )
-        )
+            print(f"Created {len(created)} monthly measurements:")
+            print(
+                "\n".join(
+                    f"{m.station.code}-{m.variable.name}-{m.date.strftime('%Y-%m-%d')}"
+                    for m in created
+                )
+            )
 
 
 @app.command()
 def refresh_seasonal_measurements(
         ctx: typer.Context,
         station: Annotated[
-            str,
+            list[str],
             typer.Option(
+                default_factory=list,
                 help=(
                         "Code of the station to process. If not provided, all "
                         "stations are processed."
                 )
             )
-        ] = None,
+        ],
         variable: Annotated[
             str,
             typer.Option(
@@ -86,13 +90,24 @@ def refresh_seasonal_measurements(
 ) -> None:
     client = httpx.Client()
     with sqlmodel.Session(ctx.obj["engine"]) as session:
-        created = _refresh_measurements(
-            session,
-            client,
-            variable,
-            station,
-            "seasonal"
-        )
+        if len(station) > 0:
+            for station_code in station:
+                print(f"Processing station {station_code!r}...")
+                created = _refresh_measurements(
+                    session,
+                    client,
+                    variable,
+                    station_code,
+                    "seasonal"
+                )
+        else:
+            created = _refresh_measurements(
+                session,
+                client,
+                variable,
+                None,
+                "seasonal"
+            )
         print(f"Created {len(created)} seasonal measurements:")
         print(
             "\n".join(
@@ -106,14 +121,15 @@ def refresh_seasonal_measurements(
 def refresh_yearly_measurements(
         ctx: typer.Context,
         station: Annotated[
-            str,
+            list[str],
             typer.Option(
+                default_factory=list,
                 help=(
                         "Code of the station to process. If not provided, all "
                         "stations are processed."
                 )
             )
-        ] = None,
+        ],
         variable: Annotated[
             str,
             typer.Option(
@@ -126,13 +142,24 @@ def refresh_yearly_measurements(
 ) -> None:
     client = httpx.Client()
     with sqlmodel.Session(ctx.obj["engine"]) as session:
-        created = _refresh_measurements(
-            session,
-            client,
-            variable,
-            station,
-            "yearly"
-        )
+        if len(station) > 0:
+            for station_code in station:
+                print(f"Processing station {station_code!r}...")
+                created = _refresh_measurements(
+                    session,
+                    client,
+                    variable,
+                    station_code,
+                    "yearly"
+                )
+        else:
+            created = _refresh_measurements(
+                session,
+                client,
+                variable,
+                None,
+                "yearly"
+            )
         print(f"Created {len(created)} yearly measurements:")
         print(
             "\n".join(

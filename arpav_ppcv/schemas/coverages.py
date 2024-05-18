@@ -5,11 +5,17 @@ from typing import (
     Annotated,
     Optional,
     Final,
+    TYPE_CHECKING,
 )
 
 import pydantic
 import sqlalchemy
 import sqlmodel
+
+from . import base
+
+if TYPE_CHECKING:
+    from . import observations
 
 logger = logging.getLogger(__name__)
 _NAME_PATTERN: Final[str] = r"^[a-z][a-z0-9_]+$"
@@ -118,11 +124,17 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         primary_key=True
     )
     name: str = sqlmodel.Field(unique=True, index=True)
+    netcdf_main_dataset_name: str
     thredds_url_pattern: str
     unit: str = ""
     palette: str
     color_scale_min: float = 0.0
     color_scale_max: float = 1.0
+    observation_variable_id: Optional[uuid.UUID] = sqlmodel.Field(
+        default=None,
+        foreign_key="variable.id"
+    )
+    observation_variable_aggregation_type: Optional[base.ObservationAggregationType] = None
 
     possible_values: list["ConfigurationParameterPossibleValue"] = sqlmodel.Relationship(
         back_populates="coverage_configuration",
@@ -130,6 +142,9 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
             "cascade": "all, delete, delete-orphan",
             "passive_deletes": True,
         }
+    )
+    related_observation_variable: "observations.Variable" = sqlmodel.Relationship(
+        back_populates="related_coverage_configurations"
     )
 
     @pydantic.computed_field()
@@ -148,6 +163,20 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
             rendered = rendered.replace(
                 f"{{{param_name}}}", used_value.configuration_parameter_value.name)
         return rendered
+
+    def build_coverage_identifier(
+            self, parameters: list["ConfigurationParameterPossibleValue"]) -> str:
+        id_parts = ["{name}"]
+        for match_obj in re.finditer(r"(\{\w+\})", self.coverage_id_pattern):
+            param_name = match_obj.group(1)[1:-1]
+            for possible_param in parameters:
+                conf_param = possible_param.configuration_parameter_value.configuration_parameter
+                if conf_param.name == param_name:
+                    id_parts.append(possible_param.configuration_parameter_value.name)
+                    break
+            else:
+                raise ValueError(f"Invalid param_name {param_name!r}")
+        return "-".join(id_parts)
 
     def retrieve_used_values(
             self,
@@ -181,6 +210,32 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
             result[configuration_parameter_name] = id_part
         return result
 
+    def get_seasonal_aggregation_query_filter(
+            self, coverage_identifier: str) -> Optional[base.Season]:
+        used_values = self.retrieve_used_values(coverage_identifier)
+        for used_value in used_values:
+            is_temporal_aggregation = (
+                    used_value.configuration_parameter_value.configuration_parameter.name in ("year_period",)
+            )
+            if is_temporal_aggregation:
+                value = used_value.configuration_parameter_value.name.lower()
+                if value in ("djf",):
+                    result = base.Season.WINTER
+                elif value in ("mam",):
+                    result = base.Season.SPRING
+                elif value in ("jja",):
+                    result = base.Season.SUMMER
+                elif value in ("son",):
+                    result = base.Season.AUTUMN
+                break
+        else:
+            result = None
+            logger.warning(
+                f"Could not determine appropriate season for coverage "
+                f"identifier {coverage_identifier!r}"
+            )
+        return result
+
 
 class CoverageConfigurationCreate(sqlmodel.SQLModel):
 
@@ -194,12 +249,15 @@ class CoverageConfigurationCreate(sqlmodel.SQLModel):
             )
         )
     ]
+    netcdf_main_dataset_name: str
     thredds_url_pattern: str
     unit: str
     palette: str
     color_scale_min: float
     color_scale_max: float
     possible_values: list["ConfigurationParameterPossibleValueCreate"]
+    observation_variable_id: Optional[uuid.UUID] = None
+    observation_variable_aggregation_type: Optional[base.ObservationAggregationType] = None
 
     @pydantic.field_validator("thredds_url_pattern")
     @classmethod
@@ -218,11 +276,14 @@ class CoverageConfigurationUpdate(sqlmodel.SQLModel):
             pattern=_NAME_PATTERN
         )
     ] = None
+    netcdf_main_dataset_name: Optional[str] = None
     thredds_url_pattern: Optional[str] = None
     unit: Optional[str] = None
     palette: Optional[str] = None
     color_scale_min: Optional[float] = None
     color_scale_max: Optional[float] = None
+    observation_variable_id: Optional[uuid.UUID] = None
+    observation_variable_aggregation_type: Optional[base.ObservationAggregationType] = None
     possible_values: list["ConfigurationParameterPossibleValueUpdate"]
 
     @pydantic.field_validator("thredds_url_pattern")

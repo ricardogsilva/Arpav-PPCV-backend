@@ -12,7 +12,10 @@ import typer
 from rich import print
 
 from .. import database
-from ..schemas import observations
+from ..schemas import (
+    base,
+    observations,
+)
 from . import schemas
 
 app = typer.Typer()
@@ -212,7 +215,8 @@ def create_seasonal_measurement(
         ctx: typer.Context,
         station_code: str,
         variable: str,
-        season: observations.Season,
+        year: int,
+        season: base.Season,
         value: float,
 ) -> None:
     """Create a new seasonal measurement."""
@@ -229,6 +233,7 @@ def create_seasonal_measurement(
                 observations.SeasonalMeasurementCreate(
                     station_id=db_station.id,
                     variable_id=db_variable.id,
+                    year=year,
                     season=season,
                     value=value,
                 )

@@ -13,6 +13,7 @@ import sqlmodel
 from .. import (
     database,
 )
+from ..schemas.base import Season
 from ..schemas import observations
 
 logger = logging.getLogger(__name__)
@@ -186,7 +187,7 @@ def harvest_seasonal_measurements(
                 f"\tProcessing variable {variable.name!r} ({var_idx+1}/"
                 f"{len(existing_variables)})..."
             )
-            for current_season in observations.Season:
+            for current_season in Season:
                 logger.info(
                     f"\t\tProcessing season {current_season!r}...")
                 existing_measurements = database.collect_all_seasonal_measurements(
@@ -201,10 +202,10 @@ def harvest_seasonal_measurements(
                     existing[measurement_id] = db_measurement
 
                 season_query_param = {
-                    observations.Season.WINTER: 1,
-                    observations.Season.SPRING: 2,
-                    observations.Season.SUMMER: 3,
-                    observations.Season.AUTUMN: 4,
+                    Season.WINTER: 1,
+                    Season.SPRING: 2,
+                    Season.SUMMER: 3,
+                    Season.AUTUMN: 4,
                 }[current_season]
                 response = client.get(
                     "https://api.arpa.veneto.it/REST/v1/clima_indicatori",

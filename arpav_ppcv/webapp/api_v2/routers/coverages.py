@@ -1,24 +1,37 @@
 import logging
 import urllib.parse
-from typing import Annotated
+import uuid
+from typing import (
+    Annotated,
+    Optional,
+)
 
 import httpx
 import pydantic
+import shapely.io
 from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
+    Query,
     Request,
     Response,
     status,
 )
 from sqlmodel import Session
 
-from .... import database
+from .... import (
+    database as db,
+    operations,
+)
 from ....config import ArpavPpcvSettings
 from ....thredds import utils as thredds_utils
+from ....schemas.base import (
+    CoverageDataSmoothingStrategy,
+    ObservationDataSmoothingStrategy,
+)
 from ... import dependencies
-from ..schemas import coverages
+from ..schemas import coverages as coverage_schemas
 
 
 logger = logging.getLogger(__name__)
@@ -27,7 +40,7 @@ router = APIRouter()
 
 @router.get(
     "/coverage-configurations",
-    response_model=coverages.CoverageConfigurationList
+    response_model=coverage_schemas.CoverageConfigurationList
 )
 async def list_coverage_configurations(
         request: Request,
@@ -69,16 +82,16 @@ async def list_coverage_configurations(
     endpoint.
 
     """
-    coverage_configurations, filtered_total = database.list_coverage_configurations(
+    coverage_configurations, filtered_total = db.list_coverage_configurations(
         db_session,
         limit=list_params.limit,
         offset=list_params.offset,
         include_total=True
     )
-    _, unfiltered_total = database.list_coverage_configurations(
+    _, unfiltered_total = db.list_coverage_configurations(
         db_session, limit=1, offset=0, include_total=True
     )
-    return coverages.CoverageConfigurationList.from_items(
+    return coverage_schemas.CoverageConfigurationList.from_items(
         coverage_configurations,
         request,
         limit=list_params.limit,
@@ -90,18 +103,18 @@ async def list_coverage_configurations(
 
 @router.get(
     "/coverage-configurations/{coverage_configuration_id}",
-    response_model=coverages.CoverageConfigurationReadDetail,
+    response_model=coverage_schemas.CoverageConfigurationReadDetail,
 )
 def get_coverage_configuration(
         request: Request,
         db_session: Annotated[Session, Depends(dependencies.get_db_session)],
         coverage_configuration_id: pydantic.UUID4
 ):
-    db_coverage_configuration = database.get_coverage_configuration(
+    db_coverage_configuration = db.get_coverage_configuration(
         db_session, coverage_configuration_id)
-    allowed_coverage_identifiers = database.list_allowed_coverage_identifiers(
+    allowed_coverage_identifiers = db.list_allowed_coverage_identifiers(
         db_session, coverage_configuration_id=db_coverage_configuration.id)
-    return coverages.CoverageConfigurationReadDetail.from_db_instance(
+    return coverage_schemas.CoverageConfigurationReadDetail.from_db_instance(
         db_coverage_configuration, allowed_coverage_identifiers, request)
 
 
@@ -118,9 +131,8 @@ async def wms_endpoint(
 
     Pass additional relevant WMS query parameters directly to this endpoint.
     """
-    coverage_configuration_name = coverage_identifier.partition("-")[0]
-    db_coverage_configuration = database.get_coverage_configuration_by_name(
-        db_session, coverage_configuration_name)
+    db_coverage_configuration = db.get_coverage_configuration_by_coverage_identifier(
+        db_session, coverage_identifier)
     if db_coverage_configuration is not None:
         try:
             thredds_url_fragment = db_coverage_configuration.get_thredds_url_fragment(coverage_identifier)
@@ -186,3 +198,131 @@ async def wms_endpoint(
             return response
     else:
         raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
+
+
+@router.get(
+    "/time-series/{coverage_identifier}", response_model=coverage_schemas.TimeSeriesList)
+def get_time_series(
+        db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+        settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
+        http_client: Annotated[httpx.Client, Depends(dependencies.get_sync_http_client)],
+        coverage_identifier: str,
+        coords: str,
+        datetime: Optional[str] = "../..",
+        include_coverage_data: bool = True,
+        include_observation_data: bool = False,
+        coverage_data_smoothing: Annotated[
+            list[CoverageDataSmoothingStrategy],
+            Query()
+        ] = [ObservationDataSmoothingStrategy.NO_SMOOTHING],  # noqa
+        observation_data_smoothing: Annotated[
+            list[ObservationDataSmoothingStrategy],
+            Query()
+        ] = [ObservationDataSmoothingStrategy.NO_SMOOTHING],  # noqa
+        include_coverage_uncertainty: bool = False,
+        include_coverage_related_data: bool = False,
+):
+    db_coverage_configuration = db.get_coverage_configuration_by_coverage_identifier(
+        db_session, coverage_identifier)
+    if db_coverage_configuration is not None:
+        geom = shapely.io.from_wkt(coords)
+        if geom.geom_type == "MultiPoint":
+            logger.warning(
+                f"Expected coords parameter to be a WKT Point but "
+                f"got {geom.geom_type!r} instead - Using the first point"
+            )
+            point_geom = geom.geoms[0]
+        elif geom.geom_type == "Point":
+            point_geom = geom
+        else:
+            logger.warning(
+                f"Expected coords parameter to be a WKT Point but "
+                f"got {geom.geom_type!r} instead - Using the centroid instead"
+            )
+            point_geom = geom.centroid
+        time_series = operations.get_coverage_time_series(
+            settings,
+            db_session,
+            http_client,
+            coverage_configuration=db_coverage_configuration,
+            coverage_identifier=coverage_identifier,
+            point_geom=point_geom,
+            temporal_range=datetime,
+            include_coverage_data=include_coverage_data,
+            include_observation_data=include_observation_data,
+            coverage_data_smoothing=coverage_data_smoothing,
+            observation_data_smoothing=observation_data_smoothing,
+            include_coverage_uncertainty=include_coverage_uncertainty,
+            include_coverage_related_data=include_coverage_related_data,
+        )
+        coverage_df = time_series[coverage_identifier]
+        series = []
+        if include_coverage_data:
+            for series_name, series_measurements in coverage_df.to_dict().items():
+                name_prefix, smoothing_strategy = series_name.rpartition("__")[::2]
+                smoothed_with = CoverageDataSmoothingStrategy(smoothing_strategy)
+                if (
+                        smoothed_with == CoverageDataSmoothingStrategy.NO_SMOOTHING and
+                        CoverageDataSmoothingStrategy.NO_SMOOTHING not in coverage_data_smoothing
+                ):
+                    continue  # client did not ask for the NO_SMOOTHING strategy
+                else:
+                    measurements = []
+                    for timestamp, value in series_measurements.items():
+                        measurements.append(
+                            coverage_schemas.TimeSeriesItem(
+                                value=value, datetime=timestamp)
+                        )
+                    series.append(
+                        coverage_schemas.TimeSeries(
+                            name=series_name,
+                            values=measurements,
+                            info={
+                                "coverage_identifier": coverage_identifier,
+                                "smoothing": smoothing_strategy.lower()
+                            }
+                        )
+                    )
+
+        if include_observation_data:
+            variable = db_coverage_configuration.related_observation_variable
+            for df_name, df in time_series.items():
+                if df_name.startswith("station_"):
+                    station_id = uuid.UUID(df_name.split("_")[1])
+                    db_station = db.get_station(db_session, station_id)
+                    for series_name, series_measurements in df.to_dict().items():
+                        name_prefix, smoothing_strategy = series_name.rpartition("__")[::2]
+                        smoothed_with = ObservationDataSmoothingStrategy(smoothing_strategy)
+                        if (
+                                smoothed_with == ObservationDataSmoothingStrategy.NO_SMOOTHING and
+                                ObservationDataSmoothingStrategy.NO_SMOOTHING not in observation_data_smoothing
+                        ):
+                            continue  # client did not ask for the NO_SMOOTHING strategy
+                        else:
+                            measurements = []
+                            for timestamp, value in series_measurements.items():
+                                measurements.append(
+                                    coverage_schemas.TimeSeriesItem(
+                                        value=value, datetime=timestamp)
+                                )
+                            series.append(
+                                coverage_schemas.TimeSeries(
+                                    name=series_name,
+                                    values=measurements,
+                                    info={
+                                        "station_id": str(db_station.id),
+                                        "station_name": db_station.name,
+                                        "variable_name": variable.name,
+                                        "variable_description": variable.description,
+                                        "smoothing": smoothing_strategy.lower()
+                                    }
+                                ),
+                            )
+        if include_coverage_uncertainty:
+            ...
+        if include_coverage_related_data:
+            ...
+        return coverage_schemas.TimeSeriesList(series=series)
+    else:
+        raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
+

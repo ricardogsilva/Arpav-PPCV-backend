@@ -14,9 +14,11 @@ import shapely.io
 import sqlalchemy.exc
 import sqlmodel
 from geoalchemy2.shape import from_shape
+from sqlalchemy import func
 
 from . import config
 from .schemas import (
+    base,
     coverages,
     observations,
 )
@@ -240,12 +242,27 @@ def list_stations(
         limit: int = 20,
         offset: int = 0,
         include_total: bool = False,
+        polygon_intersection_filter: shapely.Polygon = None,
 ) -> tuple[Sequence[observations.Station], Optional[int]]:
-    """List existing stations."""
+    """List existing stations.
+
+    The ``polygon_intersetion_filter`` parameter is expected to be a polygon
+    geometry in the EPSG:4326 CRS.
+    """
     statement = (
         sqlmodel.select(observations.Station)
         .order_by(observations.Station.code)
     )
+    if polygon_intersection_filter is not None:
+        statement = statement.where(
+            func.ST_Intersects(
+                observations.Station.geom,
+                func.ST_GeomFromWKB(
+                    shapely.io.to_wkb(polygon_intersection_filter),
+                    4326
+                )
+            )
+        )
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = (
         _get_total_num_records(session, statement) if include_total else None)
@@ -254,9 +271,25 @@ def list_stations(
 
 def collect_all_stations(
         session: sqlmodel.Session,
+        polygon_intersection_filter: shapely.Polygon = None,
 ) -> Sequence[observations.Station]:
-    _, num_total = list_stations(session, limit=1, include_total=True)
-    result, _ = list_stations(session, limit=num_total, include_total=False)
+    """Collect all stations.
+
+    The ``polygon_intersetion_filter`` parameter is expected to be a polygon
+    geometry in the EPSG:4326 CRS.
+    """
+    _, num_total = list_stations(
+        session,
+        limit=1,
+        include_total=True,
+        polygon_intersection_filter=polygon_intersection_filter
+    )
+    result, _ = list_stations(
+        session,
+        limit=num_total,
+        include_total=False,
+        polygon_intersection_filter=polygon_intersection_filter
+    )
     return result
 
 
@@ -438,7 +471,7 @@ def list_seasonal_measurements(
         offset: int = 0,
         station_id_filter: Optional[uuid.UUID] = None,
         variable_id_filter: Optional[uuid.UUID] = None,
-        season_filter: Optional[observations.Season] = None,
+        season_filter: Optional[base.Season] = None,
         include_total: bool = False,
 ) -> tuple[Sequence[observations.SeasonalMeasurement], Optional[int]]:
     """List existing seasonal measurements."""
@@ -464,7 +497,7 @@ def collect_all_seasonal_measurements(
         *,
         station_id_filter: Optional[uuid.UUID] = None,
         variable_id_filter: Optional[uuid.UUID] = None,
-        season_filter: Optional[observations.Season] = None,
+        season_filter: Optional[base.Season] = None,
 ) -> Sequence[observations.SeasonalMeasurement]:
     _, num_total = list_seasonal_measurements(
         session,
@@ -762,6 +795,17 @@ def get_coverage_configuration_by_name(
     ).first()
 
 
+def get_coverage_configuration_by_coverage_identifier(
+        session: sqlmodel.Session,
+        coverage_identifier: str
+) -> Optional[coverages.CoverageConfiguration]:
+    """
+    Get a coverage configuration by the identifier of one of its possible coverages.
+    """
+    coverage_configuration_name = coverage_identifier.partition("-")[0]
+    return get_coverage_configuration_by_name(session, coverage_configuration_name)
+
+
 def list_coverage_configurations(
         session: sqlmodel.Session,
         *,
@@ -795,11 +839,14 @@ def create_coverage_configuration(
     to_refresh = []
     db_coverage_configuration = coverages.CoverageConfiguration(
         name=coverage_configuration_create.name,
+        netcdf_main_dataset_name=coverage_configuration_create.netcdf_main_dataset_name,
         thredds_url_pattern=coverage_configuration_create.thredds_url_pattern,
         unit=coverage_configuration_create.unit,
         palette=coverage_configuration_create.palette,
         color_scale_min=coverage_configuration_create.color_scale_min,
         color_scale_max=coverage_configuration_create.color_scale_max,
+        observation_variable_id=coverage_configuration_create.observation_variable_id,
+        observation_variable_aggregation_type=coverage_configuration_create.observation_variable_aggregation_type,
     )
     session.add(db_coverage_configuration)
     to_refresh.append(db_coverage_configuration)
@@ -852,7 +899,10 @@ def update_coverage_configuration(
             session.add(db_possible_value)
             to_refresh.append(db_possible_value)
     data_ = coverage_configuration_update.model_dump(
-        exclude={"possible_values"}, exclude_unset=True, exclude_none=True)
+        exclude={"possible_values"},
+        exclude_unset=True,
+        exclude_none=True
+    )
     for key, value in data_.items():
         setattr(db_coverage_configuration, key, value)
     session.add(db_coverage_configuration)
