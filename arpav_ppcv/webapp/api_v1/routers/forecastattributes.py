@@ -70,7 +70,7 @@ def get_time_windows():
 @router.get(
     "/value-types",
     response_model=schemas.ItemList[schemas.ValueTypeListItem])
-def get_time_windows():
+def get_value_types():
     return get_item_list(
         "padoa.forecastattributes.models.ValueType",
         schemas.ValueTypeListItem

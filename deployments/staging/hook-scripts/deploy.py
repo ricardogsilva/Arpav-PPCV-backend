@@ -35,7 +35,7 @@ class _ValidateRequestPayload:
     def handle(self) -> bool:
         try:
             payload = json.loads(self.raw_payload)
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as err:
             raise RuntimeError("Could not decode payload as valid JSON") from err
         else:
             return all(
@@ -221,7 +221,7 @@ def perform_deployment(
         confirmed: bool = False
 ):
     if not confirmed:
-        print(f"Performing a dry-run")
+        print("Performing a dry-run")
     logger.info(f"{deployment_root=}")
     docker_dir = deployment_root/ "docker"
     compose_files = (

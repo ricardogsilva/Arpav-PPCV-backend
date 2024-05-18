@@ -185,7 +185,7 @@ async def wms_endpoint(
                     detail=err.response.text
                 )
             except httpx.HTTPError as err:
-                logger.exception(msg=f"THREDDS server replied with an error")
+                logger.exception(msg="THREDDS server replied with an error")
                 raise HTTPException(
                     status_code=status.HTTP_502_BAD_GATEWAY,
                 ) from err

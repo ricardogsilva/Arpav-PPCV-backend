@@ -104,7 +104,7 @@ async def download_datasets(
     relevant_datasets = catalog_contents.get_public_datasets(
         dataset_wildcard_filter)
     for batch in _batched(relevant_datasets.values(), 10):
-        logger.info(f"processing new batch")
+        logger.info("processing new batch")
         async with anyio.create_task_group() as tg:
             for public_dataset in batch:
                 logger.info(f"processing dataset {public_dataset.id!r}...")
