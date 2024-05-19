@@ -82,6 +82,9 @@ ipympl = "^0.9.4"
 [tool.poetry.scripts]
 arpav-ppcv = "arpav_ppcv.main:app"
 
+[tool.ruff]
+extend-exclude = ["backend", "arpav_ppcv/migrations"]
+
 [tool.pytest.ini_options]
 addopts = "--verbose --cov --cov-branch --log-level=warning"
 

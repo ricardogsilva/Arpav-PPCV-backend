@@ -47,7 +47,7 @@ class ArpavFeatureCollection(geojson_pydantic.FeatureCollection):
             offset: int,
             filtered_total: int,
             unfiltered_total: int
-    ) -> "cls":
+    ) -> "ArpavFeatureCollection":
         return cls(
             features=[
                 cls.list_item_type.from_db_instance(i, request)

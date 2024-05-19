@@ -164,7 +164,7 @@ def _get_station_data(
                 break
         else:
             result = None
-            logger.info(f"Nearby stations do not have data")
+            logger.info("Nearby stations do not have data")
     else:
         logger.info(
             f"There are no nearby stations from {shapely.io.to_wkt(point_geom)}")

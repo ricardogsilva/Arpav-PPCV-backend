@@ -357,7 +357,7 @@ class CoverageConfigurationView(ModelView):
             ),
             observation_variable_aggregation_type=(
                     instance.observation_variable_aggregation_type or
-                    coverages.ObservationAggregationType.YEARLY
+                    base.ObservationAggregationType.SEASONAL
             ),
             observation_variable=observation_variable,
             possible_values=[

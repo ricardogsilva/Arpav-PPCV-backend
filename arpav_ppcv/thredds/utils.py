@@ -2,7 +2,6 @@ import logging
 
 import httpx
 
-from .. import config
 from . import models
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 import shlex
 import sys
 from pathlib import Path
