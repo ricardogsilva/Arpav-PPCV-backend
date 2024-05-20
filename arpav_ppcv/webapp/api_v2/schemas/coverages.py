@@ -9,9 +9,30 @@ from .base import WebResourceList
 from ....schemas import coverages as app_models
 
 
-class ForecastModelScenario(pydantic.BaseModel):
+class ConfigurationParameterValueEmbeddedInConfigurationParameter(pydantic.BaseModel):
     name: str
-    code: str
+    description: str
+
+
+class ConfigurationParameterReadListItem(pydantic.BaseModel):
+    name: str
+    description: str
+    allowed_values: list[ConfigurationParameterValueEmbeddedInConfigurationParameter]
+
+    @classmethod
+    def from_db_instance(
+            cls,
+            instance: app_models.ConfigurationParameter,
+            request: Request,
+    ):
+        return cls(
+            **instance.model_dump(),
+            allowed_values=[
+                ConfigurationParameterValueEmbeddedInConfigurationParameter(
+                    **pv.model_dump()
+                ) for pv in instance.allowed_values
+            ]
+        )
 
 
 class ConfigurationParameterPossibleValueRead(pydantic.BaseModel):
@@ -92,8 +113,10 @@ class CoverageIdentifierList(WebResourceList):
     path_operation_name = "list_coverage_identifiers"
 
 
-class ForecastModelScenarioList(WebResourceList):
-    items: list[ForecastModelScenario]
+class ConfigurationParameterList(WebResourceList):
+    items: list[ConfigurationParameterReadListItem]
+    list_item_type = ConfigurationParameterReadListItem
+    path_operation_name = "list_configuration_parameters"
 
 
 class TimeSeriesItem(pydantic.BaseModel):

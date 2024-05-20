@@ -20,7 +20,6 @@ from typing import Dict, Any, Union, Optional, List, Sequence
 import anyio.to_thread
 import starlette_admin
 from starlette.requests import Request
-from starlette_admin import RequestAction
 from starlette_admin.contrib.sqlmodel import ModelView
 
 from ... import database
@@ -28,70 +27,40 @@ from ...schemas import (
     coverages,
     base,
 )
-from . import schemas as read_schemas
+from . import (
+    fields,
+    schemas as read_schemas,
+)
 
 
 logger = logging.getLogger(__name__)
 
 
-class UuidField(starlette_admin.StringField):
-    """Custom field for handling item identifiers.
-
-    This field, in conjuction with the custom collection template, ensures
-    that we can have related fields be edited inline, by sending the item's `id`
-    as a form hidden field.
-    """
-
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-        self.input_type = "hidden"
-
-    async def serialize_value(
-        self, request: Request, value: Any, action: RequestAction
-    ) -> Any:
-        return str(value)
+def possible_values_choices_loader(request: Request) -> Sequence[tuple[str, str]]:
+    all_conf_parameter_values = database.collect_all_configuration_parameter_values(
+        request.state.session
+    )
+    result = []
+    for conf_param_value in all_conf_parameter_values:
+        repr_value = " - ".join((
+            conf_param_value.configuration_parameter.name, conf_param_value.name))
+        result.append((repr_value, repr_value))
+    return result
 
 
-class PossibleConfigurationParameterValuesField(starlette_admin.EnumField):
-
-    def _get_label(
-            self,
-            value: read_schemas.ConfigurationParameterPossibleValueRead,
-            request: Request
-    ) -> Any:
-        conf_parameter_value = database.get_configuration_parameter_value(
-            request.state.session, value.configuration_parameter_value_id)
-        result = " - ".join((
-            conf_parameter_value.configuration_parameter.name,
-            conf_parameter_value.name
-        ))
-        return result
-
-    async def serialize_value(
-            self,
-            request: Request,
-            value: read_schemas.ConfigurationParameterPossibleValueRead,
-            action: RequestAction
-    ) -> Any:
-        return self._get_label(value, request)
+def related_observation_variable_choices_loader(
+        request: Request) -> Sequence[tuple[str, str]]:
+    all_obs_variables = database.collect_all_variables(request.state.session)
+    return [(v.name, v.name) for v in all_obs_variables]
 
 
-class RelatedObservationsVariableField(starlette_admin.EnumField):
-
-    def _get_label(
-            self,
-            value: read_schemas.ObservationVariableRead,
-            request: Request
-    ) -> Any:
-        return value.name
-
-    async def serialize_value(
-            self,
-            request: Request,
-            value: read_schemas.ObservationVariableRead,
-            action: RequestAction
-    ) -> Any:
-        return self._get_label(value, request)
+def coverage_configurations_choices_loader(
+        request: Request) -> Sequence[tuple[str, str]]:
+    all_cov_confs = database.collect_all_coverage_configurations(request.state.session)
+    result = []
+    for cov_conf in all_cov_confs:
+        result.append((cov_conf.name, cov_conf.name))
+    return result
 
 
 class ConfigurationParameterView(ModelView):
@@ -109,7 +78,7 @@ class ConfigurationParameterView(ModelView):
     )
 
     fields = (
-        UuidField("id"),
+        fields.UuidField("id"),
         starlette_admin.StringField(
             "name",
             help_text=(
@@ -124,7 +93,7 @@ class ConfigurationParameterView(ModelView):
             field=starlette_admin.CollectionField(
                 "allowed_values",
                 fields=(
-                    UuidField(
+                    fields.UuidField(
                         "id",
                         read_only=True,
                         # disabled=True,
@@ -271,24 +240,6 @@ class ConfigurationParameterView(ModelView):
         return result
 
 
-def possible_values_choices_loader(request: Request) -> Sequence[tuple[str, str]]:
-    all_conf_parameter_values = database.collect_all_configuration_parameter_values(
-        request.state.session
-    )
-    result = []
-    for conf_param_value in all_conf_parameter_values:
-        repr_value = " - ".join((
-            conf_param_value.configuration_parameter.name, conf_param_value.name))
-        result.append((repr_value, repr_value))
-    return result
-
-
-def related_observation_variable_choices_loader(
-        request: Request) -> Sequence[tuple[str, str]]:
-    all_obs_variables = database.collect_all_variables(request.state.session)
-    return [(v.name, v.name) for v in all_obs_variables]
-
-
 class CoverageConfigurationView(ModelView):
     identity = "coverage_configurations"
     name = "Coverage Configuration"
@@ -296,7 +247,7 @@ class CoverageConfigurationView(ModelView):
     icon = "fa fa-blog"
     pk_attr = "id"
     fields = (
-        UuidField("id"),
+        fields.UuidField("id"),
         starlette_admin.StringField("name"),
         starlette_admin.StringField("netcdf_main_dataset_name"),
         starlette_admin.StringField("thredds_url_pattern"),
@@ -305,7 +256,7 @@ class CoverageConfigurationView(ModelView):
         starlette_admin.StringField("palette"),
         starlette_admin.FloatField("color_scale_min"),
         starlette_admin.FloatField("color_scale_max"),
-        RelatedObservationsVariableField(
+        fields.RelatedObservationsVariableField(
             "observation_variable",
             help_text="Related observation variable",
             choices_loader=related_observation_variable_choices_loader,
@@ -315,8 +266,24 @@ class CoverageConfigurationView(ModelView):
             enum=base.ObservationAggregationType
         ),
         starlette_admin.ListField(
-            field=PossibleConfigurationParameterValuesField(
+            field=fields.PossibleConfigurationParameterValuesField(
                 "possible_values", choices_loader=possible_values_choices_loader)
+        ),
+        fields.RelatedCoverageconfigurationsField(
+            "uncertainty_lower_bounds_coverage_configuration",
+            choices_loader=coverage_configurations_choices_loader,
+            help_text=(
+                "Coverage configuration to be used when looking for coverages "
+                "which have the lower uncertainty bounds values"
+            )
+        ),
+        fields.RelatedCoverageconfigurationsField(
+            "uncertainty_upper_bounds_coverage_configuration",
+            choices_loader=coverage_configurations_choices_loader,
+            help_text=(
+                "Coverage configuration to be used when looking for coverages "
+                "which have the upper uncertainty bounds values"
+            )
         ),
     )
 
@@ -331,6 +298,8 @@ class CoverageConfigurationView(ModelView):
         "color_scale_max",
         "observation_variable",
         "observation_variable_aggregation_type",
+        "uncertainty_lower_bounds_coverage_configuration",
+        "uncertainty_upper_bounds_coverage_configuration",
     )
     exclude_fields_from_edit = (
         "coverage_id_pattern",
@@ -351,6 +320,24 @@ class CoverageConfigurationView(ModelView):
                 **obs_variable.model_dump())
         else:
             observation_variable = None
+        uncertainty_lower_cov_conf = instance.uncertainty_lower_bounds_coverage_configuration
+        if uncertainty_lower_cov_conf is not None:
+            uncertainty_lower_bounds_coverage_configuration = (
+                read_schemas.CoverageConfigurationReadListItem(
+                    id=uncertainty_lower_cov_conf.id,
+                    name=uncertainty_lower_cov_conf.name)
+            )
+        else:
+            uncertainty_lower_bounds_coverage_configuration = None
+        uncertainty_upper_cov_conf = instance.uncertainty_upper_bounds_coverage_configuration
+        if uncertainty_upper_cov_conf is not None:
+            uncertainty_upper_bounds_coverage_configuration = (
+                read_schemas.CoverageConfigurationReadListItem(
+                    id=uncertainty_upper_cov_conf.id,
+                    name=uncertainty_upper_cov_conf.name)
+            )
+        else:
+            uncertainty_upper_bounds_coverage_configuration = None
         return read_schemas.CoverageConfigurationRead(
             **instance.model_dump(
                 exclude={"observation_variable_aggregation_type"}
@@ -365,7 +352,9 @@ class CoverageConfigurationView(ModelView):
                     configuration_parameter_value_id=pv.configuration_parameter_value_id,
                     configuration_parameter_value_name=pv.configuration_parameter_value.name)
                 for pv in instance.possible_values
-            ]
+            ],
+            uncertainty_lower_bounds_coverage_configuration=uncertainty_lower_bounds_coverage_configuration,
+            uncertainty_upper_bounds_coverage_configuration=uncertainty_upper_bounds_coverage_configuration,
         )
 
 
@@ -403,7 +392,6 @@ class CoverageConfigurationView(ModelView):
         return result
 
     async def create(self, request: Request, data: Dict[str, Any]) -> Any:
-        logger.debug(f"inside create: {locals()=}")
         session = request.state.session
         try:
             data = await self._arrange_data(request, data)
@@ -422,6 +410,24 @@ class CoverageConfigurationView(ModelView):
                 )
             related_obs_variable = database.get_variable_by_name(
                 session, data["observation_variable"])
+            if (
+                    uncertainty_lower_name := data.get(
+                        "uncertainty_lower_bounds_coverage_configuration")
+            ) is not None:
+                db_uncertainty_lower = database.get_coverage_configuration_by_name(
+                    session, uncertainty_lower_name)
+                uncertainty_lower_id = db_uncertainty_lower.id
+            else:
+                uncertainty_lower_id = None
+            if (
+                    uncertainty_upper_name := data.get(
+                        "uncertainty_upper_bounds_coverage_configuration")
+            ) is not None:
+                db_uncertainty_upper = database.get_coverage_configuration_by_name(
+                    session, uncertainty_upper_name)
+                uncertainty_upper_id = db_uncertainty_upper.id
+            else:
+                uncertainty_upper_id = None
             cov_conf_create = coverages.CoverageConfigurationCreate(
                 name=data["name"],
                 netcdf_main_dataset_name=data["netcdf_main_dataset_name"],
@@ -435,9 +441,14 @@ class CoverageConfigurationView(ModelView):
                     related_obs_variable.id if related_obs_variable else None),
                 observation_variable_aggregation_type=data.get(
                     "observation_variable_aggregation_type"),
+                uncertainty_lower_bounds_coverage_configuration_id=uncertainty_lower_id,
+                uncertainty_upper_bounds_coverage_configuration_id=uncertainty_upper_id,
             )
-            db_cov_conf = database.create_coverage_configuration(
-                session, cov_conf_create)
+            db_cov_conf = await anyio.to_thread.run_sync(
+                database.create_coverage_configuration,
+                session,
+                cov_conf_create
+            )
             return self._serialize_instance(db_cov_conf)
         except Exception as e:
             return self.handle_exception(e)
@@ -459,6 +470,24 @@ class CoverageConfigurationView(ModelView):
                 )
             related_obs_variable = database.get_variable_by_name(
                 session, data["observation_variable"])
+            if (
+                    uncertainty_lower_name := data.get(
+                        "uncertainty_lower_bounds_coverage_configuration")
+            ) is not None:
+                db_uncertainty_lower = database.get_coverage_configuration_by_name(
+                    session, uncertainty_lower_name)
+                uncertainty_lower_id = db_uncertainty_lower.id
+            else:
+                uncertainty_lower_id = None
+            if (
+                    uncertainty_upper_name := data.get(
+                        "uncertainty_upper_bounds_coverage_configuration")
+            ) is not None:
+                db_uncertainty_upper = database.get_coverage_configuration_by_name(
+                    session, uncertainty_upper_name)
+                uncertainty_upper_id = db_uncertainty_upper.id
+            else:
+                uncertainty_upper_id = None
             cov_conv_update = coverages.CoverageConfigurationUpdate(
                 name=data.get("name"),
                 netcdf_main_dataset_name=data.get("netcdf_main_dataset_name"),
@@ -472,6 +501,8 @@ class CoverageConfigurationView(ModelView):
                     related_obs_variable.id if related_obs_variable else None),
                 observation_variable_aggregation_type=data.get(
                     "observation_variable_aggregation_type"),
+                uncertainty_lower_bounds_coverage_configuration_id=uncertainty_lower_id,
+                uncertainty_upper_bounds_coverage_configuration_id=uncertainty_upper_id,
             )
             db_coverage_configuration = await anyio.to_thread.run_sync(
                 database.get_coverage_configuration,

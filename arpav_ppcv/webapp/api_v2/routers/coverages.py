@@ -4,9 +4,11 @@ import uuid
 from typing import (
     Annotated,
     Optional,
+    Type,
 )
 
 import httpx
+import pandas as pd
 import pydantic
 import shapely.io
 from fastapi import (
@@ -22,6 +24,7 @@ from sqlmodel import Session
 
 from .... import (
     database as db,
+    exceptions,
     operations,
 )
 from ....config import ArpavPpcvSettings
@@ -29,13 +32,43 @@ from ....thredds import utils as thredds_utils
 from ....schemas.base import (
     CoverageDataSmoothingStrategy,
     ObservationDataSmoothingStrategy,
+    UNCERTAINTY_TIME_SERIES_PATTERN,
 )
+from ....schemas.coverages import CoverageInternal
 from ... import dependencies
 from ..schemas import coverages as coverage_schemas
 
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+@router.get(
+    "/configuration-parameters",
+    response_model=coverage_schemas.ConfigurationParameterList
+)
+async def list_configuration_parameters(
+        request: Request,
+        db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+        list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
+):
+    """List configuration parameters."""
+    config_params, filtered_total = db.list_configuration_parameters(
+        db_session,
+        limit=list_params.limit,
+        offset=list_params.offset,
+        include_total=True
+    )
+    _, unfiltered_total = db.list_configuration_parameters(
+        db_session, limit=1, offset=0, include_total=True
+    )
+    return coverage_schemas.ConfigurationParameterList.from_items(
+        config_params,
+        request,
+        limit=list_params.limit,
+        offset=list_params.offset,
+        filtered_total=filtered_total,
+        unfiltered_total=unfiltered_total
+    )
 
 
 @router.get(
@@ -210,7 +243,15 @@ def get_time_series(
         coords: str,
         datetime: Optional[str] = "../..",
         include_coverage_data: bool = True,
-        include_observation_data: bool = False,
+        include_observation_data: Annotated[
+            bool,
+            Query(
+                description=(
+                        "Whether data from the nearest observation station (if any) "
+                        "should be included in the response."
+                )
+            )
+        ] = False,
         coverage_data_smoothing: Annotated[
             list[CoverageDataSmoothingStrategy],
             Query()
@@ -222,107 +263,132 @@ def get_time_series(
         include_coverage_uncertainty: bool = False,
         include_coverage_related_data: bool = False,
 ):
-    db_coverage_configuration = db.get_coverage_configuration_by_coverage_identifier(
-        db_session, coverage_identifier)
-    if db_coverage_configuration is not None:
-        geom = shapely.io.from_wkt(coords)
-        if geom.geom_type == "MultiPoint":
-            logger.warning(
-                f"Expected coords parameter to be a WKT Point but "
-                f"got {geom.geom_type!r} instead - Using the first point"
-            )
-            point_geom = geom.geoms[0]
-        elif geom.geom_type == "Point":
-            point_geom = geom
-        else:
-            logger.warning(
-                f"Expected coords parameter to be a WKT Point but "
-                f"got {geom.geom_type!r} instead - Using the centroid instead"
-            )
-            point_geom = geom.centroid
-        time_series = operations.get_coverage_time_series(
-            settings,
-            db_session,
-            http_client,
-            coverage_configuration=db_coverage_configuration,
-            coverage_identifier=coverage_identifier,
-            point_geom=point_geom,
-            temporal_range=datetime,
-            include_coverage_data=include_coverage_data,
-            include_observation_data=include_observation_data,
-            coverage_data_smoothing=coverage_data_smoothing,
-            observation_data_smoothing=observation_data_smoothing,
-            include_coverage_uncertainty=include_coverage_uncertainty,
-            include_coverage_related_data=include_coverage_related_data,
-        )
-        coverage_df = time_series[coverage_identifier]
-        series = []
-        if include_coverage_data:
-            for series_name, series_measurements in coverage_df.to_dict().items():
-                name_prefix, smoothing_strategy = series_name.rpartition("__")[::2]
-                smoothed_with = CoverageDataSmoothingStrategy(smoothing_strategy)
-                if (
-                        smoothed_with == CoverageDataSmoothingStrategy.NO_SMOOTHING and
-                        CoverageDataSmoothingStrategy.NO_SMOOTHING not in coverage_data_smoothing
-                ):
-                    continue  # client did not ask for the NO_SMOOTHING strategy
-                else:
-                    measurements = []
-                    for timestamp, value in series_measurements.items():
-                        measurements.append(
-                            coverage_schemas.TimeSeriesItem(
-                                value=value, datetime=timestamp)
-                        )
-                    series.append(
-                        coverage_schemas.TimeSeries(
-                            name=series_name,
-                            values=measurements,
-                            info={
-                                "coverage_identifier": coverage_identifier,
-                                "smoothing": smoothing_strategy.lower()
-                            }
+    """### Get forecast-related time series for a geographic location.
+
+    Given that a `coverage_identifier` represents a dataset generated by running a
+    forecast model, this endpoint will return a representation of the various temporal
+    series of data related to this forecast.
+    """
+    if (
+            db_cov_conf := db.get_coverage_configuration_by_coverage_identifier(
+                db_session, coverage_identifier)
+    ) is not None:
+        allowed_cov_ids = db.list_allowed_coverage_identifiers(
+            db_session, coverage_configuration_id=db_cov_conf.id)
+        if coverage_identifier in allowed_cov_ids:
+            coverage = CoverageInternal(
+                configuration=db_cov_conf, identifier=coverage_identifier)
+            # TODO: catch errors with invalid geom
+            geom = shapely.io.from_wkt(coords)
+            if geom.geom_type == "MultiPoint":
+                logger.warning(
+                    f"Expected coords parameter to be a WKT Point but "
+                    f"got {geom.geom_type!r} instead - Using the first point"
+                )
+                point_geom = geom.geoms[0]
+            elif geom.geom_type == "Point":
+                point_geom = geom
+            else:
+                logger.warning(
+                    f"Expected coords parameter to be a WKT Point but "
+                    f"got {geom.geom_type!r} instead - Using the centroid instead"
+                )
+                point_geom = geom.centroid
+            try:
+                time_series = operations.get_coverage_time_series(
+                    settings, db_session, http_client, coverage, point_geom,
+                    datetime, coverage_data_smoothing, observation_data_smoothing,
+                    include_coverage_data, include_observation_data,
+                    include_coverage_uncertainty, include_coverage_related_data,
+                )
+            except exceptions.CoverageDataRetrievalError as err:
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail="Could not retrieve data"
+                ) from err
+            else:
+                series = []
+                if include_coverage_data:
+                    series.extend(
+                        _serialize_dataframe(
+                            time_series[coverage.identifier],
+                            CoverageDataSmoothingStrategy.NO_SMOOTHING in coverage_data_smoothing,
+                            available_smoothing_strategies=CoverageDataSmoothingStrategy,
+                            extra_info={"coverage_identifier": coverage.identifier}
                         )
                     )
-
-        if include_observation_data:
-            variable = db_coverage_configuration.related_observation_variable
-            for df_name, df in time_series.items():
-                if df_name.startswith("station_"):
-                    station_id = uuid.UUID(df_name.split("_")[1])
-                    db_station = db.get_station(db_session, station_id)
-                    for series_name, series_measurements in df.to_dict().items():
-                        name_prefix, smoothing_strategy = series_name.rpartition("__")[::2]
-                        smoothed_with = ObservationDataSmoothingStrategy(smoothing_strategy)
-                        if (
-                                smoothed_with == ObservationDataSmoothingStrategy.NO_SMOOTHING and
-                                ObservationDataSmoothingStrategy.NO_SMOOTHING not in observation_data_smoothing
-                        ):
-                            continue  # client did not ask for the NO_SMOOTHING strategy
-                        else:
-                            measurements = []
-                            for timestamp, value in series_measurements.items():
-                                measurements.append(
-                                    coverage_schemas.TimeSeriesItem(
-                                        value=value, datetime=timestamp)
+                    if include_coverage_uncertainty:
+                        uncertainty_time_series = {
+                            k: v for k, v in time_series.items()
+                            if UNCERTAINTY_TIME_SERIES_PATTERN in k
+                        }
+                        for uncert_name, uncert_df in uncertainty_time_series.items():
+                            series.extend(
+                                _serialize_dataframe(
+                                    uncert_df,
+                                    CoverageDataSmoothingStrategy.NO_SMOOTHING in coverage_data_smoothing,
+                                    available_smoothing_strategies=CoverageDataSmoothingStrategy,
+                                    extra_info={"related": uncert_name},
                                 )
-                            series.append(
-                                coverage_schemas.TimeSeries(
-                                    name=series_name,
-                                    values=measurements,
-                                    info={
-                                        "station_id": str(db_station.id),
-                                        "station_name": db_station.name,
-                                        "variable_name": variable.name,
-                                        "variable_description": variable.description,
-                                        "smoothing": smoothing_strategy.lower()
-                                    }
-                                ),
                             )
-        if include_coverage_uncertainty:
-            ...
-        if include_coverage_related_data:
-            ...
-        return coverage_schemas.TimeSeriesList(series=series)
+                    if include_coverage_related_data:
+                        series.extend([])
+                if include_observation_data:
+                    variable = coverage.configuration.related_observation_variable
+                    for df_name, df in time_series.items():
+                        if df_name.startswith("station_"):
+                            station_id = uuid.UUID(df_name.split("_")[1])
+                            db_station = db.get_station(db_session, station_id)
+                            station_series = _serialize_dataframe(
+                                df,
+                                ObservationDataSmoothingStrategy.NO_SMOOTHING in observation_data_smoothing,
+                                available_smoothing_strategies=ObservationDataSmoothingStrategy,
+                                extra_info={
+                                    "station_id": str(db_station.id),
+                                    "station_name": db_station.name,
+                                    "variable_name": variable.name,
+                                    "variable_description": variable.description,
+                                }
+                            )
+                            series.extend(station_series)
+                return coverage_schemas.TimeSeriesList(series=series)
+        else:
+            raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
     else:
         raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
 
+
+def _serialize_dataframe(
+        data_: pd.DataFrame,
+        include_unsmoothed: bool,
+        available_smoothing_strategies: Type[
+            ObservationDataSmoothingStrategy | CoverageDataSmoothingStrategy],
+        extra_info
+) -> list[coverage_schemas.TimeSeries]:
+    series = []
+    for series_name, series_measurements in data_.to_dict().items():
+        name_prefix, smoothing_strategy = series_name.rpartition("__")[::2]
+        smoothed_with = available_smoothing_strategies(smoothing_strategy)
+        if (
+                smoothed_with == available_smoothing_strategies.NO_SMOOTHING and
+                not include_unsmoothed
+        ):
+            continue  # client did not ask for the NO_SMOOTHING strategy
+        else:
+            measurements = []
+            for timestamp, value in series_measurements.items():
+                measurements.append(
+                    coverage_schemas.TimeSeriesItem(
+                        value=value, datetime=timestamp)
+                )
+            series.append(
+                coverage_schemas.TimeSeries(
+                    name=series_name,
+                    values=measurements,
+                    info={
+                        "smoothing": smoothing_strategy.lower(),
+                        **extra_info
+                    }
+                )
+            )
+    return series
