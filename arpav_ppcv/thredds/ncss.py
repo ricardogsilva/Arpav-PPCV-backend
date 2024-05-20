@@ -8,7 +8,6 @@ https://docs.unidata.ucar.edu/tds/current/userguide/netcdf_subset_service_ref.ht
 import datetime as dt
 import logging
 import xml.etree.ElementTree as etree
-from typing import Optional
 
 import httpx
 import shapely
@@ -87,6 +86,7 @@ def query_dataset(
         response.raise_for_status()
     except httpx.HTTPError as err:
         logger.exception(msg="Could not retrieve data")
+        logger.debug(f"upstream NCSS error: {response.content}")
         raise CoverageDataRetrievalError() from err
     else:
         result = response.text

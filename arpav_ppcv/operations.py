@@ -62,10 +62,11 @@ def get_coverage_time_series(
     if include_coverage_data:
         coverage_data = _process_coverage_data(
             raw_coverage_data,
-            coverage,
+            coverage.configuration.netcdf_main_dataset_name,
             coverage_smoothing_strategies,
             start,
-            end
+            end,
+            base_column_name=coverage.identifier
         )
         measurements[coverage.identifier] = coverage_data
         if include_coverage_uncertainty:
@@ -75,7 +76,7 @@ def get_coverage_time_series(
             ))
             if has_uncertainty_cov_confs:
                 uncertainty_data = _get_coverage_uncertainty_time_series(
-                    settings, http_client, coverage.configuration, coverage.identifier,
+                    settings, http_client, coverage,
                     point_geom, start, end, coverage_smoothing_strategies,
                 )
                 measurements.update(**uncertainty_data)
@@ -94,8 +95,8 @@ def get_coverage_time_series(
             if station_data is not None:
                 raw_station_data, station = station_data
                 data_ = _process_seasonal_station_data(
-                    coverage.configuration.related_observation_variable,
-                    raw_station_data, observation_smoothing_strategies, start, end
+                    raw_station_data, observation_smoothing_strategies, start, end,
+                    base_name=coverage.configuration.related_observation_variable.name
                 )
                 station_data_series_key = "_".join((
                     "station",
@@ -182,17 +183,17 @@ def _get_station_data(
 
 
 def _process_seasonal_station_data(
-        variable: observations.Variable,
         raw_data: list[observations.SeasonalMeasurement],
         smoothing_strategies: list[base.ObservationDataSmoothingStrategy],
         time_start: Optional[dt.datetime],
         time_end: Optional[dt.datetime],
+        base_name: str,
 ) -> pd.DataFrame:
     df = pd.DataFrame(
         [i.model_dump() for i in raw_data]
     )
     df = df[["value", "season", "year"]]
-    df = df.rename(columns={"value": variable.name})
+    df = df.rename(columns={"value": base_name})
 
     df["season_month"] = df["season"].astype("string").replace({
         "Season.WINTER": "01",
@@ -204,34 +205,35 @@ def _process_seasonal_station_data(
         df["year"].astype("string") + "-" + df["season_month"] + "-01",
         utc=True
     )
-    df = df[[variable.name, "time"]]
+    df = df[[base_name, "time"]]
     df.set_index("time", inplace=True)
     if time_start is not None:
         df = df[time_start:]
     if time_end is not None:
         df = df[:time_end]
     for strategy in smoothing_strategies:
-        column_name = "__".join((variable.name, strategy.value))
+        column_name = "__".join((base_name, strategy.value))
         if strategy == base.ObservationDataSmoothingStrategy.NO_SMOOTHING:
-            df[column_name] = df[variable.name]
+            df[column_name] = df[base_name]
         elif strategy == base.ObservationDataSmoothingStrategy.MOVING_AVERAGE_5_YEARS:
-            df[column_name] = df[variable.name].rolling(window=5, center=True).mean()
-    df = df.drop(columns=[variable.name])
+            df[column_name] = df[base_name].rolling(window=5, center=True).mean()
+    df = df.drop(columns=[base_name])
     df = df.dropna()
     return df
 
 
 def _process_coverage_data(
         raw_data: str,
-        coverage: coverages.CoverageInternal,
+        netcdf_main_dataset_name: str,
         smoothing_strategies: list[base.CoverageDataSmoothingStrategy],
         time_start: Optional[dt.datetime],
         time_end: Optional[dt.datetime],
+        base_column_name: str
 ) -> pd.DataFrame:
     df = pd.read_csv(io.StringIO(raw_data), parse_dates=["time"])
 
     # get name of the colum that holds the main variable
-    variable_name = coverage.configuration.netcdf_main_dataset_name
+    variable_name = netcdf_main_dataset_name
     try:
         col_name = [c for c in df.columns if c.startswith(f"{variable_name}[")][0]
     except IndexError:
@@ -242,7 +244,7 @@ def _process_coverage_data(
     else:
         # keep only time and main variable - we don't care about other stuff
         df = df[["time", col_name]]
-        df = df.rename(columns={col_name: coverage.identifier})
+        df = df.rename(columns={col_name: base_column_name})
 
         # - filter out values outside the temporal range
         df.set_index("time", inplace=True)
@@ -251,19 +253,19 @@ def _process_coverage_data(
         if time_end is not None:
             df = df[:time_end]
         for strategy in smoothing_strategies:
-            column_name = "__".join((coverage.identifier, strategy.value))
+            column_name = "__".join((base_column_name, strategy.value))
             if strategy == base.CoverageDataSmoothingStrategy.NO_SMOOTHING:
-                df[column_name] = df[coverage.identifier]
+                df[column_name] = df[base_column_name]
             elif strategy == base.CoverageDataSmoothingStrategy.MOVING_AVERAGE_11_YEARS:
-                df[column_name] = df[coverage.identifier].rolling(
+                df[column_name] = df[base_column_name].rolling(
                     center=True, window=11).mean()
             elif strategy == base.CoverageDataSmoothingStrategy.LOESS_SMOOTHING:
                 _, loess_smoothed, _ = loess_1d(
                     df.index.astype("int64"),
-                    df[coverage.identifier],
+                    df[base_column_name],
                 )
                 df[column_name] = loess_smoothed
-        df = df.drop(columns=[coverage.identifier])
+        df = df.drop(columns=[base_column_name])
         df = df.dropna()
         return df
 
@@ -277,6 +279,7 @@ def _get_individual_uncertainty_time_series(
         time_start: Optional[dt.datetime],
         time_end: Optional[dt.datetime],
         smoothing_strategies: list[base.CoverageDataSmoothingStrategy],
+        base_column_name: str
 ) -> pd.DataFrame:
     cov_identifier = (
         uncert_coverage_configuration.build_coverage_identifier(used_values)
@@ -297,43 +300,42 @@ def _get_individual_uncertainty_time_series(
     )
     return _process_coverage_data(
         raw_coverage_data,
-        uncert_coverage_configuration,
-        cov_identifier,
+        uncert_coverage_configuration.netcdf_main_dataset_name,
         smoothing_strategies,
         time_start,
-        time_end
+        time_end,
+        base_column_name=base_column_name
     )
 
 
 def _get_coverage_uncertainty_time_series(
         settings: ArpavPpcvSettings,
         http_client: httpx.Client,
-        coverage_conf: coverages.CoverageConfiguration,
-        coverage_identifier: str,
+        coverage: coverages.CoverageInternal,
         point_geom: shapely.Point,
         time_start: Optional[dt.datetime],
         time_end: Optional[dt.datetime],
         smoothing_strategies: list[base.CoverageDataSmoothingStrategy],
 ) -> dict[str, pd.DataFrame]:
-    used_possible_values = coverage_conf.retrieve_used_values(
-        coverage_identifier)
+    used_possible_values = coverage.configuration.retrieve_used_values(
+        coverage.identifier)
     result = {}
     used_values = [
         pv.configuration_parameter_value for pv in used_possible_values]
-    if lower_conf := coverage_conf.uncertainty_upper_bounds_coverage_configuration:
-        result[f"{coverage_identifier}_uncertainty_lower_bounds"] = (
-            _get_individual_uncertainty_time_series(
-                settings, http_client, used_values, lower_conf,
-                point_geom, time_start, time_end, smoothing_strategies
-            )
+    if lower_conf := coverage.configuration.uncertainty_lower_bounds_coverage_configuration:
+        lower_df = _get_individual_uncertainty_time_series(
+            settings, http_client, used_values, lower_conf,
+            point_geom, time_start, time_end, smoothing_strategies,
+            base_column_name="__".join((coverage.identifier, "UNCERTAINTY_LOWER_BOUND"))
         )
-    if upper_conf := coverage_conf.uncertainty_upper_bounds_coverage_configuration:
-        result[f"{coverage_identifier}_uncertainty_lower_bounds"] = (
-            _get_individual_uncertainty_time_series(
-                settings, http_client, used_values, upper_conf,
-                point_geom, time_start, time_end, smoothing_strategies
-            )
+        result[f"{base.UNCERTAINTY_TIME_SERIES_PATTERN}_LOWER_BOUND"] = lower_df
+    if upper_conf := coverage.configuration.uncertainty_upper_bounds_coverage_configuration:
+        upper_df = _get_individual_uncertainty_time_series(
+            settings, http_client, used_values, upper_conf,
+            point_geom, time_start, time_end, smoothing_strategies,
+            base_column_name="__".join((coverage.identifier, "UNCERTAINTY_UPPER_BOUND"))
         )
+        result[f"{base.UNCERTAINTY_TIME_SERIES_PATTERN}_UPPER_BOUND"] = upper_df
     return result
 
 

@@ -15,6 +15,9 @@ class ObservationDataSmoothingStrategy(enum.Enum):
     MOVING_AVERAGE_5_YEARS = "MOVING_AVERAGE_5_YEARS"
 
 
+UNCERTAINTY_TIME_SERIES_PATTERN = "**UNCERTAINTY**"
+
+
 class ObservationAggregationType(enum.Enum):
     MONTHLY = "MONTHLY"
     SEASONAL = "SEASONAL"

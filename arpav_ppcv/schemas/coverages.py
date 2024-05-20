@@ -208,16 +208,19 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
 
     def build_coverage_identifier(
             self, parameters: list[ConfigurationParameterValue]) -> str:
-        id_parts = ["{name}"]
+        id_parts = [self.name]
         for match_obj in re.finditer(r"(\{\w+\})", self.coverage_id_pattern):
             param_name = match_obj.group(1)[1:-1]
-            for conf_param_value in parameters:
-                conf_param = conf_param_value.configuration_parameter
-                if conf_param.name == param_name:
-                    id_parts.append(conf_param_value.name)
-                    break
+            if param_name != "name":
+                for conf_param_value in parameters:
+                    conf_param = conf_param_value.configuration_parameter
+                    if conf_param.name == param_name:
+                        id_parts.append(conf_param_value.name)
+                        break
+                else:
+                    raise ValueError(f"Invalid param_name {param_name!r}")
             else:
-                raise ValueError(f"Invalid param_name {param_name!r}")
+                continue
         return "-".join(id_parts)
 
     def retrieve_used_values(
