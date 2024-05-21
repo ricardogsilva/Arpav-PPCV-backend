@@ -839,9 +839,21 @@ def create_coverage_configuration(
         color_scale_max=coverage_configuration_create.color_scale_max,
         observation_variable_id=coverage_configuration_create.observation_variable_id,
         observation_variable_aggregation_type=coverage_configuration_create.observation_variable_aggregation_type,
+        uncertainty_lower_bounds_coverage_configuration_id=(
+            coverage_configuration_create.uncertainty_lower_bounds_coverage_configuration_id),
+        uncertainty_upper_bounds_coverage_configuration_id=(
+            coverage_configuration_create.uncertainty_upper_bounds_coverage_configuration_id),
     )
     session.add(db_coverage_configuration)
     to_refresh.append(db_coverage_configuration)
+    for secondary_cov_conf_id in coverage_configuration_create.secondary_coverage_configurations_ids:
+        db_secondary_cov_conf = get_coverage_configuration(session, secondary_cov_conf_id)
+        db_related = coverages.RelatedCoverageConfiguration(
+            main_coverage_configuration=db_coverage_configuration,
+            secondary_coverage_configuration=db_secondary_cov_conf
+        )
+        session.add(db_related)
+        to_refresh.append(db_related)
     for possible in coverage_configuration_create.possible_values:
         db_conf_param_value = get_configuration_parameter_value(
             session, possible.configuration_parameter_value_id
@@ -888,8 +900,39 @@ def update_coverage_configuration(
             )
             session.add(db_possible_value)
             to_refresh.append(db_possible_value)
+    # account for related cov confs being added/deleted
+    for existing_related in db_coverage_configuration.secondary_coverage_configurations:
+        has_been_requested_to_remove = (
+                existing_related.secondary_coverage_configuration_id
+                not in [
+                    i.secondary_coverage_configuration_id
+                    for i in coverage_configuration_update.secondary_coverage_configurations_ids
+                ]
+        )
+        if has_been_requested_to_remove:
+            session.delete(existing_related)
+    for secondary_id in coverage_configuration_update.secondary_coverage_configurations_ids:
+        already_related = secondary_id in [
+            i.secondary_coverage_configuration_id
+            for i in db_coverage_configuration.secondary_coverage_configurations
+        ]
+        if not already_related:
+            db_secondary_cov_conf = get_coverage_configuration(session, secondary_id)
+            db_related = coverages.RelatedCoverageConfiguration(
+                main_coverage_configuration=db_coverage_configuration,
+                secondary_coverage_configuration=db_secondary_cov_conf
+            )
+            session.add(db_related)
+            to_refresh.append(db_related)
+
+
     data_ = coverage_configuration_update.model_dump(
-        exclude={"possible_values"}, exclude_unset=True, exclude_none=True
+        exclude={
+            "possible_values",
+            "secondary_coverage_configuration_ids",
+        },
+        exclude_unset=True,
+        exclude_none=True
     )
     for key, value in data_.items():
         setattr(db_coverage_configuration, key, value)

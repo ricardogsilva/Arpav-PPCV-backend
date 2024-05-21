@@ -149,6 +149,25 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
             "passive_deletes": True,
         },
     )
+    secondary_coverage_configurations: list[
+        "RelatedCoverageConfiguration"
+    ] = sqlmodel.Relationship(
+        back_populates="main_coverage_configuration",
+        sa_relationship_kwargs={
+            "foreign_keys": (
+                "RelatedCoverageConfiguration.main_coverage_configuration_id")
+        }
+    )
+    primary_coverage_configurations: list[
+        "RelatedCoverageConfiguration"
+    ] = sqlmodel.Relationship(
+        back_populates="secondary_coverage_configuration",
+        sa_relationship_kwargs={
+            "foreign_keys": (
+                "RelatedCoverageConfiguration.secondary_coverage_configuration_id")
+        }
+    )
+
     related_observation_variable: "observations.Variable" = sqlmodel.Relationship(
         back_populates="related_coverage_configurations"
     )
@@ -315,6 +334,7 @@ class CoverageConfigurationCreate(sqlmodel.SQLModel):
     ] = None
     uncertainty_lower_bounds_coverage_configuration_id: Optional[uuid.UUID] = None
     uncertainty_upper_bounds_coverage_configuration_id: Optional[uuid.UUID] = None
+    secondary_coverage_configurations_ids: Optional[list[uuid.UUID]] = None
 
     @pydantic.field_validator("thredds_url_pattern")
     @classmethod
@@ -341,6 +361,7 @@ class CoverageConfigurationUpdate(sqlmodel.SQLModel):
     possible_values: list["ConfigurationParameterPossibleValueUpdate"]
     uncertainty_lower_bounds_coverage_configuration_id: Optional[uuid.UUID] = None
     uncertainty_upper_bounds_coverage_configuration_id: Optional[uuid.UUID] = None
+    secondary_coverage_configurations_ids: Optional[list[uuid.UUID]] = None
 
     @pydantic.field_validator("thredds_url_pattern")
     @classmethod
@@ -350,6 +371,39 @@ class CoverageConfigurationUpdate(sqlmodel.SQLModel):
             if re.match(_NAME_PATTERN, match_obj.group(1)[1:-1]) is None:
                 raise ValueError(f"configuration parameter {v!r} has invalid name")
         return v.strip()
+
+
+class RelatedCoverageConfiguration(sqlmodel.SQLModel, table=True):
+    """Relates coverage configurations with each other.
+
+    This model mediates an association table that governs a many-to-many relationship
+    between a main coverage configuration and other coverage configurations.
+    """
+
+    main_coverage_configuration_id: Optional[uuid.UUID] = sqlmodel.Field(
+        default=None,
+        primary_key=True,
+        foreign_key="coverageconfiguration.id"
+    )
+    secondary_coverage_configuration_id: Optional[uuid.UUID] = sqlmodel.Field(
+        default=None,
+        primary_key=True,
+        foreign_key="coverageconfiguration.id",
+    )
+
+    main_coverage_configuration: CoverageConfiguration = sqlmodel.Relationship(
+        back_populates="secondary_coverage_configurations",
+        sa_relationship_kwargs={
+            "foreign_keys": "RelatedCoverageConfiguration.main_coverage_configuration_id",
+        }
+    )
+    secondary_coverage_configuration: CoverageConfiguration = sqlmodel.Relationship(
+        back_populates="primary_coverage_configurations",
+        sa_relationship_kwargs={
+            "foreign_keys": "RelatedCoverageConfiguration.secondary_coverage_configuration_id",
+        }
+    )
+
 
 
 class ConfigurationParameterPossibleValue(sqlmodel.SQLModel, table=True):
