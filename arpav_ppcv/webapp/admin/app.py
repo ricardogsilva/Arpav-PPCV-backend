@@ -7,7 +7,7 @@ from starlette.exceptions import HTTPException
 from starlette_admin.contrib.sqlmodel import Admin
 from starlette_admin.views import Link
 
-from ...import (
+from ... import (
     config,
     database,
 )
@@ -22,9 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 class ArpavPpcvAdmin(Admin):
-
-    def mount_to(
-            self, app: Starlette, settings: config.ArpavPpcvSettings) -> None:
+    def mount_to(self, app: Starlette, settings: config.ArpavPpcvSettings) -> None:
         """Reimplemented in order to pass settings to the admin app."""
         admin_app = Starlette(
             routes=self.routes,
@@ -46,23 +44,21 @@ def create_admin(settings: config.ArpavPpcvSettings) -> ArpavPpcvAdmin:
     admin = ArpavPpcvAdmin(
         engine,
         debug=settings.debug,
-        templates_dir=str(settings.templates_dir / 'admin'),
+        templates_dir=str(settings.templates_dir / "admin"),
         auth_provider=auth.UsernameAndPasswordProvider(),
         middlewares=[
             Middleware(SessionMiddleware, secret_key=settings.session_secret_key),
-            Middleware(SqlModelDbSessionMiddleware, engine=engine)
+            Middleware(SqlModelDbSessionMiddleware, engine=engine),
         ],
     )
-    admin.add_view(
-        views.ConfigurationParameterView(coverages.ConfigurationParameter))
-    admin.add_view(
-        views.CoverageConfigurationView(coverages.CoverageConfiguration))
+    admin.add_view(views.ConfigurationParameterView(coverages.ConfigurationParameter))
+    admin.add_view(views.CoverageConfigurationView(coverages.CoverageConfiguration))
     admin.add_view(
         Link(
             "V2 API docs",
             icon="fa fa-link",
             url=f"{settings.public_url}{settings.v2_api_mount_prefix}/docs",
-            target="blank_"
+            target="blank_",
         )
     )
     return admin

@@ -20,14 +20,12 @@ logger = logging.getLogger(__name__)
 
 
 def harvest_stations(
-        client: httpx.Client, db_session: sqlmodel.Session
+    client: httpx.Client, db_session: sqlmodel.Session
 ) -> list[observations.StationCreate]:
     existing_stations = {s.code: s for s in database.collect_all_stations(db_session)}
     stations_create = {}
     coord_converter = pyproj.Transformer.from_crs(
-        pyproj.CRS("epsg:4258"),
-        pyproj.CRS("epsg:4326"),
-        always_xy=True
+        pyproj.CRS("epsg:4258"), pyproj.CRS("epsg:4326"), always_xy=True
     ).transform
     existing_variables = database.collect_all_variables(db_session)
     for idx, variable in enumerate(existing_variables):
@@ -37,41 +35,43 @@ def harvest_stations(
         )
         response = client.get(
             "https://api.arpa.veneto.it/REST/v1/clima_indicatori/staz_attive",
-            params={"indicatore": variable.name}
+            params={"indicatore": variable.name},
         )
         response.raise_for_status()
         for raw_station in response.json().get("data", []):
             station_code = str(raw_station["statcd"])
-            if (raw_start := raw_station.get("iniziovalidita")):
+            if raw_start := raw_station.get("iniziovalidita"):
                 try:
                     active_since = dt.date(*(int(i) for i in raw_start.split("-")))
                 except TypeError:
                     logger.warning(
-                        f"Could not extract a valid date from the input {raw_start!r}")
+                        f"Could not extract a valid date from the input {raw_start!r}"
+                    )
                     active_since = None
             else:
                 active_since = None
-            if (raw_end := raw_station.get("finevalidita")):
+            if raw_end := raw_station.get("finevalidita"):
                 try:
                     active_until = dt.date(*raw_end.split("-"))
                 except TypeError:
                     logger.warning(
-                        f"Could not extract a valid date from the input {raw_end!r}")
+                        f"Could not extract a valid date from the input {raw_end!r}"
+                    )
                     active_until = None
             else:
                 active_until = None
             if (
-                    station_code not in existing_stations and
-                    station_code not in stations_create
+                station_code not in existing_stations
+                and station_code not in stations_create
             ):
                 pt_4258 = shapely.Point(
-                    raw_station["EPSG4258_LON"], raw_station["EPSG4258_LAT"])
+                    raw_station["EPSG4258_LON"], raw_station["EPSG4258_LAT"]
+                )
                 pt_4326 = shapely.ops.transform(coord_converter, pt_4258)
                 station_create = observations.StationCreate(
                     code=station_code,
                     geom=geojson_pydantic.Point(
-                        type="Point",
-                        coordinates=(pt_4326.x, pt_4326.y)
+                        type="Point", coordinates=(pt_4326.x, pt_4326.y)
                     ),
                     altitude_m=raw_station["altitude"],
                     name=raw_station["statnm"],
@@ -84,8 +84,7 @@ def harvest_stations(
 
 
 def refresh_stations(
-        client: httpx.Client,
-        db_session: sqlmodel.Session
+    client: httpx.Client, db_session: sqlmodel.Session
 ) -> list[observations.Station]:
     to_create = harvest_stations(client, db_session)
     logger.info(f"About to create {len(to_create)} stations...")
@@ -94,10 +93,10 @@ def refresh_stations(
 
 
 def harvest_monthly_measurements(
-        client: httpx.Client,
-        db_session: sqlmodel.Session,
-        station_id: Optional[uuid.UUID] = None,
-        variable_id: Optional[uuid.UUID] = None,
+    client: httpx.Client,
+    db_session: sqlmodel.Session,
+    station_id: Optional[uuid.UUID] = None,
+    variable_id: Optional[uuid.UUID] = None,
 ) -> list[observations.MonthlyMeasurementCreate]:
     existing_stations = _get_stations(db_session, station_id)
     existing_variables = _get_variables(db_session, variable_id)
@@ -113,13 +112,12 @@ def harvest_monthly_measurements(
                 f"{len(existing_variables)})..."
             )
             for month in range(1, 13):
-                logger.info(
-                    f"\t\tProcessing month {month!r} ({month}/12)...")
+                logger.info(f"\t\tProcessing month {month!r} ({month}/12)...")
                 existing_measurements = database.collect_all_monthly_measurements(
                     db_session,
                     station_id_filter=station.id,
                     variable_id_filter=variable.id,
-                    month_filter=month
+                    month_filter=month,
                 )
                 existing = {}
                 for db_measurement in existing_measurements:
@@ -131,8 +129,8 @@ def harvest_monthly_measurements(
                         "statcd": station.code,
                         "indicatore": variable.name,
                         "tabella": "M",
-                        "periodo": month
-                    }
+                        "periodo": month,
+                    },
                 )
                 response.raise_for_status()
                 for raw_measurement in response.json().get("data", []):
@@ -143,36 +141,34 @@ def harvest_monthly_measurements(
                         date=dt.date(raw_measurement["anno"], month, 1),
                     )
                     measurement_id = _build_monthly_measurement_id(
-                        monthly_measurement_create)
+                        monthly_measurement_create
+                    )
                     if measurement_id not in existing:
-                        monthly_measurements_create.append(
-                            monthly_measurement_create)
+                        monthly_measurements_create.append(monthly_measurement_create)
     return monthly_measurements_create
 
 
 def refresh_monthly_measurements(
-        client: httpx.Client,
-        db_session: sqlmodel.Session,
-        station_id: Optional[uuid.UUID] = None,
-        variable_id: Optional[uuid.UUID] = None,
+    client: httpx.Client,
+    db_session: sqlmodel.Session,
+    station_id: Optional[uuid.UUID] = None,
+    variable_id: Optional[uuid.UUID] = None,
 ) -> list[observations.MonthlyMeasurement]:
     to_create = harvest_monthly_measurements(
-        client,
-        db_session,
-        station_id=station_id,
-        variable_id=variable_id
+        client, db_session, station_id=station_id, variable_id=variable_id
     )
     logger.info(f"About to create {len(to_create)} monthly measurements...")
     created_monthly_measurements = database.create_many_monthly_measurements(
-        db_session, to_create)
+        db_session, to_create
+    )
     return created_monthly_measurements
 
 
 def harvest_seasonal_measurements(
-        client: httpx.Client,
-        db_session: sqlmodel.Session,
-        station_id: Optional[uuid.UUID] = None,
-        variable_id: Optional[uuid.UUID] = None,
+    client: httpx.Client,
+    db_session: sqlmodel.Session,
+    station_id: Optional[uuid.UUID] = None,
+    variable_id: Optional[uuid.UUID] = None,
 ) -> list[observations.SeasonalMeasurementCreate]:
     existing_stations = _get_stations(db_session, station_id)
     existing_variables = _get_variables(db_session, variable_id)
@@ -188,13 +184,12 @@ def harvest_seasonal_measurements(
                 f"{len(existing_variables)})..."
             )
             for current_season in Season:
-                logger.info(
-                    f"\t\tProcessing season {current_season!r}...")
+                logger.info(f"\t\tProcessing season {current_season!r}...")
                 existing_measurements = database.collect_all_seasonal_measurements(
                     db_session,
                     station_id_filter=station.id,
                     variable_id_filter=variable.id,
-                    season_filter=current_season
+                    season_filter=current_season,
                 )
                 existing = {}
                 for db_measurement in existing_measurements:
@@ -213,8 +208,8 @@ def harvest_seasonal_measurements(
                         "statcd": station.code,
                         "indicatore": variable.name,
                         "tabella": "S",
-                        "periodo": season_query_param
-                    }
+                        "periodo": season_query_param,
+                    },
                 )
                 response.raise_for_status()
                 for raw_measurement in response.json().get("data", []):
@@ -232,25 +227,24 @@ def harvest_seasonal_measurements(
 
 
 def refresh_seasonal_measurements(
-        client: httpx.Client,
-        db_session: sqlmodel.Session,
-        station_id: Optional[uuid.UUID] = None,
-        variable_id: Optional[uuid.UUID] = None,
+    client: httpx.Client,
+    db_session: sqlmodel.Session,
+    station_id: Optional[uuid.UUID] = None,
+    variable_id: Optional[uuid.UUID] = None,
 ) -> list[observations.SeasonalMeasurement]:
     to_create = harvest_seasonal_measurements(
-        client,
-        db_session,
-        station_id=station_id,
-        variable_id=variable_id
+        client, db_session, station_id=station_id, variable_id=variable_id
     )
     logger.info(f"About to create {len(to_create)} seasonal measurements...")
     created_measurements = database.create_many_seasonal_measurements(
-        db_session, to_create)
+        db_session, to_create
+    )
     return created_measurements
 
 
 def _build_monthly_measurement_id(
-        measurement: observations.MonthlyMeasurement | observations.MonthlyMeasurementCreate
+    measurement: observations.MonthlyMeasurement
+    | observations.MonthlyMeasurementCreate,
 ) -> str:
     return (
         f"{measurement.station_id}-{measurement.variable_id}-"
@@ -259,7 +253,8 @@ def _build_monthly_measurement_id(
 
 
 def _build_seasonal_measurement_id(
-        measurement: observations.SeasonalMeasurement | observations.SeasonalMeasurementCreate
+    measurement: observations.SeasonalMeasurement
+    | observations.SeasonalMeasurementCreate,
 ) -> str:
     return (
         f"{measurement.station_id}-{measurement.variable_id}-"
@@ -268,16 +263,13 @@ def _build_seasonal_measurement_id(
 
 
 def _build_yearly_measurement_id(
-        measurement: observations.YearlyMeasurement | observations.YearlyMeasurementCreate
+    measurement: observations.YearlyMeasurement | observations.YearlyMeasurementCreate,
 ) -> str:
-    return (
-        f"{measurement.station_id}-{measurement.variable_id}-{measurement.year}"
-    )
+    return f"{measurement.station_id}-{measurement.variable_id}-{measurement.year}"
 
 
 def _get_stations(
-        db_session: sqlmodel.Session,
-        station_id: Optional[uuid.UUID]
+    db_session: sqlmodel.Session, station_id: Optional[uuid.UUID]
 ) -> list[observations.Station]:
     if station_id is not None:
         result = [database.get_station(db_session, station_id)]
@@ -287,8 +279,7 @@ def _get_stations(
 
 
 def _get_variables(
-        db_session: sqlmodel.Session,
-        variable_id: Optional[uuid.UUID]
+    db_session: sqlmodel.Session, variable_id: Optional[uuid.UUID]
 ) -> list[observations.Variable]:
     if variable_id is not None:
         result = [database.get_variable(db_session, variable_id)]
@@ -298,10 +289,10 @@ def _get_variables(
 
 
 def harvest_yearly_measurements(
-        client: httpx.Client,
-        db_session: sqlmodel.Session,
-        station_id: Optional[uuid.UUID] = None,
-        variable_id: Optional[uuid.UUID] = None,
+    client: httpx.Client,
+    db_session: sqlmodel.Session,
+    station_id: Optional[uuid.UUID] = None,
+    variable_id: Optional[uuid.UUID] = None,
 ) -> list[observations.YearlyMeasurementCreate]:
     existing_stations = _get_stations(db_session, station_id)
     existing_variables = _get_variables(db_session, variable_id)
@@ -332,7 +323,7 @@ def harvest_yearly_measurements(
                     "indicatore": variable.name,
                     "tabella": "A",
                     "periodo": "0",
-                }
+                },
             )
             response.raise_for_status()
             for raw_measurement in response.json().get("data", []):
@@ -342,27 +333,23 @@ def harvest_yearly_measurements(
                     value=raw_measurement["valore"],
                     year=int(raw_measurement["anno"]),
                 )
-                measurement_id = _build_yearly_measurement_id(
-                    yearly_measurement_create)
+                measurement_id = _build_yearly_measurement_id(yearly_measurement_create)
                 if measurement_id not in existing:
-                    yearly_measurements_create.append(
-                        yearly_measurement_create)
+                    yearly_measurements_create.append(yearly_measurement_create)
     return yearly_measurements_create
 
 
 def refresh_yearly_measurements(
-        client: httpx.Client,
-        db_session: sqlmodel.Session,
-        station_id: Optional[uuid.UUID] = None,
-        variable_id: Optional[uuid.UUID] = None,
+    client: httpx.Client,
+    db_session: sqlmodel.Session,
+    station_id: Optional[uuid.UUID] = None,
+    variable_id: Optional[uuid.UUID] = None,
 ) -> list[observations.YearlyMeasurement]:
     to_create = harvest_yearly_measurements(
-        client,
-        db_session,
-        station_id=station_id,
-        variable_id=variable_id
+        client, db_session, station_id=station_id, variable_id=variable_id
     )
     logger.info(f"About to create {len(to_create)} yearly measurements...")
     created_measurements = database.create_many_yearly_measurements(
-        db_session, to_create)
+        db_session, to_create
+    )
     return created_measurements

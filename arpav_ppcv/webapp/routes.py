@@ -14,7 +14,7 @@ def landing_page(request: Request):
             "v1_api_docs_url": request.app.state.v1_api_docs_url,
             "v2_api_docs_url": request.app.state.v2_api_docs_url,
             "legacy_base_url": request.app.state.legacy_base_url,
-        }
+        },
     )
 
 

@@ -37,8 +37,12 @@ class CoverageConfigurationRead(sqlmodel.SQLModel):
     possible_values: list[ConfigurationParameterPossibleValueRead]
     observation_variable_aggregation_type: ObservationAggregationType
     observation_variable: Optional["ObservationVariableRead"]
-    uncertainty_lower_bounds_coverage_configuration: Optional["CoverageConfigurationReadListItem"]
-    uncertainty_upper_bounds_coverage_configuration: Optional["CoverageConfigurationReadListItem"]
+    uncertainty_lower_bounds_coverage_configuration: Optional[
+        "CoverageConfigurationReadListItem"
+    ]
+    uncertainty_upper_bounds_coverage_configuration: Optional[
+        "CoverageConfigurationReadListItem"
+    ]
 
 
 class ObservationVariableRead(sqlmodel.SQLModel):

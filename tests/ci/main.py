@@ -16,54 +16,49 @@ cli_app = typer.Typer()
 
 @cli_app.command()
 def run_ci_pipeline(
-        with_tests: Annotated[
-            bool,
-            typer.Option(
-                help=(
-                        "Run automated tests on the built container and exit with an "
-                        "error if a test fails."
-                )
+    with_tests: Annotated[
+        bool,
+        typer.Option(
+            help=(
+                "Run automated tests on the built container and exit with an "
+                "error if a test fails."
             )
-        ] = False,
-        with_security_scan: Annotated[
-            bool,
-            typer.Option(
-                help=(
-                        "Full URI to an image registry where the built container image should be "
-                        "published, including the image tag. This assumes that logging in to the "
-                        "registry has already been made (for example by running the "
-                        "`docker login` command beforehand)."
-                        "Example: ghcr.io/geobeyond/arpav-ppcv-backend:latest"
-                )
+        ),
+    ] = False,
+    with_security_scan: Annotated[
+        bool,
+        typer.Option(
+            help=(
+                "Full URI to an image registry where the built container image should be "
+                "published, including the image tag. This assumes that logging in to the "
+                "registry has already been made (for example by running the "
+                "`docker login` command beforehand)."
+                "Example: ghcr.io/geobeyond/arpav-ppcv-backend:latest"
             )
-        ] = False,
-        with_linter: Annotated[
-            bool,
-            typer.Option(
-                help=(
-                        "Apply linting to the code and exit with an error if there are static "
-                        "analysis issues."
-                )
+        ),
+    ] = False,
+    with_linter: Annotated[
+        bool,
+        typer.Option(
+            help=(
+                "Apply linting to the code and exit with an error if there are static "
+                "analysis issues."
             )
-        ] = False,
-        with_formatter: Annotated[
-            bool,
-            typer.Option(
-                help=(
-                        "Check the code for formatting issues and exit with an error if "
-                        "found."
-                )
+        ),
+    ] = False,
+    with_formatter: Annotated[
+        bool,
+        typer.Option(
+            help=(
+                "Check the code for formatting issues and exit with an error if "
+                "found."
             )
-        ] = False,
-        publish_docker_image: str | None = None,
-        git_commit: Annotated[
-            str,
-            typer.Option(
-                help=(
-                    "Hash of the current version's git commit"
-                )
-            )
-        ] = None
+        ),
+    ] = False,
+    publish_docker_image: str | None = None,
+    git_commit: Annotated[
+        str, typer.Option(help=("Hash of the current version's git commit"))
+    ] = None,
 ):
     """Command-line interface for running CI pipeline."""
 
@@ -75,7 +70,7 @@ def run_ci_pipeline(
             with_linter=with_linter,
             with_formatter=with_formatter,
             publish_docker_image=publish_docker_image,
-            git_commit=git_commit
+            git_commit=git_commit,
         )
     )
 
@@ -96,7 +91,8 @@ def _sanitize_docker_image_name(docker_image_name: str) -> str:
     path, tag = rest.partition(":")[::2]
     if "_" in host:
         logger.warning(
-            "Docker image name's host section cannot contain the '_' character.")
+            "Docker image name's host section cannot contain the '_' character."
+        )
     return f"{host}/{path.lower()}:{tag or 'latest'}"
 
 
@@ -131,8 +127,7 @@ async def _run_security_scan(built_container: dagger.Container):
                 "--output install-trivy.sh"
             )
         )
-        .with_exec(
-            shlex.split("sh install-trivy.sh -b /usr/local/bin v0.49.1"))
+        .with_exec(shlex.split("sh install-trivy.sh -b /usr/local/bin v0.49.1"))
         .with_exec(
             shlex.split(
                 "trivy rootfs "
@@ -146,13 +141,14 @@ async def _run_security_scan(built_container: dagger.Container):
 
 
 async def _run_tests(
-        client: dagger.Client,
-        built_container: dagger.Container,
-        env_variables: dict[str, str]
+    client: dagger.Client,
+    built_container: dagger.Container,
+    env_variables: dict[str, str],
 ):
     arpav_db_params = _get_db_parameters(env_variables["ARPAV_PPCV__TEST_DB_DSN"])
     legacy_db_params = _get_db_parameters(
-        env_variables["ARPAV_PPCV__DJANGO_APP__DB_DSN"])
+        env_variables["ARPAV_PPCV__DJANGO_APP__DB_DSN"]
+    )
 
     arpav_db_service = (
         client.container()
@@ -175,32 +171,27 @@ async def _run_tests(
         .as_service()
     )
     test_container = (
-        built_container
-        .with_service_binding(arpav_db_params["host"], arpav_db_service)
+        built_container.with_service_binding(arpav_db_params["host"], arpav_db_service)
         .with_service_binding(legacy_db_params["host"], django_db_service)
         .without_entrypoint()
     )
     for var_name, var_value in env_variables.items():
         test_container = test_container.with_env_variable(var_name, var_value)
     return await (
-        test_container
-        .with_exec(shlex.split("poetry install --with dev"))
+        test_container.with_exec(shlex.split("poetry install --with dev"))
         .with_exec(shlex.split("poetry run arpav-ppcv django-admin migrate"))
-        .with_exec(
-            shlex.split(
-                "poetry run pytest --reuse-db tests")
-        )
+        .with_exec(shlex.split("poetry run pytest --reuse-db tests"))
     ).stdout()
 
 
 async def _run_pipeline(
-        *,
-        with_tests: bool,
-        with_security_scan: bool,
-        with_linter: bool,
-        with_formatter: bool,
-        publish_docker_image: str | None,
-        git_commit: str | None,
+    *,
+    with_tests: bool,
+    with_security_scan: bool,
+    with_linter: bool,
+    with_formatter: bool,
+    publish_docker_image: str | None,
+    git_commit: str | None,
 ):
     # env_variables = _get_env_variables()
     env_variables = {
@@ -227,20 +218,16 @@ async def _run_pipeline(
         src = client.host().directory(str(repo_root))
         built_container = (
             client.container()
-            .build(
-                context=src,
-                dockerfile="docker/Dockerfile",
-                build_args=build_args
-            )
+            .build(context=src, dockerfile="docker/Dockerfile", build_args=build_args)
             .with_label(
                 "org.opencontainers.image.source",
-                "https://github.com/geobeyond/Arpav-PPCV-backend"
+                "https://github.com/geobeyond/Arpav-PPCV-backend",
             )
         )
-        if with_linter:
-            await _run_linter(built_container)
         if with_formatter:
             await _run_formatter(built_container)
+        if with_linter:
+            await _run_linter(built_container)
         if with_security_scan:
             await _run_security_scan(built_container)
         if with_tests:
@@ -262,7 +249,7 @@ def _get_db_parameters(db_connection_string: str) -> dict[str, str]:
         "user": username,
         "password": password,
         "host": host,
-        "port": port
+        "port": port,
     }
 
 

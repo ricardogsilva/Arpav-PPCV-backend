@@ -4,10 +4,7 @@ import logging
 import logging.config
 import os
 import sys
-from typing import (
-    Annotated,
-    Optional
-)
+from typing import Annotated, Optional
 from pathlib import Path
 
 import alembic.command
@@ -49,8 +46,7 @@ def base_callback(ctx: typer.Context) -> None:
     settings = config.get_settings()
     engine = database.get_engine(settings)
     alembic_config = alembic.config.Config()
-    alembic_config.set_main_option(
-        "script_location", "arpav_ppcv:migrations")
+    alembic_config.set_main_option("script_location", "arpav_ppcv:migrations")
     ctx_obj.update(
         {
             "settings": settings,
@@ -59,11 +55,9 @@ def base_callback(ctx: typer.Context) -> None:
         }
     )
     if (
-            (config_file_path := settings.log_config_file) is not None and
-            config_file_path.exists()
-    ):
-        logging.config.dictConfig(
-            yaml.safe_load(config_file_path.read_text()))
+        config_file_path := settings.log_config_file
+    ) is not None and config_file_path.exists():
+        logging.config.dictConfig(yaml.safe_load(config_file_path.read_text()))
 
 
 @db_app.callback()
@@ -86,10 +80,7 @@ def generate_migration(ctx: typer.Context, migration_message: str):
 
 
 @db_app.command(name="upgrade")
-def upgrade_db(
-        ctx: typer.Context,
-        revision_identifier: Optional[str] = None
-) -> None:
+def upgrade_db(ctx: typer.Context, revision_identifier: Optional[str] = None) -> None:
     """Apply any pending migration files."""
     print("Upgrading database...")
     revision_arg = "head" if revision_identifier is None else revision_identifier
@@ -139,10 +130,12 @@ def run_server(ctx: typer.Context):
     if (log_config_file := settings.log_config_file) is not None:
         uvicorn_args.append(f"--log-config={str(log_config_file)}")
     if settings.public_url.startswith("https://"):
-        uvicorn_args.extend([
-            "--forwarded-allow-ips=*",
-            "--proxy-headers",
-        ])
+        uvicorn_args.extend(
+            [
+                "--forwarded-allow-ips=*",
+                "--proxy-headers",
+            ]
+        )
 
     serving_str = (
         f"[dim]Serving at:[/dim] [link]http://{settings.bind_host}:{settings.bind_port}[/link]\n\n"
@@ -185,42 +178,42 @@ def django_admin(ctx: typer.Context, command: str):
 
 @dev_app.command()
 def import_thredds_datasets(
-        catalog: Annotated[
-            Optional[list[crawler.KnownCatalogIdentifier]],
-            typer.Option(
-                default_factory=list,
-                help=(
-                    "Catalogs to crawl in search of datasets. If this parameter is "
-                    "not provided, then all known catalogs will be crawled."
-                )
+    catalog: Annotated[
+        Optional[list[crawler.KnownCatalogIdentifier]],
+        typer.Option(
+            default_factory=list,
+            help=(
+                "Catalogs to crawl in search of datasets. If this parameter is "
+                "not provided, then all known catalogs will be crawled."
+            ),
+        ),
+    ],
+    output_base_dir: Annotated[
+        Optional[Path],
+        typer.Option(
+            help=(
+                "Where datasets should be downloaded to. If this parameter is "
+                "not provided, only the total number of found datasets "
+                "is shown."
             )
-        ],
-        output_base_dir: Annotated[
-            Optional[Path],
-            typer.Option(
-                help=(
-                        "Where datasets should be downloaded to. If this parameter is "
-                        "not provided, only the total number of found datasets "
-                        "is shown."
-                )
+        ),
+    ] = None,
+    wildcard_filter: Annotated[
+        str, typer.Option(help="Wildcard filter for selecting only relevant datasets")
+    ] = "*",
+    force_download: Annotated[
+        Optional[bool],
+        typer.Option(
+            help=(
+                "Whether to re-download a dataset even if it is already "
+                "present locally."
             )
-        ] = None,
-        wildcard_filter: Annotated[
-            str,
-            typer.Option(help="Wildcard filter for selecting only relevant datasets")
-        ] = "*",
-        force_download: Annotated[
-            Optional[bool],
-            typer.Option(
-                help=(
-                        "Whether to re-download a dataset even if it is already "
-                        "present locally."
-                )
-            )
-        ] = False,
+        ),
+    ] = False,
 ):
     relevant_catalogs = (
-        catalog if len(catalog) > 0 else list(crawler.KnownCatalogIdentifier))
+        catalog if len(catalog) > 0 else list(crawler.KnownCatalogIdentifier)
+    )
     client = httpx.Client()
     for relevant_catalog in relevant_catalogs:
         print(f"Processing catalog {relevant_catalog.value!r}...")

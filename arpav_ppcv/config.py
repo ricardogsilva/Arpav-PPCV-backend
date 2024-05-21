@@ -4,10 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 import pydantic
-from pydantic_settings import (
-    BaseSettings,
-    SettingsConfigDict
-)
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +37,8 @@ class ThreddsDatasetSettings(pydantic.BaseModel):
 
     def get_dynamic_id_parameters(self, dataset_id: str) -> dict[str, str]:
         pattern_parts = re.finditer(
-            r"\{(\w+)\}",
-            self.dataset_id_pattern.partition("-")[-1])
+            r"\{(\w+)\}", self.dataset_id_pattern.partition("-")[-1]
+        )
         id_parts = dataset_id.split("-")[1:]
         result = {}
         for index, pattern_match_obj in enumerate(pattern_parts):
@@ -67,25 +64,23 @@ class ThreddsServerSettings(pydantic.BaseModel):
     base_url: str = "http://localhost:8080/thredds"
     wms_service_url_fragment: str = "wms"
     netcdf_subset_service_url_fragment: str = "ncss/grid"  # noqa
-    datasets: dict[str, ThreddsDatasetSettings] = pydantic.Field(
-        default_factory=dict)
+    datasets: dict[str, ThreddsDatasetSettings] = pydantic.Field(default_factory=dict)
     uncertainty_visualization_scale_range: tuple[float, float] = pydantic.Field(
-        default=(0, 9))
+        default=(0, 9)
+    )
 
     @pydantic.model_validator(mode="after")
     def strip_slashes_from_urls(self):
         self.base_url = self.base_url.strip("/")
-        self.wms_service_url_fragment = (
-            self.wms_service_url_fragment.strip("/"))
+        self.wms_service_url_fragment = self.wms_service_url_fragment.strip("/")
         self.netcdf_subset_service_url_fragment = (
-            self.netcdf_subset_service_url_fragment.strip("/"))
+            self.netcdf_subset_service_url_fragment.strip("/")
+        )
         return self
 
     @pydantic.model_validator(mode="after")
     def validate_dataset_config_ids(self):
-        illegal_strings = (
-            "-",
-        )
+        illegal_strings = ("-",)
         for ds_conf_id in self.datasets.keys():
             for patt in illegal_strings:
                 if patt in ds_conf_id:
@@ -107,11 +102,12 @@ class DjangoEmailSettings(pydantic.BaseModel):
 class DjangoThreddsSettings(pydantic.BaseModel):
     host: str = "localhost"
     auth_url: str = (
-        "https://thredds.arpa.veneto.it/thredds/restrictedAccess/dati_accordo")
+        "https://thredds.arpa.veneto.it/thredds/restrictedAccess/dati_accordo"
+    )
     port: int = 8080
-    user: str = 'admin'
-    password: str = 'admin'
-    proxy: str = 'http://proxy:8089/thredds/'
+    user: str = "admin"
+    password: str = "admin"
+    proxy: str = "http://proxy:8089/thredds/"
 
 
 class DjangoAppSettings(pydantic.BaseModel):
@@ -123,7 +119,8 @@ class DjangoAppSettings(pydantic.BaseModel):
     static_mount_prefix: str = "/legacy-static"
     db_engine: str = "django.contrib.gis.db.backends.postgis"
     db_dsn: pydantic.PostgresDsn = pydantic.PostgresDsn(
-        "postgresql://django_user:django_password@localhost:5432/django_db")
+        "postgresql://django_user:django_password@localhost:5432/django_db"
+    )
     email: DjangoEmailSettings = DjangoEmailSettings()
     redis_dsn: pydantic.RedisDsn = pydantic.RedisDsn("redis://localhost:6379")
     thredds: DjangoThreddsSettings = DjangoThreddsSettings()
@@ -137,7 +134,12 @@ class AdminUserSettings(pydantic.BaseModel):
     company_logo_url: Optional[str] = None
     roles: list[str] = pydantic.Field(
         default_factory=lambda: [
-            "read", "create", "edit", "delete", "action_make_published"]
+            "read",
+            "create",
+            "edit",
+            "delete",
+            "action_make_published",
+        ]
     )
 
 
@@ -171,9 +173,7 @@ class ArpavPpcvSettings(BaseSettings):  # noqa
     @pydantic.model_validator(mode="after")
     def ensure_test_db_dsn(self):
         if self.test_db_dsn is None:
-            rest, standard_db_name = (
-                self.db_dsn.unicode_string().rpartition("/")[::2]
-            )
+            rest, standard_db_name = self.db_dsn.unicode_string().rpartition("/")[::2]
             test_db_name = f"test_{standard_db_name}"
             self.test_db_dsn = pydantic.PostgresDsn(f"{rest}/{test_db_name}")
         return self

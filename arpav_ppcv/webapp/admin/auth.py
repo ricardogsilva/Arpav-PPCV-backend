@@ -33,8 +33,8 @@ class UsernameAndPasswordProvider(AuthProvider):
 
         settings: config.ArpavPpcvSettings = request.app.state.settings
         if (
-                username == settings.admin_user.username and
-                password == settings.admin_user.password
+            username == settings.admin_user.username
+            and password == settings.admin_user.password
         ):
             """Save `username` in session"""
             request.session.update({"username": username})

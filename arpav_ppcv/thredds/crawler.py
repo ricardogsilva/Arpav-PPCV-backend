@@ -41,41 +41,56 @@ class KnownCatalogIdentifier(enum.Enum):
 def get_catalog_url(catalog_identifier: KnownCatalogIdentifier) -> str:
     return {
         KnownCatalogIdentifier.THIRTY_YEAR_ANOMALY_5_MODEL_AVERAGE: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/ensembletwbc/clipped"),
+            "https://thredds.arpa.veneto.it/thredds/catalog/ensembletwbc/clipped"
+        ),
         KnownCatalogIdentifier.THIRTY_YEAR_ANOMALY_TEMPERATURE_PRECIPITATION: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/taspr5rcm/clipped"),
+            "https://thredds.arpa.veneto.it/thredds/catalog/taspr5rcm/clipped"
+        ),
         KnownCatalogIdentifier.THIRTY_YEAR_ANOMALY_CLIMATIC_INDICES: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/indici5rcm/clipped"),
+            "https://thredds.arpa.veneto.it/thredds/catalog/indici5rcm/clipped"
+        ),
         KnownCatalogIdentifier.YEARLY_ANOMALY_5_MODEL_AVERAGE_TAS_PR: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/ens5ym/clipped"),
+            "https://thredds.arpa.veneto.it/thredds/catalog/ens5ym/clipped"
+        ),
         KnownCatalogIdentifier.YEARLY_ABSOLUTE_5_MODEL_AVERAGE: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/ensymbc/clipped"),
+            "https://thredds.arpa.veneto.it/thredds/catalog/ensymbc/clipped"
+        ),
         KnownCatalogIdentifier.YEARLY_ANOMALY_EC_EARTH_CCLM4_8_17: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_CCLM4-8-17ym/clipped"),
+            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_CCLM4-8-17ym/clipped"
+        ),
         KnownCatalogIdentifier.YEARLY_ABSOLUTE_EC_EARTH_CCLM4_8_17: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_CCLM4-8-17ymbc/clipped"),
+            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_CCLM4-8-17ymbc/clipped"
+        ),
         KnownCatalogIdentifier.YEARLY_ANOMALY_EC_EARTH_RACM022E: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_RACMO22Eym/clipped"),
+            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_RACMO22Eym/clipped"
+        ),
         KnownCatalogIdentifier.YEARLY_ABSOLUTE_EC_EARTH_RACM022E: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_RACMO22Eymbc/clipped"),
+            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_RACMO22Eymbc/clipped"
+        ),
         KnownCatalogIdentifier.YEARLY_ANOMALY_EC_EARTH_RCA4: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_RCA4ym/clipped"),
+            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_RCA4ym/clipped"
+        ),
         KnownCatalogIdentifier.YEARLY_ABSOLUTE_EC_EARTH_RCA4: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_RCA4ymbc/clipped"),
+            "https://thredds.arpa.veneto.it/thredds/catalog/EC-EARTH_RCA4ymbc/clipped"
+        ),
         KnownCatalogIdentifier.YEARLY_ANOMALY_HADGEM2_ES_RACMO22E: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/HadGEM2-ES_RACMO22Eym/clipped"),
+            "https://thredds.arpa.veneto.it/thredds/catalog/HadGEM2-ES_RACMO22Eym/clipped"
+        ),
         KnownCatalogIdentifier.YEARLY_ABSOLUTE_HADGEM2_ES_RACMO22E: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/HadGEM2-ES_RACMO22Eymbc/clipped"),
+            "https://thredds.arpa.veneto.it/thredds/catalog/HadGEM2-ES_RACMO22Eymbc/clipped"
+        ),
         KnownCatalogIdentifier.YEARLY_ANOMALY_MPI_ESM_LR_REMO2009: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/MPI-ESM-LR_REMO2009ym/clipped"),
+            "https://thredds.arpa.veneto.it/thredds/catalog/MPI-ESM-LR_REMO2009ym/clipped"
+        ),
         KnownCatalogIdentifier.YEARLY_ABSOLUTE_MPI_ESM_LR_REMO2009: (
-            "https://thredds.arpa.veneto.it/thredds/catalog/MPI-ESM-LR_REMO2009ymbc/clipped"),
+            "https://thredds.arpa.veneto.it/thredds/catalog/MPI-ESM-LR_REMO2009ymbc/clipped"
+        ),
     }[catalog_identifier]
 
 
 def discover_catalog_contents(
-        catalog_reference_url: str,
-        http_client: httpx.Client,
+    catalog_reference_url: str,
+    http_client: httpx.Client,
 ) -> models.ThreddsClientCatalog:
     """
     catalog_reference_url:
@@ -86,23 +101,23 @@ def discover_catalog_contents(
     response.raise_for_status()
     raw_catalog_description = response.content
     parsed_services, parsed_dataset = _parse_catalog_client_description(
-        raw_catalog_description)
+        raw_catalog_description
+    )
     return models.ThreddsClientCatalog(
         url=urllib.parse.urlparse(catalog_reference_url),
         services={service.service_type: service for service in parsed_services},
-        dataset=parsed_dataset
+        dataset=parsed_dataset,
     )
 
 
 async def download_datasets(
-        output_base_directory: Path,
-        catalog_contents: models.ThreddsClientCatalog,
-        dataset_wildcard_filter: str = "*",
-        force_download: bool = False
+    output_base_directory: Path,
+    catalog_contents: models.ThreddsClientCatalog,
+    dataset_wildcard_filter: str = "*",
+    force_download: bool = False,
 ) -> None:
     client = httpx.AsyncClient()
-    relevant_datasets = catalog_contents.get_public_datasets(
-        dataset_wildcard_filter)
+    relevant_datasets = catalog_contents.get_public_datasets(dataset_wildcard_filter)
     for batch in _batched(relevant_datasets.values(), 10):
         logger.info("processing new batch")
         async with anyio.create_task_group() as tg:
@@ -119,11 +134,11 @@ async def download_datasets(
 
 
 async def download_individual_dataset(
-        dataset_id: str,
-        catalog_contents: models.ThreddsClientCatalog,
-        output_base_directory: Path,
-        force_download: bool,
-        http_client: httpx.AsyncClient,
+    dataset_id: str,
+    catalog_contents: models.ThreddsClientCatalog,
+    output_base_directory: Path,
+    force_download: bool,
+    http_client: httpx.AsyncClient,
 ) -> None:
     url = catalog_contents.build_dataset_download_url(dataset_id)
     output_path = output_base_directory / dataset_id
@@ -140,7 +155,7 @@ async def download_individual_dataset(
 
 
 def _parse_catalog_client_description(
-        catalog_description: bytes
+    catalog_description: bytes,
 ) -> tuple[list[models.ThreddsClientService], models.ThreddsClientDataset]:
     root_element = et.fromstring(catalog_description)
     service_qn = et.QName(_NAMESPACES["thredds"], "service")
@@ -149,8 +164,7 @@ def _parse_catalog_client_description(
     for service_element in root_element.findall(f"./{service_qn}/"):
         service = _parse_service_element(service_element)
         services.append(service)
-    dataset = _parse_dataset_element(
-        root_element.findall(f"./{dataset_qn}")[0])
+    dataset = _parse_dataset_element(root_element.findall(f"./{dataset_qn}")[0])
     return services, dataset
 
 
@@ -158,7 +172,7 @@ def _parse_service_element(service_el: et.Element) -> models.ThreddsClientServic
     return models.ThreddsClientService(
         name=service_el.get("name", default=""),
         service_type=service_el.get("serviceType", default=""),
-        base=service_el.get("base", default="")
+        base=service_el.get("base", default=""),
     )
 
 
@@ -178,7 +192,8 @@ def _parse_dataset_element(dataset_el: et.Element) -> models.ThreddsClientDatase
             case meta_qname.text:
                 for metadata_element in element.findall("./"):
                     key = metadata_element.tag.replace(
-                        f"{{{_NAMESPACES['thredds']}}}", "")
+                        f"{{{_NAMESPACES['thredds']}}}", ""
+                    )
                     metadata[key] = metadata_element.text
             case ds_qname.text:
                 public_ds = models.ThreddsClientPublicDataset(
@@ -217,7 +232,7 @@ def _batched(iterable, n):
     """
     # batched('ABCDEFG', 3) --> ABC DEF G
     if n < 1:
-        raise ValueError('n must be at least one')
+        raise ValueError("n must be at least one")
     it = iter(iterable)
     while batch := tuple(islice(it, n)):
         yield batch

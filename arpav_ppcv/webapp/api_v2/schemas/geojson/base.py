@@ -22,7 +22,7 @@ class ApiReadableModelAsFeature(typing.Protocol):
 
     @classmethod
     def from_db_instance(  # noqa: D102
-            cls: typing.Type[F], db_instance: pydantic.BaseModel, request: Request
+        cls: typing.Type[F], db_instance: pydantic.BaseModel, request: Request
     ) -> F:
         ...
 
@@ -39,22 +39,20 @@ class ArpavFeatureCollection(geojson_pydantic.FeatureCollection):
 
     @classmethod
     def from_items(
-            cls,
-            items: typing.Sequence[pydantic.BaseModel],
-            request: Request,
-            *,
-            limit: int,
-            offset: int,
-            filtered_total: int,
-            unfiltered_total: int
+        cls,
+        items: typing.Sequence[pydantic.BaseModel],
+        request: Request,
+        *,
+        limit: int,
+        offset: int,
+        filtered_total: int,
+        unfiltered_total: int,
     ) -> "ArpavFeatureCollection":
         return cls(
-            features=[
-                cls.list_item_type.from_db_instance(i, request)
-                for i in items
-            ],
+            features=[cls.list_item_type.from_db_instance(i, request) for i in items],
             links=cls._get_list_links(
-                request, limit, offset, filtered_total, len(items)),
+                request, limit, offset, filtered_total, len(items)
+            ),
             number_matched=filtered_total,
             number_total=unfiltered_total,
             number_returned=len(items),
@@ -62,12 +60,12 @@ class ArpavFeatureCollection(geojson_pydantic.FeatureCollection):
 
     @classmethod
     def _get_list_links(
-            cls,
-            request: Request,
-            limit: int,
-            offset: int,
-            filtered_total: int,
-            num_returned_records: int
+        cls,
+        request: Request,
+        limit: int,
+        offset: int,
+        filtered_total: int,
+        num_returned_records: int,
     ) -> ListLinks:
         filters = dict(request.query_params)
         if "limit" in filters.keys():

@@ -14,9 +14,7 @@ ItemType = TypeVar("ItemType")
 
 
 class BaseConfigParameterListItem(pydantic.BaseModel):
-    model_config = pydantic.ConfigDict(
-        from_attributes=True
-    )
+    model_config = pydantic.ConfigDict(from_attributes=True)
 
     id: str
     name: str
@@ -53,9 +51,7 @@ class ValueTypeListItem(BaseConfigParameterListItem):
 
 
 class MapListItem(pydantic.BaseModel):
-    model_config = pydantic.ConfigDict(
-        from_attributes=True
-    )
+    model_config = pydantic.ConfigDict(from_attributes=True)
 
     variable_id: str
     forecast_model_id: str
@@ -80,9 +76,7 @@ class MapListItem(pydantic.BaseModel):
 
 
 class UserDownloadListItem(pydantic.BaseModel):
-    model_config = pydantic.ConfigDict(
-        from_attributes=True
-    )
+    model_config = pydantic.ConfigDict(from_attributes=True)
 
     reason: str | None = None
     place: str | None = None
@@ -94,9 +88,7 @@ class UserDownloadListItem(pydantic.BaseModel):
 
 
 class DatasetEmbeddedInTimeSeries(pydantic.BaseModel):
-    model_config = pydantic.ConfigDict(
-        from_attributes=True
-    )
+    model_config = pydantic.ConfigDict(from_attributes=True)
 
     lat: float
     lng: float
@@ -111,9 +103,7 @@ class TimeSeriesCreate(pydantic.BaseModel):
 
 
 class TimeSeriesListItem(pydantic.BaseModel):
-    model_config = pydantic.ConfigDict(
-        from_attributes=True
-    )
+    model_config = pydantic.ConfigDict(from_attributes=True)
 
     dataset: DatasetEmbeddedInTimeSeries
     values: dict

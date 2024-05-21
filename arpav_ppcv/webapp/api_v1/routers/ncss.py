@@ -7,11 +7,10 @@ router = APIRouter(tags=["ncss"])
 
 
 @router.post(
-    "/time-series",
-    response_model=schemas.ItemList[schemas.TimeSeriesListItem]
+    "/time-series", response_model=schemas.ItemList[schemas.TimeSeriesListItem]
 )
 def create_time_series(
-        time_series: schemas.TimeSeriesCreate,
+    time_series: schemas.TimeSeriesCreate,
 ):
     """### Create a new time series
 
@@ -27,13 +26,11 @@ def create_time_series(
     responses={
         200: {
             "content": {"application/netcdf": {}},
-            "description": "Return a NetCDF file with the dataset"
+            "description": "Return a NetCDF file with the dataset",
         }
-    }
+    },
 )
-def request_netcdf_download(
-        dataset: schemas.DatasetReadIn
-) -> FileResponse:
+def request_netcdf_download(dataset: schemas.DatasetReadIn) -> FileResponse:
     """### Download a dataset as a NetCDF file
 
     Returns the file and also stores the request in the database, for the purpose of

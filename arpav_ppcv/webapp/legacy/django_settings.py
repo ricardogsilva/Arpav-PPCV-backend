@@ -14,8 +14,7 @@ import yaml
 from ... import config
 
 
-def get_custom_django_settings(
-        settings: config.ArpavPpcvSettings) -> dict[str, Any]:
+def get_custom_django_settings(settings: config.ArpavPpcvSettings) -> dict[str, Any]:
     base_dir = str(Path(__file__).parents[3] / "backend")
     time_zone = "UTC"
     if (config_file_path := settings.log_config_file) is not None:
@@ -54,7 +53,6 @@ def get_custom_django_settings(
             "padoa.thredds",
             "padoa.forecastattributes",
             "padoa.places",
-
         ],
         "MIDDLEWARE": [
             "django.middleware.security.SecurityMiddleware",
@@ -93,7 +91,7 @@ def get_custom_django_settings(
                 "PASSWORD": settings.django_app.db_dsn.hosts()[0]["password"],
                 "HOST": settings.django_app.db_dsn.hosts()[0]["host"],
                 "PORT": settings.django_app.db_dsn.hosts()[0]["port"],
-                "CONN_MAX_AGE": 3600
+                "CONN_MAX_AGE": 3600,
             }
         },
         "AUTH_PASSWORD_VALIDATORS": [
@@ -127,10 +125,7 @@ def get_custom_django_settings(
             "DEFAULT_AUTHENTICATION_CLASSES": [
                 "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
             ],
-
-            "DEFAULT_RENDERER_CLASSES": (
-                "rest_framework.renderers.JSONRenderer",
-            ),
+            "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
             "EXCEPTION_HANDLER": "rest_framework.views.exception_handler",
             "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
             "PAGE_SIZE": 100,
@@ -190,7 +185,7 @@ def get_custom_django_settings(
             "db": 0,
             "password": "",
             "prefix": "session",
-            "socket_timeout": 1
+            "socket_timeout": 1,
         },
         "THREDDS": {
             "host": settings.django_app.thredds.host,

@@ -34,44 +34,37 @@ def list_stations(ctx: typer.Context) -> None:
         print(pydantic_core.to_json(result, indent=_JSON_INDENTATION).decode("utf-8"))
 
 
-@app.command(
-    name="create-station",
-    context_settings={
-        "ignore_unknown_options": True
-    }
-)
+@app.command(name="create-station", context_settings={"ignore_unknown_options": True})
 def create_station(
-        ctx: typer.Context,
-        code: str,
-        longitude: Annotated[float, typer.Argument(min=-180, max=180)],
-        latitude: Annotated[float, typer.Argument(min=-90, max=90)],
-        altitude: Annotated[float, typer.Option(min=-50, max=10_000)] = None,
-        name: Annotated[str, typer.Option(help="Station name")] = "",
-        type: Annotated[str, typer.Option(help="Station type")] = "",
+    ctx: typer.Context,
+    code: str,
+    longitude: Annotated[float, typer.Argument(min=-180, max=180)],
+    latitude: Annotated[float, typer.Argument(min=-90, max=90)],
+    altitude: Annotated[float, typer.Option(min=-50, max=10_000)] = None,
+    name: Annotated[str, typer.Option(help="Station name")] = "",
+    type: Annotated[str, typer.Option(help="Station type")] = "",
 ) -> None:
     station_create = schemas.StationCreate(
-        geom=geojson_pydantic.Point(
-            type="Point", coordinates=(longitude, latitude)
-        ),
+        geom=geojson_pydantic.Point(type="Point", coordinates=(longitude, latitude)),
         code=code,
         altitude_m=altitude,
         name=name,
-        type_=type.lower().replace(" ", "_")
+        type_=type.lower().replace(" ", "_"),
     )
     """Create a new station."""
     with sqlmodel.Session(ctx.obj["engine"]) as session:
         db_station = database.create_station(session, station_create)
         print(
-            schemas.StationRead(
-                **db_station.model_dump()
-            ).model_dump_json(indent=_JSON_INDENTATION)
+            schemas.StationRead(**db_station.model_dump()).model_dump_json(
+                indent=_JSON_INDENTATION
+            )
         )
 
 
 @app.command(name="delete-station")
 def delete_station(
-        ctx: typer.Context,
-        station_id: uuid.UUID,
+    ctx: typer.Context,
+    station_id: uuid.UUID,
 ) -> None:
     """Delete a station."""
     with sqlmodel.Session(ctx.obj["engine"]) as session:
@@ -91,30 +84,28 @@ def list_variables(ctx: typer.Context) -> None:
 
 @app.command(name="create-variable")
 def create_variable(
-        ctx: typer.Context,
-        name: str,
-        description: str,
-        unit: Optional[str] = "",
+    ctx: typer.Context,
+    name: str,
+    description: str,
+    unit: Optional[str] = "",
 ) -> None:
     variable_create = schemas.VariableCreate(
-        name=name,
-        description=description,
-        unit=unit
+        name=name, description=description, unit=unit
     )
     """Create a new variable."""
     with sqlmodel.Session(ctx.obj["engine"]) as session:
         db_variable = database.create_variable(session, variable_create)
         print(
-            schemas.VariableRead(
-                **db_variable.model_dump()
-            ).model_dump_json(indent=_JSON_INDENTATION)
+            schemas.VariableRead(**db_variable.model_dump()).model_dump_json(
+                indent=_JSON_INDENTATION
+            )
         )
 
 
 @app.command(name="delete-variable")
 def delete_variable(
-        ctx: typer.Context,
-        variable_id: uuid.UUID,
+    ctx: typer.Context,
+    variable_id: uuid.UUID,
 ) -> None:
     """Delete a variable."""
     with sqlmodel.Session(ctx.obj["engine"]) as session:
@@ -134,11 +125,11 @@ def list_monthly_measurements(ctx: typer.Context) -> None:
 
 @app.command(name="create-monthly-measurement")
 def create_monthly_measurement(
-        ctx: typer.Context,
-        station_code: str,
-        variable: str,
-        date: dt.datetime,
-        value: float,
+    ctx: typer.Context,
+    station_code: str,
+    variable: str,
+    date: dt.datetime,
+    value: float,
 ) -> None:
     """Create a new monthly measurement."""
     with sqlmodel.Session(ctx.obj["engine"]) as session:
@@ -155,8 +146,8 @@ def create_monthly_measurement(
                     station_id=db_station.id,
                     variable_id=db_variable.id,
                     date=dt.date(date.year, date.month, 1),
-                    value=value
-                )
+                    value=value,
+                ),
             )
         print(
             schemas.MonthlyMeasurementRead(
@@ -167,8 +158,8 @@ def create_monthly_measurement(
 
 @app.command(name="delete-monthly-measurement")
 def delete_monthly_measurement(
-        ctx: typer.Context,
-        monthly_measurement_id: uuid.UUID,
+    ctx: typer.Context,
+    monthly_measurement_id: uuid.UUID,
 ) -> None:
     """Delete a monthly measurement."""
     with sqlmodel.Session(ctx.obj["engine"]) as session:
@@ -177,9 +168,9 @@ def delete_monthly_measurement(
 
 @app.command(name="list-seasonal-measurements")
 def list_seasonal_measurements(
-        ctx: typer.Context,
-        station_code: Optional[str] = None,
-        variable_name: Optional[str] = None,
+    ctx: typer.Context,
+    station_code: Optional[str] = None,
+    variable_name: Optional[str] = None,
 ) -> None:
     """List seasonal measurements."""
     with sqlmodel.Session(ctx.obj["engine"]) as session:
@@ -204,7 +195,7 @@ def list_seasonal_measurements(
             for v in database.collect_all_seasonal_measurements(
                 session,
                 station_id_filter=station_id_filter,
-                variable_id_filter=variable_id_filter
+                variable_id_filter=variable_id_filter,
             )
         ]
         print(pydantic_core.to_json(result, indent=_JSON_INDENTATION).decode("utf-8"))
@@ -212,12 +203,12 @@ def list_seasonal_measurements(
 
 @app.command(name="create-seasonal-measurement")
 def create_seasonal_measurement(
-        ctx: typer.Context,
-        station_code: str,
-        variable: str,
-        year: int,
-        season: base.Season,
-        value: float,
+    ctx: typer.Context,
+    station_code: str,
+    variable: str,
+    year: int,
+    season: base.Season,
+    value: float,
 ) -> None:
     """Create a new seasonal measurement."""
     with sqlmodel.Session(ctx.obj["engine"]) as session:
@@ -236,7 +227,7 @@ def create_seasonal_measurement(
                     year=year,
                     season=season,
                     value=value,
-                )
+                ),
             )
         print(
             schemas.SeasonalMeasurementRead(
@@ -247,8 +238,8 @@ def create_seasonal_measurement(
 
 @app.command(name="delete-seasonal-measurement")
 def delete_seasonal_measurement(
-        ctx: typer.Context,
-        measurement_id: uuid.UUID,
+    ctx: typer.Context,
+    measurement_id: uuid.UUID,
 ) -> None:
     """Delete a seasonal measurement."""
     with sqlmodel.Session(ctx.obj["engine"]) as session:
@@ -257,9 +248,9 @@ def delete_seasonal_measurement(
 
 @app.command(name="list-yearly-measurements")
 def list_yearly_measurements(
-        ctx: typer.Context,
-        station_code: Optional[str] = None,
-        variable_name: Optional[str] = None,
+    ctx: typer.Context,
+    station_code: Optional[str] = None,
+    variable_name: Optional[str] = None,
 ) -> None:
     """List yearly measurements."""
     with sqlmodel.Session(ctx.obj["engine"]) as session:
@@ -284,7 +275,7 @@ def list_yearly_measurements(
             for v in database.collect_all_yearly_measurements(
                 session,
                 station_id_filter=station_id_filter,
-                variable_id_filter=variable_id_filter
+                variable_id_filter=variable_id_filter,
             )
         ]
         print(pydantic_core.to_json(result, indent=_JSON_INDENTATION).decode("utf-8"))
@@ -292,11 +283,11 @@ def list_yearly_measurements(
 
 @app.command(name="create-yearly-measurement")
 def create_yearly_measurement(
-        ctx: typer.Context,
-        station_code: str,
-        variable: str,
-        value: float,
-        year: int,
+    ctx: typer.Context,
+    station_code: str,
+    variable: str,
+    value: float,
+    year: int,
 ) -> None:
     """Create a new yearly measurement."""
     with sqlmodel.Session(ctx.obj["engine"]) as session:
@@ -314,7 +305,7 @@ def create_yearly_measurement(
                     variable_id=db_variable.id,
                     year=year,
                     value=value,
-                )
+                ),
             )
         print(
             schemas.YearlyMeasurementRead(
@@ -325,8 +316,8 @@ def create_yearly_measurement(
 
 @app.command(name="delete-yearly-measurement")
 def delete_yearly_measurement(
-        ctx: typer.Context,
-        measurement_id: uuid.UUID,
+    ctx: typer.Context,
+    measurement_id: uuid.UUID,
 ) -> None:
     """Delete a yearly measurement."""
     with sqlmodel.Session(ctx.obj["engine"]) as session:

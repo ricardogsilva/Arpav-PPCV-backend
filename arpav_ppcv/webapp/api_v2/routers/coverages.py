@@ -42,21 +42,22 @@ from ..schemas import coverages as coverage_schemas
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+
 @router.get(
     "/configuration-parameters",
-    response_model=coverage_schemas.ConfigurationParameterList
+    response_model=coverage_schemas.ConfigurationParameterList,
 )
 async def list_configuration_parameters(
-        request: Request,
-        db_session: Annotated[Session, Depends(dependencies.get_db_session)],
-        list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
+    request: Request,
+    db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+    list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
 ):
     """List configuration parameters."""
     config_params, filtered_total = db.list_configuration_parameters(
         db_session,
         limit=list_params.limit,
         offset=list_params.offset,
-        include_total=True
+        include_total=True,
     )
     _, unfiltered_total = db.list_configuration_parameters(
         db_session, limit=1, offset=0, include_total=True
@@ -67,18 +68,18 @@ async def list_configuration_parameters(
         limit=list_params.limit,
         offset=list_params.offset,
         filtered_total=filtered_total,
-        unfiltered_total=unfiltered_total
+        unfiltered_total=unfiltered_total,
     )
 
 
 @router.get(
     "/coverage-configurations",
-    response_model=coverage_schemas.CoverageConfigurationList
+    response_model=coverage_schemas.CoverageConfigurationList,
 )
 async def list_coverage_configurations(
-        request: Request,
-        db_session: Annotated[Session, Depends(dependencies.get_db_session)],
-        list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
+    request: Request,
+    db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+    list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
 ):
     """### List coverage configurations.
 
@@ -119,7 +120,7 @@ async def list_coverage_configurations(
         db_session,
         limit=list_params.limit,
         offset=list_params.offset,
-        include_total=True
+        include_total=True,
     )
     _, unfiltered_total = db.list_coverage_configurations(
         db_session, limit=1, offset=0, include_total=True
@@ -130,7 +131,7 @@ async def list_coverage_configurations(
         limit=list_params.limit,
         offset=list_params.offset,
         filtered_total=filtered_total,
-        unfiltered_total=unfiltered_total
+        unfiltered_total=unfiltered_total,
     )
 
 
@@ -139,44 +140,52 @@ async def list_coverage_configurations(
     response_model=coverage_schemas.CoverageConfigurationReadDetail,
 )
 def get_coverage_configuration(
-        request: Request,
-        db_session: Annotated[Session, Depends(dependencies.get_db_session)],
-        coverage_configuration_id: pydantic.UUID4
+    request: Request,
+    db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+    coverage_configuration_id: pydantic.UUID4,
 ):
     db_coverage_configuration = db.get_coverage_configuration(
-        db_session, coverage_configuration_id)
+        db_session, coverage_configuration_id
+    )
     allowed_coverage_identifiers = db.list_allowed_coverage_identifiers(
-        db_session, coverage_configuration_id=db_coverage_configuration.id)
+        db_session, coverage_configuration_id=db_coverage_configuration.id
+    )
     return coverage_schemas.CoverageConfigurationReadDetail.from_db_instance(
-        db_coverage_configuration, allowed_coverage_identifiers, request)
+        db_coverage_configuration, allowed_coverage_identifiers, request
+    )
 
 
 @router.get("/wms/{coverage_identifier}")
 async def wms_endpoint(
-        request: Request,
-        db_session: Annotated[Session, Depends(dependencies.get_db_session)],
-        settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
-        http_client: Annotated[httpx.AsyncClient, Depends(dependencies.get_http_client)],
-        coverage_identifier: str,
-        version: str = "1.3.0",
+    request: Request,
+    db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+    settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
+    http_client: Annotated[httpx.AsyncClient, Depends(dependencies.get_http_client)],
+    coverage_identifier: str,
+    version: str = "1.3.0",
 ):
     """### Serve coverage via OGC Web Map Service.
 
     Pass additional relevant WMS query parameters directly to this endpoint.
     """
     db_coverage_configuration = db.get_coverage_configuration_by_coverage_identifier(
-        db_session, coverage_identifier)
+        db_session, coverage_identifier
+    )
     if db_coverage_configuration is not None:
         try:
-            thredds_url_fragment = db_coverage_configuration.get_thredds_url_fragment(coverage_identifier)
+            thredds_url_fragment = db_coverage_configuration.get_thredds_url_fragment(
+                coverage_identifier
+            )
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
         else:
-            base_wms_url = "/".join((
-                settings.thredds_server.base_url,
-                settings.thredds_server.wms_service_url_fragment,
-                thredds_url_fragment
-            ))
+            base_wms_url = "/".join(
+                (
+                    settings.thredds_server.base_url,
+                    settings.thredds_server.wms_service_url_fragment,
+                    thredds_url_fragment,
+                )
+            )
             parsed_url = urllib.parse.urlparse(base_wms_url)
             logger.info(f"{base_wms_url=}")
             query_params = {k.lower(): v for k, v in request.query_params.items()}
@@ -187,9 +196,11 @@ async def wms_endpoint(
                     ncwms_palette=db_coverage_configuration.palette,
                     ncwms_color_scale_range=(
                         db_coverage_configuration.color_scale_min,
-                        db_coverage_configuration.color_scale_max),
+                        db_coverage_configuration.color_scale_max,
+                    ),
                     uncertainty_visualization_scale_range=(
-                        settings.thredds_server.uncertainty_visualization_scale_range)
+                        settings.thredds_server.uncertainty_visualization_scale_range
+                    ),
                 )
             elif query_params.get("request") == "GetCapabilities":
                 # TODO: need to tweak the reported URLs
@@ -212,10 +223,11 @@ async def wms_endpoint(
             try:
                 wms_response = await thredds_utils.proxy_request(wms_url, http_client)
             except httpx.HTTPStatusError as err:
-                logger.exception(msg=f"THREDDS server replied with an error: {err.response.text}")
+                logger.exception(
+                    msg=f"THREDDS server replied with an error: {err.response.text}"
+                )
                 raise HTTPException(
-                    status_code=status.HTTP_502_BAD_GATEWAY,
-                    detail=err.response.text
+                    status_code=status.HTTP_502_BAD_GATEWAY, detail=err.response.text
                 )
             except httpx.HTTPError as err:
                 logger.exception(msg="THREDDS server replied with an error")
@@ -226,7 +238,7 @@ async def wms_endpoint(
                 response = Response(
                     content=wms_response.content,
                     status_code=wms_response.status_code,
-                    headers=dict(wms_response.headers)
+                    headers=dict(wms_response.headers),
                 )
             return response
     else:
@@ -234,34 +246,33 @@ async def wms_endpoint(
 
 
 @router.get(
-    "/time-series/{coverage_identifier}", response_model=coverage_schemas.TimeSeriesList)
+    "/time-series/{coverage_identifier}", response_model=coverage_schemas.TimeSeriesList
+)
 def get_time_series(
-        db_session: Annotated[Session, Depends(dependencies.get_db_session)],
-        settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
-        http_client: Annotated[httpx.Client, Depends(dependencies.get_sync_http_client)],
-        coverage_identifier: str,
-        coords: str,
-        datetime: Optional[str] = "../..",
-        include_coverage_data: bool = True,
-        include_observation_data: Annotated[
-            bool,
-            Query(
-                description=(
-                        "Whether data from the nearest observation station (if any) "
-                        "should be included in the response."
-                )
+    db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+    settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
+    http_client: Annotated[httpx.Client, Depends(dependencies.get_sync_http_client)],
+    coverage_identifier: str,
+    coords: str,
+    datetime: Optional[str] = "../..",
+    include_coverage_data: bool = True,
+    include_observation_data: Annotated[
+        bool,
+        Query(
+            description=(
+                "Whether data from the nearest observation station (if any) "
+                "should be included in the response."
             )
-        ] = False,
-        coverage_data_smoothing: Annotated[
-            list[CoverageDataSmoothingStrategy],
-            Query()
-        ] = [ObservationDataSmoothingStrategy.NO_SMOOTHING],  # noqa
-        observation_data_smoothing: Annotated[
-            list[ObservationDataSmoothingStrategy],
-            Query()
-        ] = [ObservationDataSmoothingStrategy.NO_SMOOTHING],  # noqa
-        include_coverage_uncertainty: bool = False,
-        include_coverage_related_data: bool = False,
+        ),
+    ] = False,
+    coverage_data_smoothing: Annotated[list[CoverageDataSmoothingStrategy], Query()] = [
+        ObservationDataSmoothingStrategy.NO_SMOOTHING
+    ],  # noqa
+    observation_data_smoothing: Annotated[
+        list[ObservationDataSmoothingStrategy], Query()
+    ] = [ObservationDataSmoothingStrategy.NO_SMOOTHING],  # noqa
+    include_coverage_uncertainty: bool = False,
+    include_coverage_related_data: bool = False,
 ):
     """### Get forecast-related time series for a geographic location.
 
@@ -270,14 +281,17 @@ def get_time_series(
     series of data related to this forecast.
     """
     if (
-            db_cov_conf := db.get_coverage_configuration_by_coverage_identifier(
-                db_session, coverage_identifier)
+        db_cov_conf := db.get_coverage_configuration_by_coverage_identifier(
+            db_session, coverage_identifier
+        )
     ) is not None:
         allowed_cov_ids = db.list_allowed_coverage_identifiers(
-            db_session, coverage_configuration_id=db_cov_conf.id)
+            db_session, coverage_configuration_id=db_cov_conf.id
+        )
         if coverage_identifier in allowed_cov_ids:
             coverage = CoverageInternal(
-                configuration=db_cov_conf, identifier=coverage_identifier)
+                configuration=db_cov_conf, identifier=coverage_identifier
+            )
             # TODO: catch errors with invalid geom
             geom = shapely.io.from_wkt(coords)
             if geom.geom_type == "MultiPoint":
@@ -296,15 +310,23 @@ def get_time_series(
                 point_geom = geom.centroid
             try:
                 time_series = operations.get_coverage_time_series(
-                    settings, db_session, http_client, coverage, point_geom,
-                    datetime, coverage_data_smoothing, observation_data_smoothing,
-                    include_coverage_data, include_observation_data,
-                    include_coverage_uncertainty, include_coverage_related_data,
+                    settings,
+                    db_session,
+                    http_client,
+                    coverage,
+                    point_geom,
+                    datetime,
+                    coverage_data_smoothing,
+                    observation_data_smoothing,
+                    include_coverage_data,
+                    include_observation_data,
+                    include_coverage_uncertainty,
+                    include_coverage_related_data,
                 )
             except exceptions.CoverageDataRetrievalError as err:
                 raise HTTPException(
                     status_code=status.HTTP_502_BAD_GATEWAY,
-                    detail="Could not retrieve data"
+                    detail="Could not retrieve data",
                 ) from err
             else:
                 series = []
@@ -312,21 +334,24 @@ def get_time_series(
                     series.extend(
                         _serialize_dataframe(
                             time_series[coverage.identifier],
-                            CoverageDataSmoothingStrategy.NO_SMOOTHING in coverage_data_smoothing,
+                            CoverageDataSmoothingStrategy.NO_SMOOTHING
+                            in coverage_data_smoothing,
                             available_smoothing_strategies=CoverageDataSmoothingStrategy,
-                            extra_info={"coverage_identifier": coverage.identifier}
+                            extra_info={"coverage_identifier": coverage.identifier},
                         )
                     )
                     if include_coverage_uncertainty:
                         uncertainty_time_series = {
-                            k: v for k, v in time_series.items()
+                            k: v
+                            for k, v in time_series.items()
                             if UNCERTAINTY_TIME_SERIES_PATTERN in k
                         }
                         for uncert_name, uncert_df in uncertainty_time_series.items():
                             series.extend(
                                 _serialize_dataframe(
                                     uncert_df,
-                                    CoverageDataSmoothingStrategy.NO_SMOOTHING in coverage_data_smoothing,
+                                    CoverageDataSmoothingStrategy.NO_SMOOTHING
+                                    in coverage_data_smoothing,
                                     available_smoothing_strategies=CoverageDataSmoothingStrategy,
                                     extra_info={"related": uncert_name},
                                 )
@@ -341,14 +366,15 @@ def get_time_series(
                             db_station = db.get_station(db_session, station_id)
                             station_series = _serialize_dataframe(
                                 df,
-                                ObservationDataSmoothingStrategy.NO_SMOOTHING in observation_data_smoothing,
+                                ObservationDataSmoothingStrategy.NO_SMOOTHING
+                                in observation_data_smoothing,
                                 available_smoothing_strategies=ObservationDataSmoothingStrategy,
                                 extra_info={
                                     "station_id": str(db_station.id),
                                     "station_name": db_station.name,
                                     "variable_name": variable.name,
                                     "variable_description": variable.description,
-                                }
+                                },
                             )
                             series.extend(station_series)
                 return coverage_schemas.TimeSeriesList(series=series)
@@ -359,36 +385,33 @@ def get_time_series(
 
 
 def _serialize_dataframe(
-        data_: pd.DataFrame,
-        include_unsmoothed: bool,
-        available_smoothing_strategies: Type[
-            ObservationDataSmoothingStrategy | CoverageDataSmoothingStrategy],
-        extra_info
+    data_: pd.DataFrame,
+    include_unsmoothed: bool,
+    available_smoothing_strategies: Type[
+        ObservationDataSmoothingStrategy | CoverageDataSmoothingStrategy
+    ],
+    extra_info,
 ) -> list[coverage_schemas.TimeSeries]:
     series = []
     for series_name, series_measurements in data_.to_dict().items():
         name_prefix, smoothing_strategy = series_name.rpartition("__")[::2]
         smoothed_with = available_smoothing_strategies(smoothing_strategy)
         if (
-                smoothed_with == available_smoothing_strategies.NO_SMOOTHING and
-                not include_unsmoothed
+            smoothed_with == available_smoothing_strategies.NO_SMOOTHING
+            and not include_unsmoothed
         ):
             continue  # client did not ask for the NO_SMOOTHING strategy
         else:
             measurements = []
             for timestamp, value in series_measurements.items():
                 measurements.append(
-                    coverage_schemas.TimeSeriesItem(
-                        value=value, datetime=timestamp)
+                    coverage_schemas.TimeSeriesItem(value=value, datetime=timestamp)
                 )
             series.append(
                 coverage_schemas.TimeSeries(
                     name=series_name,
                     values=measurements,
-                    info={
-                        "smoothing": smoothing_strategy.lower(),
-                        **extra_info
-                    }
+                    info={"smoothing": smoothing_strategy.lower(), **extra_info},
                 )
             )
     return series

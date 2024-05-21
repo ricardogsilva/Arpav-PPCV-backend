@@ -99,7 +99,6 @@ def cli_runner():
 
 @pytest.fixture()
 def cli_app(settings, arpav_db):
-
     # replaces the default callback with another one, with different settings
     @main.app.callback()
     def _override_main_app_callback(ctx: typer.Context):
@@ -123,13 +122,13 @@ def sample_stations(arpav_db_session) -> list[observations.Station]:
                 geom=from_shape(
                     shapely.io.from_geojson(
                         geojson_pydantic.Point(
-                            type="Point", coordinates=(i, 2*i)
+                            type="Point", coordinates=(i, 2 * i)
                         ).model_dump_json()
                     )
                 ),
                 altitude_m=2,
                 name=f"teststation{i}name",
-                type_="sometype"
+                type_="sometype",
             )
         )
     for db_station in db_stations:
@@ -160,22 +159,17 @@ def sample_variables(arpav_db_session) -> list[observations.Variable]:
 
 @pytest.fixture()
 def sample_monthly_measurements(
-        arpav_db_session,
-        sample_variables,
-        sample_stations
+    arpav_db_session, sample_variables, sample_stations
 ) -> list[observations.MonthlyMeasurement]:
     db_monthly_measurements = []
     unique_measurement_instances = set()
     while len(unique_measurement_instances) < 200:
-        sampled_date = dt.date(
-            random.randrange(1920, 2020),
-            random.randrange(1, 13),
-            1
-        )
+        sampled_date = dt.date(random.randrange(1920, 2020), random.randrange(1, 13), 1)
         sampled_station_id = random.choice(sample_stations).id
         sampled_variable_id = random.choice(sample_variables).id
         unique_measurement_instances.add(
-            (sampled_date, sampled_station_id, sampled_variable_id))
+            (sampled_date, sampled_station_id, sampled_variable_id)
+        )
 
     for date_, station_id, variable_id in unique_measurement_instances:
         db_monthly_measurements.append(

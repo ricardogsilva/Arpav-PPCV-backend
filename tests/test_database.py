@@ -11,15 +11,9 @@ from arpav_ppcv import database
         pytest.param(20, 20, True),
     ],
 )
-def test_list_stations(
-        arpav_db_session,
-        sample_stations,
-        limit,
-        offset,
-        include_total
-):
+def test_list_stations(arpav_db_session, sample_stations, limit, offset, include_total):
     ordered_stations = sorted(sample_stations, key=lambda station: station.code)
-    expected_codes = [s.code for s in ordered_stations][offset:offset+limit]
+    expected_codes = [s.code for s in ordered_stations][offset : offset + limit]
     db_stations, total = database.list_stations(
         arpav_db_session, limit=limit, offset=offset, include_total=include_total
     )
@@ -31,7 +25,6 @@ def test_list_stations(
         assert db_station.code == expected_codes[index]
 
 
-
 @pytest.mark.parametrize(
     "limit, offset, include_total",
     [
@@ -41,14 +34,10 @@ def test_list_stations(
     ],
 )
 def test_list_variables(
-        arpav_db_session,
-        sample_variables,
-        limit,
-        offset,
-        include_total
+    arpav_db_session, sample_variables, limit, offset, include_total
 ):
     ordered_variables = sorted(sample_variables, key=lambda variable: variable.name)
-    expected_names = [v.name for v in ordered_variables][offset:offset+limit]
+    expected_names = [v.name for v in ordered_variables][offset : offset + limit]
     db_variables, total = database.list_variables(
         arpav_db_session, limit=limit, offset=offset, include_total=include_total
     )
@@ -69,15 +58,10 @@ def test_list_variables(
     ],
 )
 def test_list_monthly_measurements(
-        arpav_db_session,
-        sample_monthly_measurements,
-        limit,
-        offset,
-        include_total
+    arpav_db_session, sample_monthly_measurements, limit, offset, include_total
 ):
-    ordered_measurements = sorted(
-        sample_monthly_measurements, key=lambda m: m.date)
-    expected_dates = [m.date for m in ordered_measurements][offset:offset+limit]
+    ordered_measurements = sorted(sample_monthly_measurements, key=lambda m: m.date)
+    expected_dates = [m.date for m in ordered_measurements][offset : offset + limit]
     db_measurements, total = database.list_monthly_measurements(
         arpav_db_session, limit=limit, offset=offset, include_total=include_total
     )

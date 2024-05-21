@@ -18,11 +18,28 @@ def create_app(settings: config.ArpavPpcvSettings) -> fastapi.FastAPI:
         contact={
             "name": settings.contact.name,
             "url": settings.contact.url,
-            "email": settings.contact.email
+            "email": settings.contact.email,
         },
     )
-    app.include_router(base_router, prefix="/base", tags=["base",])
-    app.include_router(coverages_router, prefix="/coverages", tags=["coverages",])
     app.include_router(
-        observations_router, prefix="/observations", tags=["observations",])
+        base_router,
+        prefix="/base",
+        tags=[
+            "base",
+        ],
+    )
+    app.include_router(
+        coverages_router,
+        prefix="/coverages",
+        tags=[
+            "coverages",
+        ],
+    )
+    app.include_router(
+        observations_router,
+        prefix="/observations",
+        tags=[
+            "observations",
+        ],
+    )
     return app

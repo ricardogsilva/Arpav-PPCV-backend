@@ -15,9 +15,9 @@ class StationReadListItem(observations.StationBase):
 
     @classmethod
     def from_db_instance(
-            cls,
-            instance: observations.Station,
-            request: Request,
+        cls,
+        instance: observations.Station,
+        request: Request,
     ) -> "StationReadListItem":
         url = request.url_for("get_station", **{"station_id": instance.id})
         return cls(
@@ -31,13 +31,13 @@ class VariableReadListItem(observations.VariableBase):
 
     @classmethod
     def from_db_instance(
-            cls,
-            instance: observations.Variable,
-            request: Request,
+        cls,
+        instance: observations.Variable,
+        request: Request,
     ) -> "VariableReadListItem":
         return cls(
             **instance.model_dump(),
-            url=str(request.url_for("get_variable", variable_id=instance.id))
+            url=str(request.url_for("get_variable", variable_id=instance.id)),
         )
 
 
@@ -48,9 +48,9 @@ class MonthlyMeasurementReadListItem(observations.MonthlyMeasurementBase):
 
     @classmethod
     def from_db_instance(
-            cls,
-            instance: observations.MonthlyMeasurement,
-            request: Request,
+        cls,
+        instance: observations.MonthlyMeasurement,
+        request: Request,
     ) -> "MonthlyMeasurementReadListItem":
         return cls(
             **instance.model_dump(),
@@ -58,8 +58,9 @@ class MonthlyMeasurementReadListItem(observations.MonthlyMeasurementBase):
             station_code=instance.station.code,
             url=str(
                 request.url_for(
-                    "get_monthly_measurement", monthly_measurement_id=instance.id)
-            )
+                    "get_monthly_measurement", monthly_measurement_id=instance.id
+                )
+            ),
         )
 
 
@@ -73,9 +74,9 @@ class SeasonalMeasurementReadListItem(pydantic.BaseModel):
 
     @classmethod
     def from_db_instance(
-            cls,
-            instance: observations.SeasonalMeasurement,
-            request: Request,
+        cls,
+        instance: observations.SeasonalMeasurement,
+        request: Request,
     ) -> "SeasonalMeasurementReadListItem":
         return cls(
             **instance.model_dump(),
@@ -83,8 +84,9 @@ class SeasonalMeasurementReadListItem(pydantic.BaseModel):
             station_code=instance.station.code,
             url=str(
                 request.url_for(
-                    "get_seasonal_measurement", seasonal_measurement_id=instance.id)
-            )
+                    "get_seasonal_measurement", seasonal_measurement_id=instance.id
+                )
+            ),
         )
 
 
@@ -97,9 +99,9 @@ class YearlyMeasurementReadListItem(pydantic.BaseModel):
 
     @classmethod
     def from_db_instance(
-            cls,
-            instance: observations.YearlyMeasurement,
-            request: Request,
+        cls,
+        instance: observations.YearlyMeasurement,
+        request: Request,
     ) -> "YearlyMeasurementReadListItem":
         return cls(
             **instance.model_dump(),
@@ -107,8 +109,9 @@ class YearlyMeasurementReadListItem(pydantic.BaseModel):
             station_code=instance.station.code,
             url=str(
                 request.url_for(
-                    "get_yearly_measurement", yearly_measurement_id=instance.id)
-            )
+                    "get_yearly_measurement", yearly_measurement_id=instance.id
+                )
+            ),
         )
 
 
