@@ -21,17 +21,18 @@ class ConfigurationParameterReadListItem(pydantic.BaseModel):
 
     @classmethod
     def from_db_instance(
-            cls,
-            instance: app_models.ConfigurationParameter,
-            request: Request,
+        cls,
+        instance: app_models.ConfigurationParameter,
+        request: Request,
     ):
         return cls(
             **instance.model_dump(),
             allowed_values=[
                 ConfigurationParameterValueEmbeddedInConfigurationParameter(
                     **pv.model_dump()
-                ) for pv in instance.allowed_values
-            ]
+                )
+                for pv in instance.allowed_values
+            ],
         )
 
 
@@ -49,13 +50,12 @@ class CoverageConfigurationReadListItem(pydantic.BaseModel):
 
     @classmethod
     def from_db_instance(
-            cls,
-            instance: app_models.CoverageConfiguration,
-            request: Request,
+        cls,
+        instance: app_models.CoverageConfiguration,
+        request: Request,
     ) -> "CoverageConfigurationReadListItem":
         url = request.url_for(
-            "get_coverage_configuration",
-            **{"coverage_configuration_id": instance.id}
+            "get_coverage_configuration", **{"coverage_configuration_id": instance.id}
         )
         return cls(
             **instance.model_dump(),
@@ -63,9 +63,10 @@ class CoverageConfigurationReadListItem(pydantic.BaseModel):
             possible_values=[
                 ConfigurationParameterPossibleValueRead(
                     configuration_parameter_name=pv.configuration_parameter_value.configuration_parameter.name,
-                    configuration_parameter_value=pv.configuration_parameter_value.name
-                ) for pv in instance.possible_values
-            ]
+                    configuration_parameter_value=pv.configuration_parameter_value.name,
+                )
+                for pv in instance.possible_values
+            ],
         )
 
 
@@ -79,14 +80,13 @@ class CoverageConfigurationReadDetail(CoverageConfigurationReadListItem):
 
     @classmethod
     def from_db_instance(
-            cls,
-            instance: app_models.CoverageConfiguration,
-            allowed_coverage_identifiers: list[str],
-            request: Request,
+        cls,
+        instance: app_models.CoverageConfiguration,
+        allowed_coverage_identifiers: list[str],
+        request: Request,
     ) -> "CoverageConfigurationReadDetail":
         url = request.url_for(
-            "get_coverage_configuration",
-            **{"coverage_configuration_id": instance.id}
+            "get_coverage_configuration", **{"coverage_configuration_id": instance.id}
         )
         return cls(
             **instance.model_dump(),
@@ -94,10 +94,11 @@ class CoverageConfigurationReadDetail(CoverageConfigurationReadListItem):
             possible_values=[
                 ConfigurationParameterPossibleValueRead(
                     configuration_parameter_name=pv.configuration_parameter_value.configuration_parameter.name,
-                    configuration_parameter_value=pv.configuration_parameter_value.name
-                ) for pv in instance.possible_values
+                    configuration_parameter_value=pv.configuration_parameter_value.name,
+                )
+                for pv in instance.possible_values
             ],
-            allowed_coverage_identifiers=allowed_coverage_identifiers
+            allowed_coverage_identifiers=allowed_coverage_identifiers,
         )
 
 

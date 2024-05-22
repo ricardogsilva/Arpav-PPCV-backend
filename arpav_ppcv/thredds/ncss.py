@@ -19,8 +19,8 @@ logger = logging.getLogger(__name__)
 
 
 def get_dataset_description(
-        http_client: httpx.Client,
-        thredds_ncss_url: str,
+    http_client: httpx.Client,
+    thredds_ncss_url: str,
 ) -> models.ThreddsDatasetDescription:
     response = http_client.get(f"{thredds_ncss_url}/dataset.xml")
     response.raise_for_status()
@@ -31,7 +31,7 @@ def get_dataset_description(
             models.ThreddsDatasetDescriptionVariable(
                 name=var_info.get("name"),
                 description=var_info.get("desc"),
-                units=var_info.findall("./*[@name='units']")[0].get("value")
+                units=var_info.findall("./*[@name='units']")[0].get("value"),
             )
         )
     time_span_el = root.findall("./TimeSpan")[0]
@@ -44,23 +44,23 @@ def get_dataset_description(
         xmin=float(lat_lon_el.findall("./west")[0].text),
         ymin=float(lat_lon_el.findall("./south")[0].text),
         xmax=float(lat_lon_el.findall("./east")[0].text),
-        ymax=float(lat_lon_el.findall("./north")[0].text)
+        ymax=float(lat_lon_el.findall("./north")[0].text),
     )
     return models.ThreddsDatasetDescription(
         variables=variables,
         spatial_bounds=spatial_bounds,
-        temporal_bounds=temporal_bounds
+        temporal_bounds=temporal_bounds,
     )
 
 
 def query_dataset(
-        http_client: httpx.Client,
-        thredds_ncss_url: str,
-        variable_name: str,
-        longitude: float,
-        latitude: float,
-        time_start: dt.datetime | None = None,
-        time_end: dt.datetime | None = None,
+    http_client: httpx.Client,
+    thredds_ncss_url: str,
+    variable_name: str,
+    longitude: float,
+    latitude: float,
+    time_start: dt.datetime | None = None,
+    time_end: dt.datetime | None = None,
 ) -> str:
     """Query THREDDS for the specified variable."""
     if time_start is None or time_end is None:
@@ -80,7 +80,7 @@ def query_dataset(
             "longitude": longitude,
             "accept": "CSV",
             **temporal_parameters,
-        }
+        },
     )
     try:
         response.raise_for_status()

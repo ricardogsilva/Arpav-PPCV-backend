@@ -8,18 +8,15 @@ logger = logging.getLogger(__name__)
 
 
 def build_dataset_service_url(
-        dataset_configuration_id: str,
-        pattern_fields: dict[str, str],
-        *,
-        url_path_pattern: str,
-        thredds_base_url: str,
-        service_url_fragment: str,
+    dataset_configuration_id: str,
+    pattern_fields: dict[str, str],
+    *,
+    url_path_pattern: str,
+    thredds_base_url: str,
+    service_url_fragment: str,
 ) -> str:
     rendered = url_path_pattern.format(
-        **{
-            "configuration_id": dataset_configuration_id,
-            **pattern_fields
-        }
+        **{"configuration_id": dataset_configuration_id, **pattern_fields}
     )
     return "/".join((thredds_base_url, service_url_fragment, rendered))
 
@@ -41,10 +38,10 @@ async def proxy_request(url: str, http_client: httpx.AsyncClient) -> httpx.Respo
 
 
 def tweak_wms_get_map_request(
-        query_params: dict[str, str],
-        ncwms_palette: str,
-        ncwms_color_scale_range: tuple[float, float],
-        uncertainty_visualization_scale_range: tuple[float, float]
+    query_params: dict[str, str],
+    ncwms_palette: str,
+    ncwms_color_scale_range: tuple[float, float],
+    uncertainty_visualization_scale_range: tuple[float, float],
 ) -> dict[str, str]:
     # which layer type is being requested?
 
@@ -69,7 +66,8 @@ def tweak_wms_get_map_request(
             color_scale_range = ",".join(str(f) for f in ncwms_color_scale_range)
             if "stippled" in palette:
                 uncert_scale_range = ",".join(
-                    str(f) for f in uncertainty_visualization_scale_range)
+                    str(f) for f in uncertainty_visualization_scale_range
+                )
                 color_scale_range = ";".join((color_scale_range, uncert_scale_range))
         else:
             color_scale_range = requested_color_scale_range

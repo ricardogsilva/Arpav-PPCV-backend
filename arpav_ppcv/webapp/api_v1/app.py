@@ -22,7 +22,7 @@ def create_app(settings: config.ArpavPpcvSettings) -> fastapi.FastAPI:
         contact={
             "name": settings.contact.name,
             "url": settings.contact.url,
-            "email": settings.contact.email
+            "email": settings.contact.email,
         },
     )
     app.include_router(forecastattributes.router, prefix="/api")

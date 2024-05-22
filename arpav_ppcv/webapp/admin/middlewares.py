@@ -12,7 +12,7 @@ from starlette_admin.contrib.sqla.middleware import DBSessionMiddleware
 
 @contextmanager
 def get_sqlmodel_session(
-        engine: sqlalchemy.Engine
+    engine: sqlalchemy.Engine,
 ) -> Generator[sqlmodel.Session, None, None]:
     session: sqlmodel.Session = sqlmodel.Session(engine, expire_on_commit=False)
     try:
@@ -39,13 +39,10 @@ class SqlModelDbSessionMiddleware(DBSessionMiddleware):
     """
 
     async def dispatch(
-            self, request: Request, call_next: RequestResponseEndpoint
+        self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
         if isinstance(self.engine, AsyncEngine):
-            async with AsyncSession(
-                    self.engine,
-                    expire_on_commit=False
-            ) as session:
+            async with AsyncSession(self.engine, expire_on_commit=False) as session:
                 request.state.session = session
                 return await call_next(request)
         else:

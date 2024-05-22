@@ -10,7 +10,7 @@ from ..dependencies import get_settings
 
 
 async def load_django(
-        settings: Annotated[config.ArpavPpcvSettings, Depends(get_settings)]
+    settings: Annotated[config.ArpavPpcvSettings, Depends(get_settings)],
 ):
     custom_django_settings = get_custom_django_settings(settings)
     django_settings.configure(**custom_django_settings)

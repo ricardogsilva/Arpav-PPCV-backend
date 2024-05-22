@@ -2,20 +2,22 @@ import httpx
 
 
 def test_refresh_monthly_measurements_with_new_measurement(
-        httpx_mock,
-        cli_runner,
-        cli_app,
-        sample_variables,
-        sample_stations,
-        sample_monthly_measurements,
+    httpx_mock,
+    cli_runner,
+    cli_app,
+    sample_variables,
+    sample_stations,
+    sample_monthly_measurements,
 ):
     target_station = sample_stations[0]
     target_variable = sample_variables[0]
     execution_args = [
         "observations-harvester",
         "refresh-monthly-measurements",
-        "--station", str(target_station.code),
-        "--variable", target_variable.name,
+        "--station",
+        str(target_station.code),
+        "--variable",
+        target_variable.name,
     ]
     httpx_mock.add_response(
         json={
@@ -35,12 +37,12 @@ def test_refresh_monthly_measurements_with_new_measurement(
 
 
 def test_refresh_monthly_measurements_with_existing_measurement(
-        httpx_mock,
-        cli_runner,
-        cli_app,
-        sample_variables,
-        sample_stations,
-        sample_monthly_measurements,
+    httpx_mock,
+    cli_runner,
+    cli_app,
+    sample_variables,
+    sample_stations,
+    sample_monthly_measurements,
 ):
     target_measurement = sample_monthly_measurements[0]
     target_station = target_measurement.station
@@ -50,8 +52,10 @@ def test_refresh_monthly_measurements_with_existing_measurement(
     execution_args = [
         "observations-harvester",
         "refresh-monthly-measurements",
-        "--station", str(target_station.code),
-        "--variable", target_variable.name,
+        "--station",
+        str(target_station.code),
+        "--variable",
+        target_variable.name,
     ]
 
     def custom_response(request: httpx.Request) -> httpx.Response:
@@ -65,15 +69,10 @@ def test_refresh_monthly_measurements_with_existing_measurement(
                             "anno": target_year,
                         },
                     ],
-                }
+                },
             )
         else:
-            result_response = httpx.Response(
-                status_code=200,
-                json={
-                    "data": []
-                }
-            )
+            result_response = httpx.Response(status_code=200, json={"data": []})
         return result_response
 
     httpx_mock.add_callback(custom_response)

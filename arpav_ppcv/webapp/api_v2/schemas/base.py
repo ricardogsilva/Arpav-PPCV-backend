@@ -26,7 +26,7 @@ class ApiReadableModel(typing.Protocol):
 
     @classmethod
     def from_db_instance(  # noqa: D102
-            cls: typing.Type[R], db_instance: sqlmodel.SQLModel, request: Request
+        cls: typing.Type[R], db_instance: sqlmodel.SQLModel, request: Request
     ) -> R:
         ...
 
@@ -53,30 +53,31 @@ class WebResourceList(base_schemas.ResourceList):
 
     @classmethod
     def from_items(
-            cls,
-            items: typing.Sequence[sqlmodel.SQLModel],
-            request: Request,
-            *,
-            limit: int,
-            offset: int,
-            filtered_total: int,
-            unfiltered_total: int
+        cls,
+        items: typing.Sequence[sqlmodel.SQLModel],
+        request: Request,
+        *,
+        limit: int,
+        offset: int,
+        filtered_total: int,
+        unfiltered_total: int,
     ):
         return cls(
             meta=cls._get_meta(len(items), unfiltered_total, filtered_total),
             links=cls._get_list_links(
-                request, limit, offset, filtered_total, len(items)),
-            items=[cls.list_item_type.from_db_instance(i, request) for i in items]
+                request, limit, offset, filtered_total, len(items)
+            ),
+            items=[cls.list_item_type.from_db_instance(i, request) for i in items],
         )
 
     @classmethod
     def _get_list_links(
-            cls,
-            request: Request,
-            limit: int,
-            offset: int,
-            filtered_total: int,
-            num_returned_records: int
+        cls,
+        request: Request,
+        limit: int,
+        offset: int,
+        filtered_total: int,
+        num_returned_records: int,
     ) -> ListLinks:
         filters = dict(request.query_params)
         if "limit" in filters.keys():
@@ -95,7 +96,7 @@ class WebResourceList(base_schemas.ResourceList):
 
     @staticmethod
     def _get_meta(
-            num_returned_records: int, unfiltered_total: int, filtered_total: int
+        num_returned_records: int, unfiltered_total: int, filtered_total: int
     ) -> ListMeta:
         return ListMeta(
             returned_records=num_returned_records,
@@ -105,12 +106,12 @@ class WebResourceList(base_schemas.ResourceList):
 
 
 def get_pagination_urls(
-        base_url: str,
-        returned_records: int,
-        total_records: int,
-        limit: int,
-        offset: int,
-        **filters,
+    base_url: str,
+    returned_records: int,
+    total_records: int,
+    limit: int,
+    offset: int,
+    **filters,
 ) -> dict[str, str]:
     """Build pagination-related urls."""
     pagination_offsets = _get_pagination_offsets(
@@ -136,7 +137,7 @@ def _build_list_url(base_url: str, limit: int, offset: typing.Optional[int], **f
 
 
 def _get_pagination_offsets(
-        returned_records: int, total_records: int, limit: int, offset: int
+    returned_records: int, total_records: int, limit: int, offset: int
 ):
     """Calculate pagination offsets."""
     shown = offset + returned_records

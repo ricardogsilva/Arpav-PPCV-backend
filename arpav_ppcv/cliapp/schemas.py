@@ -1,9 +1,6 @@
 import pydantic
 
-from ..schemas import (
-    base,
-    observations
-)
+from ..schemas import base, observations
 
 
 class StationRead(observations.StationBase):

@@ -10,7 +10,7 @@ def test_list_cities(test_client):
         id=1,
         name="fakeregion",
         geometry="MULTIPOLYGON(((40 40, 20 45, 45 30, 40 40)),((20 35, 10 30, 10 10, 30 5, 45 20, 20 35),(30 20, 20 15, 20 25, 30 20)))",
-        centroid="Point(0 0)"
+        centroid="Point(0 0)",
     )
     fake_province = models.Provinces.objects.create(
         id=10,
@@ -21,16 +21,16 @@ def test_list_cities(test_client):
     )
     centroids = {}
     for i in range(1, num_items + 1):
-        centroid = {"longitude": i, "latitude": i+3}
+        centroid = {"longitude": i, "latitude": i + 3}
         centroids[i] = centroid
         models.Cities.objects.create(
-            id=100+i,
+            id=100 + i,
             name=f"Fake city {i}",
             prov_code="fakeprovincecode",
             region=fake_region,
             province=fake_province,
             geometry="MULTIPOLYGON(((40 40, 20 45, 45 30, 40 40)),((20 35, 10 30, 10 10, 30 5, 45 20, 20 35),(30 20, 20 15, 20 25, 30 20)))",
-            centroid=f"Point({centroid['longitude']} {centroid['latitude']})"
+            centroid=f"Point({centroid['longitude']} {centroid['latitude']})",
         )
     response = test_client.get("/legacy/places/cities/")
     assert response.status_code == 200
@@ -45,7 +45,7 @@ def test_list_cities(test_client):
                 assert model_["name"] == f"Fake city {i}"
                 assert model_["latlng"] == {
                     "lng": expected_centroid["longitude"],
-                    "lat": expected_centroid["latitude"]
+                    "lat": expected_centroid["latitude"],
                 }
                 break
         else:

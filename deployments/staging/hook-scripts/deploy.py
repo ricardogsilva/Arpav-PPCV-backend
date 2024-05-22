@@ -42,10 +42,11 @@ class _ValidateRequestPayload:
                 (
                     payload.get("event") == "push",
                     payload.get("ref") == "refs/heads/main",
-                    payload.get("repository", "").lower() in (
+                    payload.get("repository", "").lower()
+                    in (
                         "geobeyond/arpav-ppcv",
                         "geobeyond/arpav-ppcv-backend",
-                    )
+                    ),
                 )
             )
 
@@ -57,8 +58,7 @@ class _FindDockerDir:
 
     def handle(self) -> None:
         if not self.docker_dir.exists():
-            raise RuntimeError(
-                f"Docker dir {str(self.docker_dir)!r} does not exist")
+            raise RuntimeError(f"Docker dir {str(self.docker_dir)!r} does not exist")
 
 
 @dataclasses.dataclass
@@ -125,7 +125,8 @@ class _FindEnvFiles:
         for env_file_path in self.env_files.values():
             if not env_file_path.exists():
                 raise RuntimeError(
-                    f"Could not find environment file {env_file_path!r}, aborting...")
+                    f"Could not find environment file {env_file_path!r}, aborting..."
+                )
 
 
 @dataclasses.dataclass
@@ -135,10 +136,7 @@ class _PullImage:
 
     def handle(self) -> None:
         print("Pulling updated docker images...")
-        run(
-            shlex.split(f"docker pull {' '.join(self.images)}"),
-            check=True
-        )
+        run(shlex.split(f"docker pull {' '.join(self.images)}"), check=True)
 
 
 @dataclasses.dataclass
@@ -162,7 +160,7 @@ class _StartCompose:
                 "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_LEGACY_DB_SERVICE": self.env_file_legacy_db_service,  # noqa
                 "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_WEBAPP_SERVICE": self.env_file_webapp_service,  # noqa
             },
-            check=True
+            check=True,
         )
 
 
@@ -178,7 +176,7 @@ class _RunMigrations:
                 f"docker exec {self.webapp_service_name} poetry run "
                 f"arpav-ppcv db upgrade"
             ),
-            check=True
+            check=True,
         )
 
 
@@ -194,7 +192,7 @@ class _RunLegacyMigrations:
                 f"docker exec {self.webapp_service_name} poetry run "
                 f"arpav-ppcv django-admin migrate"
             ),
-            check=True
+            check=True,
         )
 
 
@@ -210,28 +208,25 @@ class _CollectLegacyStaticFiles:
                 f"docker exec {self.webapp_service_name} poetry run "
                 f"arpav-ppcv django-admin collectstatic --no-input"
             ),
-            check=True
+            check=True,
         )
 
 
 def perform_deployment(
-        *,
-        raw_request_payload: str,
-        deployment_root: Path,
-        confirmed: bool = False
+    *, raw_request_payload: str, deployment_root: Path, confirmed: bool = False
 ):
     if not confirmed:
         print("Performing a dry-run")
     logger.info(f"{deployment_root=}")
-    docker_dir = deployment_root/ "docker"
+    docker_dir = deployment_root / "docker"
     compose_files = (
-        f"-f {docker_dir}/compose.yaml "
-        f"-f {docker_dir}/compose.staging.yaml"
+        f"-f {docker_dir}/compose.yaml " f"-f {docker_dir}/compose.staging.yaml"
     )
     clone_destination = Path("/tmp/arpav-ppcv-backend")
     deployment_env_files = {
         "db_service": deployment_root / "environment-files/db-service.env",
-        "legacy_db_service": deployment_root / "environment-files/legacy-db-service.env",
+        "legacy_db_service": deployment_root
+        / "environment-files/legacy-db-service.env",
         "webapp_service": deployment_root / "environment-files/webapp-service.env",
     }
     relevant_images = (
@@ -251,7 +246,7 @@ def perform_deployment(
             env_file_db_service=deployment_env_files["db_service"],
             env_file_legacy_db_service=deployment_env_files["legacy_db_service"],
             env_file_webapp_service=deployment_env_files["webapp_service"],
-            compose_files_fragment=compose_files
+            compose_files_fragment=compose_files,
         ),
         _RunMigrations(webapp_service_name=webapp_service_name),
         _RunLegacyMigrations(webapp_service_name=webapp_service_name),
@@ -266,21 +261,16 @@ def perform_deployment(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "deployment_root",
-        help="Root directory of the deployment",
-        type=Path
+        "deployment_root", help="Root directory of the deployment", type=Path
     )
-    parser.add_argument(
-        "payload",
-        help="Trigger request's body payload"
-    )
+    parser.add_argument("payload", help="Trigger request's body payload")
     parser.add_argument(
         "--confirm",
         action="store_true",
         help=(
             "Perform the actual deployment. If this is not provided the script runs "
             "in dry-run mode, just showing what steps would be performed"
-        )
+        ),
     )
     parser.add_argument(
         "--verbose",
@@ -288,13 +278,12 @@ if __name__ == "__main__":
         help="Turn on debug logging level",
     )
     args = parser.parse_args()
-    logging.basicConfig(
-        level=logging.DEBUG if args.verbose else logging.WARNING)
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARNING)
     try:
         perform_deployment(
             raw_request_payload=args.payload,
             deployment_root=args.deployment_root,
-            confirmed=args.confirm
+            confirmed=args.confirm,
         )
     except RuntimeError as err:
         raise SystemExit(err) from err

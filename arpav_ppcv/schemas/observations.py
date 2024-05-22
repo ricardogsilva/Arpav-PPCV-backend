@@ -34,10 +34,7 @@ if TYPE_CHECKING:
 class StationBase(sqlmodel.SQLModel):
     model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
-    id: pydantic.UUID4 = sqlmodel.Field(
-        default_factory=uuid.uuid4,
-        primary_key=True
-    )
+    id: pydantic.UUID4 = sqlmodel.Field(default_factory=uuid.uuid4, primary_key=True)
     geom: fields.WkbElement = sqlmodel.Field(
         sa_column=sqlalchemy.Column(
             geoalchemy2.Geometry(
@@ -66,8 +63,8 @@ class Station(StationBase, table=True):
             # is deleted
             "cascade": "all, delete-orphan",
             # expect that the RDBMS handles cascading deletes
-            "passive_deletes": True
-        }
+            "passive_deletes": True,
+        },
     )
     seasonal_measurements: list["SeasonalMeasurement"] = sqlmodel.Relationship(
         back_populates="station",
@@ -78,8 +75,8 @@ class Station(StationBase, table=True):
             # is deleted
             "cascade": "all, delete-orphan",
             # expect that the RDBMS handles cascading deletes
-            "passive_deletes": True
-        }
+            "passive_deletes": True,
+        },
     )
     yearly_measurements: list["YearlyMeasurement"] = sqlmodel.Relationship(
         back_populates="station",
@@ -90,8 +87,8 @@ class Station(StationBase, table=True):
             # is deleted
             "cascade": "all, delete-orphan",
             # expect that the RDBMS handles cascading deletes
-            "passive_deletes": True
-        }
+            "passive_deletes": True,
+        },
     )
 
 
@@ -116,19 +113,16 @@ class StationUpdate(sqlmodel.SQLModel):
 
 
 class VariableBase(sqlmodel.SQLModel):
-    id: pydantic.UUID4 = sqlmodel.Field(
-        default_factory=uuid.uuid4,
-        primary_key=True
-    )
+    id: pydantic.UUID4 = sqlmodel.Field(default_factory=uuid.uuid4, primary_key=True)
     name: str = sqlmodel.Field(unique=True)
     description: str
     unit: str = ""
 
 
 class Variable(VariableBase, table=True):
-    related_coverage_configurations: list["coverages.CoverageConfiguration"] = sqlmodel.Relationship(
-        back_populates="related_observation_variable"
-    )
+    related_coverage_configurations: list[
+        "coverages.CoverageConfiguration"
+    ] = sqlmodel.Relationship(back_populates="related_observation_variable")
     monthly_measurements: list["MonthlyMeasurement"] = sqlmodel.Relationship(
         back_populates="variable",
         sa_relationship_kwargs={
@@ -138,8 +132,8 @@ class Variable(VariableBase, table=True):
             # is deleted
             "cascade": "all, delete-orphan",
             # expect that the RDBMS handles cascading deletes
-            "passive_deletes": True
-        }
+            "passive_deletes": True,
+        },
     )
     seasonal_measurements: list["SeasonalMeasurement"] = sqlmodel.Relationship(
         back_populates="variable",
@@ -150,8 +144,8 @@ class Variable(VariableBase, table=True):
             # is deleted
             "cascade": "all, delete-orphan",
             # expect that the RDBMS handles cascading deletes
-            "passive_deletes": True
-        }
+            "passive_deletes": True,
+        },
     )
     yearly_measurements: list["YearlyMeasurement"] = sqlmodel.Relationship(
         back_populates="variable",
@@ -162,8 +156,8 @@ class Variable(VariableBase, table=True):
             # is deleted
             "cascade": "all, delete-orphan",
             # expect that the RDBMS handles cascading deletes
-            "passive_deletes": True
-        }
+            "passive_deletes": True,
+        },
     )
 
 
@@ -187,22 +181,27 @@ class MonthlyMeasurementBase(sqlmodel.SQLModel):
 class MonthlyMeasurement(MonthlyMeasurementBase, table=True):
     __table_args__ = (
         sqlalchemy.ForeignKeyConstraint(
-            ["station_id",],
-            ["station.id",],
+            [
+                "station_id",
+            ],
+            [
+                "station.id",
+            ],
             onupdate="CASCADE",
             ondelete="CASCADE",  # i.e. delete a monthly measurement if its related station is deleted
         ),
         sqlalchemy.ForeignKeyConstraint(
-            ["variable_id", ],
-            ["variable.id", ],
+            [
+                "variable_id",
+            ],
+            [
+                "variable.id",
+            ],
             onupdate="CASCADE",
             ondelete="CASCADE",  # i.e. delete a monthly measurement if its related station is deleted
         ),
     )
-    id: pydantic.UUID4 = sqlmodel.Field(
-        default_factory=uuid.uuid4,
-        primary_key=True
-    )
+    id: pydantic.UUID4 = sqlmodel.Field(default_factory=uuid.uuid4, primary_key=True)
     station_id: pydantic.UUID4
     variable_id: pydantic.UUID4
 
@@ -213,7 +212,7 @@ class MonthlyMeasurement(MonthlyMeasurementBase, table=True):
             # is instead of the default lazy behavior of only retrieving related
             # records when they are accessed by the ORM
             "lazy": "joined",
-        }
+        },
     )
     variable: Variable = sqlmodel.Relationship(
         back_populates="monthly_measurements",
@@ -222,7 +221,7 @@ class MonthlyMeasurement(MonthlyMeasurementBase, table=True):
             # is instead of the default lazy behavior of only retrieving related
             # records when they are accessed by the ORM
             "lazy": "joined",
-        }
+        },
     )
 
 
@@ -241,22 +240,27 @@ class MonthlyMeasurementUpdate(sqlmodel.SQLModel):
 class SeasonalMeasurement(sqlmodel.SQLModel, table=True):
     __table_args__ = (
         sqlalchemy.ForeignKeyConstraint(
-            ["station_id",],
-            ["station.id",],
+            [
+                "station_id",
+            ],
+            [
+                "station.id",
+            ],
             onupdate="CASCADE",
             ondelete="CASCADE",  # i.e. delete a measurement if its related station is deleted
         ),
         sqlalchemy.ForeignKeyConstraint(
-            ["variable_id", ],
-            ["variable.id", ],
+            [
+                "variable_id",
+            ],
+            [
+                "variable.id",
+            ],
             onupdate="CASCADE",
             ondelete="CASCADE",  # i.e. delete a measurement if its related station is deleted
         ),
     )
-    id: pydantic.UUID4 = sqlmodel.Field(
-        default_factory=uuid.uuid4,
-        primary_key=True
-    )
+    id: pydantic.UUID4 = sqlmodel.Field(default_factory=uuid.uuid4, primary_key=True)
     station_id: pydantic.UUID4
     variable_id: pydantic.UUID4
     value: float
@@ -270,7 +274,7 @@ class SeasonalMeasurement(sqlmodel.SQLModel, table=True):
             # is instead of the default lazy behavior of only retrieving related
             # records when they are accessed by the ORM
             "lazy": "joined",
-        }
+        },
     )
     variable: Variable = sqlmodel.Relationship(
         back_populates="seasonal_measurements",
@@ -279,7 +283,7 @@ class SeasonalMeasurement(sqlmodel.SQLModel, table=True):
             # is instead of the default lazy behavior of only retrieving related
             # records when they are accessed by the ORM
             "lazy": "joined",
-        }
+        },
     )
 
 
@@ -300,22 +304,27 @@ class SeasonalMeasurementUpdate(sqlmodel.SQLModel):
 class YearlyMeasurement(sqlmodel.SQLModel, table=True):
     __table_args__ = (
         sqlalchemy.ForeignKeyConstraint(
-            ["station_id",],
-            ["station.id",],
+            [
+                "station_id",
+            ],
+            [
+                "station.id",
+            ],
             onupdate="CASCADE",
             ondelete="CASCADE",  # i.e. delete a measurement if its related station is deleted
         ),
         sqlalchemy.ForeignKeyConstraint(
-            ["variable_id", ],
-            ["variable.id", ],
+            [
+                "variable_id",
+            ],
+            [
+                "variable.id",
+            ],
             onupdate="CASCADE",
             ondelete="CASCADE",  # i.e. delete a measurement if its related station is deleted
         ),
     )
-    id: pydantic.UUID4 = sqlmodel.Field(
-        default_factory=uuid.uuid4,
-        primary_key=True
-    )
+    id: pydantic.UUID4 = sqlmodel.Field(default_factory=uuid.uuid4, primary_key=True)
     station_id: pydantic.UUID4
     variable_id: pydantic.UUID4
     value: float
@@ -328,7 +337,7 @@ class YearlyMeasurement(sqlmodel.SQLModel, table=True):
             # is instead of the default lazy behavior of only retrieving related
             # records when they are accessed by the ORM
             "lazy": "joined",
-        }
+        },
     )
     variable: Variable = sqlmodel.Relationship(
         back_populates="yearly_measurements",
@@ -337,7 +346,7 @@ class YearlyMeasurement(sqlmodel.SQLModel, table=True):
             # is instead of the default lazy behavior of only retrieving related
             # records when they are accessed by the ORM
             "lazy": "joined",
-        }
+        },
     )
 
 

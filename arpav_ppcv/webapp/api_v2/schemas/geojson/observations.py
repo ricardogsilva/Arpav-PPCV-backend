@@ -19,9 +19,9 @@ class StationFeatureCollectionItem(geojson_pydantic.Feature):
 
     @classmethod
     def from_db_instance(
-            cls,
-            instance: observations.Station,
-            request: Request,
+        cls,
+        instance: observations.Station,
+        request: Request,
     ) -> "StationFeatureCollectionItem":
         url = request.url_for("get_station", **{"station_id": instance.id})
         return cls(
@@ -33,7 +33,7 @@ class StationFeatureCollectionItem(geojson_pydantic.Feature):
                     "geom",
                 }
             ),
-            links=[str(url)]
+            links=[str(url)],
         )
 
 

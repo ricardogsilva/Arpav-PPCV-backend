@@ -113,13 +113,13 @@ class ThreddsClientCatalog:
             scheme=self.url.scheme,
             host=self.url.netloc,
             service_base=self.services["HTTPServer"].base.strip("/"),
-            dataset_path=dataset.url_path.strip("/")
+            dataset_path=dataset.url_path.strip("/"),
         )
 
     def get_public_datasets(
-            self,
-            wildcard_pattern: str = "*"
+        self, wildcard_pattern: str = "*"
     ) -> dict[str, ThreddsClientPublicDataset]:
         relevant_ids = fnmatch.filter(
-            self.dataset.public_datasets.keys(), wildcard_pattern)
+            self.dataset.public_datasets.keys(), wildcard_pattern
+        )
         return {id_: self.dataset.public_datasets[id_] for id_ in relevant_ids}
