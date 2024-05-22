@@ -90,8 +90,22 @@ def get_coverage_time_series(
                 )
                 measurements.update(**uncertainty_data)
         if include_coverage_related_data:
-            # TODO: how to map to related data?
-            ...
+            for (
+                related_cov_conf
+            ) in coverage.configuration.secondary_coverage_configurations:
+                related_data = _get_related_coverage_time_series(
+                    settings,
+                    http_client,
+                    point_geom,
+                    start,
+                    end,
+                    coverage_smoothing_strategies,
+                    related_cov_conf.secondary_coverage_configuration,
+                    coverage,
+                )
+                measurements[
+                    f"{base.RELATED_TIME_SERIES_PATTERN}_{related_cov_conf.secondary_coverage_configuration.name}"
+                ] = related_data
     if include_observation_data:
         if coverage.configuration.related_observation_variable is not None:
             station_data = _get_station_data(
@@ -384,6 +398,51 @@ def _get_coverage_uncertainty_time_series(
         )
         result[f"{base.UNCERTAINTY_TIME_SERIES_PATTERN}_UPPER_BOUND"] = upper_df
     return result
+
+
+def _get_related_coverage_time_series(
+    settings: ArpavPpcvSettings,
+    http_client: httpx.Client,
+    point_geom: shapely.Point,
+    time_start: Optional[dt.datetime],
+    time_end: Optional[dt.datetime],
+    smoothing_strategies: list[base.CoverageDataSmoothingStrategy],
+    related_coverage_configuration: coverages.CoverageConfiguration,
+    coverage: coverages.CoverageInternal,
+) -> pd.DataFrame:
+    used_possible_values = coverage.configuration.retrieve_used_values(
+        coverage.identifier
+    )
+    used_values = [pv.configuration_parameter_value for pv in used_possible_values]
+    related_cov_identifier = related_coverage_configuration.build_coverage_identifier(
+        used_values
+    )
+    ncss_url = "/".join(
+        (
+            settings.thredds_server.base_url,
+            settings.thredds_server.netcdf_subset_service_url_fragment,
+            related_coverage_configuration.get_thredds_url_fragment(
+                related_cov_identifier
+            ),
+        )
+    )
+    raw_coverage_data = ncss.query_dataset(
+        http_client,
+        thredds_ncss_url=ncss_url,
+        variable_name=related_coverage_configuration.netcdf_main_dataset_name,
+        longitude=point_geom.x,
+        latitude=point_geom.y,
+        time_start=time_start,
+        time_end=time_end,
+    )
+    return _process_coverage_data(
+        raw_coverage_data,
+        related_coverage_configuration.netcdf_main_dataset_name,
+        smoothing_strategies,
+        time_start,
+        time_end,
+        base_column_name=related_cov_identifier,
+    )
 
 
 def _parse_temporal_range(

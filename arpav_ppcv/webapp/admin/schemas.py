@@ -24,6 +24,11 @@ class ConfigurationParameterPossibleValueRead(sqlmodel.SQLModel):
     configuration_parameter_value_name: str
 
 
+class RelatedCoverageConfigurationRead(sqlmodel.SQLModel):
+    id: uuid.UUID
+    name: str
+
+
 class CoverageConfigurationRead(sqlmodel.SQLModel):
     id: uuid.UUID
     name: str
@@ -43,6 +48,7 @@ class CoverageConfigurationRead(sqlmodel.SQLModel):
     uncertainty_upper_bounds_coverage_configuration: Optional[
         "CoverageConfigurationReadListItem"
     ]
+    related_coverages: list[RelatedCoverageConfigurationRead]
 
 
 class ObservationVariableRead(sqlmodel.SQLModel):

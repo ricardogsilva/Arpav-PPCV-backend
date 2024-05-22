@@ -155,8 +155,9 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         back_populates="main_coverage_configuration",
         sa_relationship_kwargs={
             "foreign_keys": (
-                "RelatedCoverageConfiguration.main_coverage_configuration_id")
-        }
+                "RelatedCoverageConfiguration.main_coverage_configuration_id"
+            )
+        },
     )
     primary_coverage_configurations: list[
         "RelatedCoverageConfiguration"
@@ -164,8 +165,9 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         back_populates="secondary_coverage_configuration",
         sa_relationship_kwargs={
             "foreign_keys": (
-                "RelatedCoverageConfiguration.secondary_coverage_configuration_id")
-        }
+                "RelatedCoverageConfiguration.secondary_coverage_configuration_id"
+            )
+        },
     )
 
     related_observation_variable: "observations.Variable" = sqlmodel.Relationship(
@@ -381,9 +383,7 @@ class RelatedCoverageConfiguration(sqlmodel.SQLModel, table=True):
     """
 
     main_coverage_configuration_id: Optional[uuid.UUID] = sqlmodel.Field(
-        default=None,
-        primary_key=True,
-        foreign_key="coverageconfiguration.id"
+        default=None, primary_key=True, foreign_key="coverageconfiguration.id"
     )
     secondary_coverage_configuration_id: Optional[uuid.UUID] = sqlmodel.Field(
         default=None,
@@ -395,15 +395,14 @@ class RelatedCoverageConfiguration(sqlmodel.SQLModel, table=True):
         back_populates="secondary_coverage_configurations",
         sa_relationship_kwargs={
             "foreign_keys": "RelatedCoverageConfiguration.main_coverage_configuration_id",
-        }
+        },
     )
     secondary_coverage_configuration: CoverageConfiguration = sqlmodel.Relationship(
         back_populates="primary_coverage_configurations",
         sa_relationship_kwargs={
             "foreign_keys": "RelatedCoverageConfiguration.secondary_coverage_configuration_id",
-        }
+        },
     )
-
 
 
 class ConfigurationParameterPossibleValue(sqlmodel.SQLModel, table=True):

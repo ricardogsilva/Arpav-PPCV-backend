@@ -15,6 +15,7 @@ starlette_admin.contrib.sqlmodel.ModelView. This is done mostly for two reasons:
 
 import functools
 import logging
+import uuid
 from typing import Dict, Any, Union, Optional, List, Sequence
 
 import anyio.to_thread
@@ -59,9 +60,10 @@ def related_observation_variable_choices_loader(
 def coverage_configurations_choices_loader(
     request: Request,
 ) -> Sequence[tuple[str, str]]:
+    main_cov_conf_id = uuid.UUID(request.path_params["pk"])
     all_cov_confs = database.collect_all_coverage_configurations(request.state.session)
     result = []
-    for cov_conf in all_cov_confs:
+    for cov_conf in [cc for cc in all_cov_confs if cc.id != main_cov_conf_id]:
         result.append((cov_conf.name, cov_conf.name))
     return result
 
@@ -241,14 +243,14 @@ class CoverageConfigurationView(ModelView):
     pk_attr = "id"
     fields = (
         fields.UuidField("id"),
-        starlette_admin.StringField("name"),
-        starlette_admin.StringField("netcdf_main_dataset_name"),
-        starlette_admin.StringField("thredds_url_pattern"),
+        starlette_admin.StringField("name", required=True),
+        starlette_admin.StringField("netcdf_main_dataset_name", required=True),
+        starlette_admin.StringField("thredds_url_pattern", required=True),
         starlette_admin.StringField("coverage_id_pattern", disabled=True),
-        starlette_admin.StringField("unit"),
-        starlette_admin.StringField("palette"),
-        starlette_admin.FloatField("color_scale_min"),
-        starlette_admin.FloatField("color_scale_max"),
+        starlette_admin.StringField("unit", required=True),
+        starlette_admin.StringField("palette", required=True),
+        starlette_admin.FloatField("color_scale_min", required=True),
+        starlette_admin.FloatField("color_scale_max", required=True),
         fields.RelatedObservationsVariableField(
             "observation_variable",
             help_text="Related observation variable",
@@ -279,6 +281,16 @@ class CoverageConfigurationView(ModelView):
                 "which have the upper uncertainty bounds values"
             ),
         ),
+        starlette_admin.ListField(
+            field=fields.RelatedCoverageconfigurationsField(
+                "related_coverages",
+                choices_loader=coverage_configurations_choices_loader,
+                help_text=(
+                    "Additional coverages which are related to this one and which "
+                    "can be used when requesting time series"
+                ),
+            )
+        ),
     )
 
     exclude_fields_from_list = (
@@ -294,6 +306,7 @@ class CoverageConfigurationView(ModelView):
         "observation_variable_aggregation_type",
         "uncertainty_lower_bounds_coverage_configuration",
         "uncertainty_upper_bounds_coverage_configuration",
+        "related_coverages",
     )
     exclude_fields_from_edit = ("coverage_id_pattern",)
 
@@ -305,7 +318,8 @@ class CoverageConfigurationView(ModelView):
         result = await super().get_pk_value(request, obj)
         return str(result)
 
-    def _serialize_instance(self, instance: coverages.CoverageConfiguration):
+    @staticmethod
+    def _serialize_instance(instance: coverages.CoverageConfiguration):
         obs_variable = instance.related_observation_variable
         if obs_variable is not None:
             observation_variable = read_schemas.ObservationVariableRead(
@@ -353,6 +367,13 @@ class CoverageConfigurationView(ModelView):
             ],
             uncertainty_lower_bounds_coverage_configuration=uncertainty_lower_bounds_coverage_configuration,
             uncertainty_upper_bounds_coverage_configuration=uncertainty_upper_bounds_coverage_configuration,
+            related_coverages=[
+                read_schemas.RelatedCoverageConfigurationRead(
+                    id=rcc.secondary_coverage_configuration_id,
+                    name=rcc.secondary_coverage_configuration.name,
+                )
+                for rcc in instance.secondary_coverage_configurations
+            ],
         )
 
     async def find_by_pk(
@@ -430,6 +451,12 @@ class CoverageConfigurationView(ModelView):
                 uncertainty_upper_id = db_uncertainty_upper.id
             else:
                 uncertainty_upper_id = None
+            related_cov_conf_ids = []
+            for related_cov_conf_name in data.get("related_coverages", []):
+                db_related_cov_conf = database.get_coverage_configuration_by_name(
+                    session, related_cov_conf_name
+                )
+                related_cov_conf_ids.append(db_related_cov_conf.id)
             cov_conf_create = coverages.CoverageConfigurationCreate(
                 name=data["name"],
                 netcdf_main_dataset_name=data["netcdf_main_dataset_name"],
@@ -447,6 +474,7 @@ class CoverageConfigurationView(ModelView):
                 ),
                 uncertainty_lower_bounds_coverage_configuration_id=uncertainty_lower_id,
                 uncertainty_upper_bounds_coverage_configuration_id=uncertainty_upper_id,
+                secondary_coverage_configurations_ids=related_cov_conf_ids,
             )
             db_cov_conf = await anyio.to_thread.run_sync(
                 database.create_coverage_configuration, session, cov_conf_create
@@ -500,6 +528,12 @@ class CoverageConfigurationView(ModelView):
                 uncertainty_upper_id = db_uncertainty_upper.id
             else:
                 uncertainty_upper_id = None
+            related_cov_conf_ids = []
+            for related_cov_conf_name in data.get("related_coverages", []):
+                db_related_cov_conf = database.get_coverage_configuration_by_name(
+                    session, related_cov_conf_name
+                )
+                related_cov_conf_ids.append(db_related_cov_conf.id)
             cov_conv_update = coverages.CoverageConfigurationUpdate(
                 name=data.get("name"),
                 netcdf_main_dataset_name=data.get("netcdf_main_dataset_name"),
@@ -517,6 +551,7 @@ class CoverageConfigurationView(ModelView):
                 ),
                 uncertainty_lower_bounds_coverage_configuration_id=uncertainty_lower_id,
                 uncertainty_upper_bounds_coverage_configuration_id=uncertainty_upper_id,
+                secondary_coverage_configurations_ids=related_cov_conf_ids,
             )
             db_coverage_configuration = await anyio.to_thread.run_sync(
                 database.get_coverage_configuration, session, pk
