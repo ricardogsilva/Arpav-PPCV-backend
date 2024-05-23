@@ -32,6 +32,7 @@ from ....thredds import utils as thredds_utils
 from ....schemas.base import (
     CoverageDataSmoothingStrategy,
     ObservationDataSmoothingStrategy,
+    RELATED_TIME_SERIES_PATTERN,
     UNCERTAINTY_TIME_SERIES_PATTERN,
 )
 from ....schemas.coverages import CoverageInternal
@@ -353,11 +354,25 @@ def get_time_series(
                                     CoverageDataSmoothingStrategy.NO_SMOOTHING
                                     in coverage_data_smoothing,
                                     available_smoothing_strategies=CoverageDataSmoothingStrategy,
-                                    extra_info={"related": uncert_name},
                                 )
                             )
                     if include_coverage_related_data:
-                        series.extend([])
+                        related_time_series = {
+                            k: v
+                            for k, v in time_series.items()
+                            if RELATED_TIME_SERIES_PATTERN in k
+                        }
+                        for related_name, related_df in related_time_series.items():
+                            series.extend(
+                                _serialize_dataframe(
+                                    related_df,
+                                    (
+                                        CoverageDataSmoothingStrategy.NO_SMOOTHING
+                                        in coverage_data_smoothing
+                                    ),
+                                    available_smoothing_strategies=CoverageDataSmoothingStrategy,
+                                )
+                            )
                 if include_observation_data:
                     variable = coverage.configuration.related_observation_variable
                     for df_name, df in time_series.items():
@@ -390,7 +405,7 @@ def _serialize_dataframe(
     available_smoothing_strategies: Type[
         ObservationDataSmoothingStrategy | CoverageDataSmoothingStrategy
     ],
-    extra_info,
+    extra_info: Optional[dict[str, str]] = None,
 ) -> list[coverage_schemas.TimeSeries]:
     series = []
     for series_name, series_measurements in data_.to_dict().items():
@@ -411,7 +426,10 @@ def _serialize_dataframe(
                 coverage_schemas.TimeSeries(
                     name=series_name,
                     values=measurements,
-                    info={"smoothing": smoothing_strategy.lower(), **extra_info},
+                    info={
+                        "smoothing": smoothing_strategy.lower(),
+                        **(extra_info or {}),
+                    },
                 )
             )
     return series

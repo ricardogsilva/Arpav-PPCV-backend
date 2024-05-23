@@ -16,6 +16,7 @@ class ObservationDataSmoothingStrategy(enum.Enum):
 
 
 UNCERTAINTY_TIME_SERIES_PATTERN = "**UNCERTAINTY**"
+RELATED_TIME_SERIES_PATTERN = "**RELATED**"
 
 
 class ObservationAggregationType(enum.Enum):
