@@ -1,6 +1,8 @@
 import pytest
+import random
 
 from arpav_ppcv import database
+from arpav_ppcv.schemas import coverages
 
 
 @pytest.mark.parametrize(
@@ -71,3 +73,103 @@ def test_list_monthly_measurements(
         assert total is None
     for index, db_measurement in enumerate(db_measurements):
         assert db_measurement.date == expected_dates[index]
+
+
+@pytest.mark.parametrize("name, thredds_url_pattern", [
+    pytest.param("fake_cov_conf1", "fake-thredds-pattern1"),
+    pytest.param("fake_cov_conf2", " fake-thredds-pattern2 ", id="spaces in thredds url pattern edges"),
+    # pytest.param("fake_cov_conf2", " fake-thredds-pattern2 ", id="invalid_name"),
+])
+def test_create_coverage_configuration_simple(
+        arpav_db_session,
+        name,
+        thredds_url_pattern
+):
+    cov_conf_create = coverages.CoverageConfigurationCreate(
+        name=name,
+        netcdf_main_dataset_name="fake_ds",
+        thredds_url_pattern=thredds_url_pattern,
+        unit="fake_unit",
+        palette="fake_palette",
+        color_scale_min=0.0,
+        color_scale_max=1.0,
+        possible_values=[],
+    )
+    created = database.create_coverage_configuration(arpav_db_session, cov_conf_create)
+    assert created.id is not None
+    assert created.name == cov_conf_create.name
+    assert created.thredds_url_pattern == cov_conf_create.thredds_url_pattern.strip()
+
+
+def test_create_coverage_configuration_with_possible_values(
+        arpav_db_session, sample_configuration_parameters):
+    used_params = random.sample(sample_configuration_parameters, k=3)
+    possible_values = []
+    for used_param in used_params:
+        possible_values.extend(
+            random.sample(used_param.allowed_values, k=2)
+        )
+    print(f"possible_values: {[(type(pv), pv.model_dump()) for pv in possible_values]}")
+    cov_conf_create = coverages.CoverageConfigurationCreate(
+        name="fake_name",
+        netcdf_main_dataset_name="fake_ds",
+        thredds_url_pattern="fake_thredds_pattern",
+        unit="fake_unit",
+        palette="fake_palette",
+        color_scale_min=0.0,
+        color_scale_max=1.0,
+        possible_values=[
+            coverages.ConfigurationParameterPossibleValueCreate(
+                configuration_parameter_value_id=p.id
+            )
+            for p in possible_values
+        ],
+    )
+    created = database.create_coverage_configuration(arpav_db_session, cov_conf_create)
+    assert created.id is not None
+    for possible_value in possible_values:
+        assert possible_value.id in [
+            pv.configuration_parameter_value_id for pv in created.possible_values]
+
+
+def test_create_coverage_configuration_value_uses_new_possible_values(
+        arpav_db_session, sample_configuration_parameters
+):
+    used_param = sample_configuration_parameters[0]
+    possible_value = used_param.allowed_values[0]
+    cov_conf_create1 = coverages.CoverageConfigurationCreate(
+        name="fake_name1",
+        netcdf_main_dataset_name="fake_ds1",
+        thredds_url_pattern="fake_thredds_pattern1",
+        unit="fake_unit",
+        palette="fake_palette",
+        color_scale_min=0.0,
+        color_scale_max=1.0,
+        possible_values=[
+            coverages.ConfigurationParameterPossibleValueCreate(
+                configuration_parameter_value_id=possible_value.id)
+        ],
+
+    )
+    created1 = database.create_coverage_configuration(
+        arpav_db_session, cov_conf_create1)
+    cov_conf_create2 = coverages.CoverageConfigurationCreate(
+        name="fake_name2",
+        netcdf_main_dataset_name="fake_ds2",
+        thredds_url_pattern="fake_thredds_pattern2",
+        unit="fake_unit",
+        palette="fake_palette",
+        color_scale_min=0.0,
+        color_scale_max=1.0,
+        possible_values=[
+            coverages.ConfigurationParameterPossibleValueCreate(
+                configuration_parameter_value_id=possible_value.id)
+        ],
+
+    )
+    created2 = database.create_coverage_configuration(
+        arpav_db_session, cov_conf_create2)
+    assert created2.id is not None
+    assert created2.possible_values[0] == possible_value
+    assert created1.id is not None
+    assert created1.possible_values[0] == possible_value

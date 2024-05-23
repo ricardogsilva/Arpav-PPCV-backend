@@ -864,12 +864,18 @@ def create_coverage_configuration(
         db_conf_param_value = get_configuration_parameter_value(
             session, possible.configuration_parameter_value_id
         )
-        possible_value = coverages.ConfigurationParameterPossibleValue(
-            coverage_configuration=db_coverage_configuration,
-            configuration_parameter_value=db_conf_param_value,
-        )
-        session.add(possible_value)
-        to_refresh.append(possible_value)
+        if db_conf_param_value is not None:
+            possible_value = coverages.ConfigurationParameterPossibleValue(
+                coverage_configuration=db_coverage_configuration,
+                configuration_parameter_value=db_conf_param_value,
+            )
+            session.add(possible_value)
+            to_refresh.append(possible_value)
+        else:
+            raise ValueError(
+                f"Configuration parameter value with id "
+                f"{possible.configuration_parameter_value_id} does not exist"
+            )
     session.commit()
     for item in to_refresh:
         session.refresh(item)

@@ -18,7 +18,10 @@ from arpav_ppcv import (
     database,
     main,
 )
-from arpav_ppcv.schemas import observations
+from arpav_ppcv.schemas import (
+    coverages,
+    observations,
+)
 from arpav_ppcv.webapp import dependencies
 from arpav_ppcv.webapp.app import create_app_from_settings
 from arpav_ppcv.webapp.legacy.django_settings import get_custom_django_settings
@@ -186,6 +189,33 @@ def sample_monthly_measurements(
     for db_station in db_monthly_measurements:
         arpav_db_session.refresh(db_station)
     return db_monthly_measurements
+
+
+@pytest.fixture()
+def sample_configuration_parameters(arpav_db_session):
+    db_conf_params = []
+    for i in range(5):
+        allowed_values = []
+        for j in range(4):
+            allowed_values.append(
+                coverages.ConfigurationParameterValue(
+                    name=f"fake_parameter_value{j}",
+                    description=f"Description for fake param value {j}"
+                )
+            )
+        db_conf_params.append(
+            coverages.ConfigurationParameter(
+                name=f"fake_parameter_{i}",
+                description=f"Description for fake param {i}",
+                allowed_values=allowed_values
+            )
+        )
+    for db_conf_param in db_conf_params:
+        arpav_db_session.add(db_conf_param)
+    arpav_db_session.commit()
+    for db_conf_param in db_conf_params:
+        arpav_db_session.refresh(db_conf_param)
+    return db_conf_params
 
 
 def _override_get_settings():
