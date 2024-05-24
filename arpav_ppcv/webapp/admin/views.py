@@ -60,7 +60,6 @@ def related_observation_variable_choices_loader(
 def coverage_configurations_choices_loader(
     request: Request,
 ) -> Sequence[tuple[str, str]]:
-    logger.debug(f"{request.path_params=}")
     if (pk := request.path_params.get("pk")) is not None:
         main_cov_conf_id = uuid.UUID(pk)
     else:
