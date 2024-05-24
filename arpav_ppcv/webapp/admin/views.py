@@ -60,9 +60,12 @@ def related_observation_variable_choices_loader(
 def coverage_configurations_choices_loader(
     request: Request,
 ) -> Sequence[tuple[str, str]]:
-    main_cov_conf_id = uuid.UUID(request.path_params["pk"])
-    all_cov_confs = database.collect_all_coverage_configurations(request.state.session)
+    if (pk := request.path_params.get("pk")) is not None:
+        main_cov_conf_id = uuid.UUID(pk)
+    else:
+        main_cov_conf_id = None
     result = []
+    all_cov_confs = database.collect_all_coverage_configurations(request.state.session)
     for cov_conf in [cc for cc in all_cov_confs if cc.id != main_cov_conf_id]:
         result.append((cov_conf.name, cov_conf.name))
     return result

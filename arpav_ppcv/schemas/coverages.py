@@ -336,7 +336,9 @@ class CoverageConfigurationCreate(sqlmodel.SQLModel):
     ] = None
     uncertainty_lower_bounds_coverage_configuration_id: Optional[uuid.UUID] = None
     uncertainty_upper_bounds_coverage_configuration_id: Optional[uuid.UUID] = None
-    secondary_coverage_configurations_ids: Optional[list[uuid.UUID]] = None
+    secondary_coverage_configurations_ids: Annotated[
+        Optional[list[uuid.UUID]], pydantic.Field(default_factory=list)
+    ]
 
     @pydantic.field_validator("thredds_url_pattern")
     @classmethod
