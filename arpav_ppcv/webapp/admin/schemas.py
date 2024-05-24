@@ -1,3 +1,4 @@
+import datetime as dt
 from typing import Optional
 import uuid
 
@@ -59,3 +60,22 @@ class ObservationVariableRead(sqlmodel.SQLModel):
 class CoverageConfigurationReadListItem(sqlmodel.SQLModel):
     id: uuid.UUID
     name: str
+
+
+class VariableRead(sqlmodel.SQLModel):
+    id: uuid.UUID
+    name: str
+    description: str
+    unit: Optional[str]
+
+
+class StationRead(sqlmodel.SQLModel):
+    id: uuid.UUID
+    name: str
+    code: str
+    type: str
+    longitude: float
+    latitude: float
+    active_since: Optional[dt.date]
+    active_until: Optional[dt.date]
+    altitude_m: Optional[float]

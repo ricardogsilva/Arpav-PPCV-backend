@@ -11,12 +11,16 @@ from ... import (
     config,
     database,
 )
-from ...schemas import coverages
-from . import (
-    auth,
-    views,
+from ...schemas import (
+    coverages,
+    observations,
 )
+from . import auth
 from .middlewares import SqlModelDbSessionMiddleware
+from .views import (
+    coverages as coverage_views,
+    observations as observations_views,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +55,10 @@ def create_admin(settings: config.ArpavPpcvSettings) -> ArpavPpcvAdmin:
             Middleware(SqlModelDbSessionMiddleware, engine=engine),
         ],
     )
-    admin.add_view(views.ConfigurationParameterView(coverages.ConfigurationParameter))
-    admin.add_view(views.CoverageConfigurationView(coverages.CoverageConfiguration))
+    admin.add_view(coverage_views.ConfigurationParameterView(coverages.ConfigurationParameter))
+    admin.add_view(coverage_views.CoverageConfigurationView(coverages.CoverageConfiguration))
+    admin.add_view(observations_views.VariableView(observations.Variable))
+    admin.add_view(observations_views.StationView(observations.Station))
     admin.add_view(
         Link(
             "V2 API docs",

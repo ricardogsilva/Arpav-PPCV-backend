@@ -1,4 +1,4 @@
-"""Views for the admin app.
+"""Views for the admin app's coverages.
 
 The classes contained in this module are derived from
 starlette_admin.contrib.sqlmodel.ModelView. This is done mostly for two reasons:
@@ -23,12 +23,12 @@ import starlette_admin
 from starlette.requests import Request
 from starlette_admin.contrib.sqlmodel import ModelView
 
-from ... import database
-from ...schemas import (
+from .... import database
+from ....schemas import (
     coverages,
     base,
 )
-from . import (
+from .. import (
     fields,
     schemas as read_schemas,
 )
