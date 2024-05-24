@@ -6,6 +6,7 @@ from .....schemas import (
     observations,
     fields,
 )
+from ..observations import VariableReadEmbeddedInStationRead
 from .base import ArpavFeatureCollection
 
 
@@ -27,12 +28,26 @@ class StationFeatureCollectionItem(geojson_pydantic.Feature):
         return cls(
             id=instance.id,
             geometry=instance.geom,
-            properties=instance.model_dump(
-                exclude={
-                    "id",
-                    "geom",
-                }
-            ),
+            properties={
+                **instance.model_dump(
+                    exclude={
+                        "id",
+                        "geom",
+                    }
+                ),
+                "monthly_variables": [
+                    VariableReadEmbeddedInStationRead(**v.model_dump())
+                    for v in instance.monthly_variables
+                ],
+                "seasonal_variables": [
+                    VariableReadEmbeddedInStationRead(**v.model_dump())
+                    for v in instance.seasonal_variables
+                ],
+                "yearly_variables": [
+                    VariableReadEmbeddedInStationRead(**v.model_dump())
+                    for v in instance.yearly_variables
+                ],
+            },
             links=[str(url)],
         )
 

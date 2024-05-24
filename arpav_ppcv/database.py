@@ -231,10 +231,13 @@ def list_stations(
     offset: int = 0,
     include_total: bool = False,
     polygon_intersection_filter: shapely.Polygon = None,
+    variable_id_filter: Optional[uuid.UUID] = None,
+    variable_aggregation_type: Optional[
+        base.ObservationAggregationType] = base.ObservationAggregationType.SEASONAL,
 ) -> tuple[Sequence[observations.Station], Optional[int]]:
     """List existing stations.
 
-    The ``polygon_intersetion_filter`` parameter is expected to be a polygon
+    The ``polygon_intersection_filter`` parameter is expected to be a polygon
     geometry in the EPSG:4326 CRS.
     """
     statement = sqlmodel.select(observations.Station).order_by(
@@ -248,6 +251,29 @@ def list_stations(
                     shapely.io.to_wkb(polygon_intersection_filter), 4326
                 ),
             )
+        )
+    if all((variable_id_filter, variable_aggregation_type)):
+        if variable_aggregation_type == base.ObservationAggregationType.MONTHLY:
+            instance_class = observations.MonthlyMeasurement
+        elif variable_aggregation_type == base.ObservationAggregationType.SEASONAL:
+            instance_class = observations.SeasonalMeasurement
+        elif variable_aggregation_type == base.ObservationAggregationType.YEARLY:
+            instance_class = observations.YearlyMeasurement
+        else:
+            raise RuntimeError(
+                f"variable filtering for {variable_aggregation_type} is not supported")
+        statement = (
+            statement
+            .join(instance_class)
+            .join(observations.Variable)
+            .where(observations.Variable.id == variable_id_filter)
+            .distinct()
+        )
+
+    else:
+        logger.warning(
+            "Did not perform variable filter as not all related parameters have been "
+            "provided"
         )
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = _get_total_num_records(session, statement) if include_total else None

@@ -66,6 +66,16 @@ class Station(StationBase, table=True):
             "passive_deletes": True,
         },
     )
+    monthly_variables: list["Variable"] = sqlmodel.Relationship(
+        sa_relationship_kwargs={
+            "primaryjoin": (
+                "and_(Station.id == MonthlyMeasurement.station_id, "
+                "Variable.id == MonthlyMeasurement.variable_id)"
+            ),
+            "secondary": "monthlymeasurement",
+            "viewonly": True
+        }
+    )
     seasonal_measurements: list["SeasonalMeasurement"] = sqlmodel.Relationship(
         back_populates="station",
         sa_relationship_kwargs={
@@ -78,6 +88,16 @@ class Station(StationBase, table=True):
             "passive_deletes": True,
         },
     )
+    seasonal_variables: list["Variable"] = sqlmodel.Relationship(
+        sa_relationship_kwargs={
+            "primaryjoin": (
+                "and_(Station.id == SeasonalMeasurement.station_id, "
+                "Variable.id == SeasonalMeasurement.variable_id)"
+            ),
+            "secondary": "seasonalmeasurement",
+            "viewonly": True
+        }
+    )
     yearly_measurements: list["YearlyMeasurement"] = sqlmodel.Relationship(
         back_populates="station",
         sa_relationship_kwargs={
@@ -89,6 +109,16 @@ class Station(StationBase, table=True):
             # expect that the RDBMS handles cascading deletes
             "passive_deletes": True,
         },
+    )
+    yearly_variables: list["Variable"] = sqlmodel.Relationship(
+        sa_relationship_kwargs={
+            "primaryjoin": (
+                "and_(Station.id == YearlyMeasurement.station_id, "
+                "Variable.id == YearlyMeasurement.variable_id)"
+            ),
+            "secondary": "yearlymeasurement",
+            "viewonly": True
+        }
     )
 
 
