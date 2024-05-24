@@ -867,7 +867,7 @@ def create_coverage_configuration(
         if db_conf_param_value is not None:
             possible_value = coverages.ConfigurationParameterPossibleValue(
                 coverage_configuration=db_coverage_configuration,
-                configuration_parameter_value=db_conf_param_value,
+                configuration_parameter_value_id=db_conf_param_value.id,
             )
             session.add(possible_value)
             to_refresh.append(possible_value)

@@ -132,9 +132,17 @@ def test_create_coverage_configuration_with_possible_values(
             pv.configuration_parameter_value_id for pv in created.possible_values]
 
 
-def test_create_coverage_configuration_value_uses_new_possible_values(
+def test_create_coverage_configuration_uses_new_possible_values(
         arpav_db_session, sample_configuration_parameters
 ):
+    """Ensure that when a new coverage configuration is created it does not
+    clear any possible values that may be repeated in other coverage configurations.
+    This is to ensure that
+
+    https://github.com/geobeyond/Arpav-PPCV-backend/issues/87
+
+    is fixed.
+    """
     used_param = sample_configuration_parameters[0]
     possible_value = used_param.allowed_values[0]
     cov_conf_create1 = coverages.CoverageConfigurationCreate(
@@ -153,6 +161,11 @@ def test_create_coverage_configuration_value_uses_new_possible_values(
     )
     created1 = database.create_coverage_configuration(
         arpav_db_session, cov_conf_create1)
+
+    assert created1.id is not None
+    assert (created1.possible_values[0].configuration_parameter_value.configuration_parameter.name == possible_value.configuration_parameter.name)
+    assert created1.possible_values[0].configuration_parameter_value.name == possible_value.name
+
     cov_conf_create2 = coverages.CoverageConfigurationCreate(
         name="fake_name2",
         netcdf_main_dataset_name="fake_ds2",
@@ -170,6 +183,9 @@ def test_create_coverage_configuration_value_uses_new_possible_values(
     created2 = database.create_coverage_configuration(
         arpav_db_session, cov_conf_create2)
     assert created2.id is not None
-    assert created2.possible_values[0] == possible_value
+    assert created2.possible_values[0].configuration_parameter_value.configuration_parameter.name == possible_value.configuration_parameter.name
+    assert created2.possible_values[0].configuration_parameter_value.name == possible_value.name
+
     assert created1.id is not None
-    assert created1.possible_values[0] == possible_value
+    assert created1.possible_values[0].configuration_parameter_value.configuration_parameter.name == possible_value.configuration_parameter.name
+    assert created1.possible_values[0].configuration_parameter_value.name == possible_value.name
