@@ -233,7 +233,8 @@ def list_stations(
     polygon_intersection_filter: shapely.Polygon = None,
     variable_id_filter: Optional[uuid.UUID] = None,
     variable_aggregation_type: Optional[
-        base.ObservationAggregationType] = base.ObservationAggregationType.SEASONAL,
+        base.ObservationAggregationType
+    ] = base.ObservationAggregationType.SEASONAL,
 ) -> tuple[Sequence[observations.Station], Optional[int]]:
     """List existing stations.
 
@@ -261,10 +262,10 @@ def list_stations(
             instance_class = observations.YearlyMeasurement
         else:
             raise RuntimeError(
-                f"variable filtering for {variable_aggregation_type} is not supported")
+                f"variable filtering for {variable_aggregation_type} is not supported"
+            )
         statement = (
-            statement
-            .join(instance_class)
+            statement.join(instance_class)
             .join(observations.Variable)
             .where(observations.Variable.id == variable_id_filter)
             .distinct()

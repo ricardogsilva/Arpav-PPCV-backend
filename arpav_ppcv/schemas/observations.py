@@ -73,7 +73,7 @@ class Station(StationBase, table=True):
                 "Variable.id == MonthlyMeasurement.variable_id)"
             ),
             "secondary": "monthlymeasurement",
-            "viewonly": True
+            "viewonly": True,
         }
     )
     seasonal_measurements: list["SeasonalMeasurement"] = sqlmodel.Relationship(
@@ -95,7 +95,7 @@ class Station(StationBase, table=True):
                 "Variable.id == SeasonalMeasurement.variable_id)"
             ),
             "secondary": "seasonalmeasurement",
-            "viewonly": True
+            "viewonly": True,
         }
     )
     yearly_measurements: list["YearlyMeasurement"] = sqlmodel.Relationship(
@@ -117,7 +117,7 @@ class Station(StationBase, table=True):
                 "Variable.id == YearlyMeasurement.variable_id)"
             ),
             "secondary": "yearlymeasurement",
-            "viewonly": True
+            "viewonly": True,
         }
     )
 

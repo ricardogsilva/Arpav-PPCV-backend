@@ -49,8 +49,7 @@ def list_stations(
     list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
     variable_name: str | None = None,
     temporal_aggregation: Annotated[
-        base.ObservationAggregationType,
-        Query()
+        base.ObservationAggregationType, Query()
     ] = base.ObservationAggregationType.SEASONAL,
     accept: Annotated[str | None, Header()] = None,
 ):
@@ -58,12 +57,14 @@ def list_stations(
     filter_kwargs = {}
     if variable_name is not None:
         if (
-                db_var := database.get_variable_by_name(db_session, variable_name)
+            db_var := database.get_variable_by_name(db_session, variable_name)
         ) is not None:
-            filter_kwargs.update({
-                "variable_id_filter": db_var.id,
-                "variable_aggregation_type": temporal_aggregation,
-            })
+            filter_kwargs.update(
+                {
+                    "variable_id_filter": db_var.id,
+                    "variable_aggregation_type": temporal_aggregation,
+                }
+            )
         else:
             raise HTTPException(status_code=400, detail="Invalid variable name")
     stations, filtered_total = database.list_stations(
@@ -71,7 +72,7 @@ def list_stations(
         limit=list_params.limit,
         offset=list_params.offset,
         include_total=True,
-        **filter_kwargs
+        **filter_kwargs,
     )
     _, unfiltered_total = database.list_stations(
         db_session, limit=1, offset=0, include_total=True
