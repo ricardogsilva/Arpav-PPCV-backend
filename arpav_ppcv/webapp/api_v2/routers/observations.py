@@ -1,12 +1,18 @@
 import logging
-from typing import Annotated
+import math
+from typing import (
+    Annotated,
+    Optional,
+)
 
 import fastapi
+import numpy as np
 import pydantic
 from fastapi import (
     APIRouter,
     Depends,
     Header,
+    Path,
     Request,
     Query,
 )
@@ -15,11 +21,19 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 from sqlmodel import Session
 
-from .... import database
+from .... import (
+    database as db,
+    operations,
+)
 from ....schemas import base
 from ... import dependencies
 from ..schemas import observations
 from ..schemas.geojson import observations as observations_geojson
+from ..schemas.base import (
+    TimeSeries,
+    TimeSeriesItem,
+    TimeSeriesList,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -57,7 +71,7 @@ def list_stations(
     filter_kwargs = {}
     if variable_name is not None:
         if (
-            db_var := database.get_variable_by_name(db_session, variable_name)
+            db_var := db.get_variable_by_name(db_session, variable_name)
         ) is not None:
             filter_kwargs.update(
                 {
@@ -67,14 +81,14 @@ def list_stations(
             )
         else:
             raise HTTPException(status_code=400, detail="Invalid variable name")
-    stations, filtered_total = database.list_stations(
+    stations, filtered_total = db.list_stations(
         db_session,
         limit=list_params.limit,
         offset=list_params.offset,
         include_total=True,
         **filter_kwargs,
     )
-    _, unfiltered_total = database.list_stations(
+    _, unfiltered_total = db.list_stations(
         db_session, limit=1, offset=0, include_total=True
     )
     if accept == "application/json":
@@ -111,7 +125,7 @@ def get_station(
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     station_id: pydantic.UUID4,
 ):
-    db_station = database.get_station(db_session, station_id)
+    db_station = db.get_station(db_session, station_id)
     return observations.StationReadListItem.from_db_instance(db_station, request)
 
 
@@ -122,13 +136,13 @@ def list_variables(
     list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
 ):
     """List known variables."""
-    variables, filtered_total = database.list_variables(
+    variables, filtered_total = db.list_variables(
         db_session,
         limit=list_params.limit,
         offset=list_params.offset,
         include_total=True,
     )
-    _, unfiltered_total = database.list_variables(
+    _, unfiltered_total = db.list_variables(
         db_session, limit=1, offset=0, include_total=True
     )
     return observations.VariableList.from_items(
@@ -150,7 +164,7 @@ def get_variable(
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     variable_id: pydantic.UUID4,
 ):
-    db_variable = database.get_variable(db_session, variable_id)
+    db_variable = db.get_variable(db_session, variable_id)
     return observations.VariableReadListItem.from_db_instance(db_variable, request)
 
 
@@ -165,7 +179,7 @@ def list_monthly_measurements(
 ):
     """List known monthly measurements."""
     if station_code is not None:
-        db_station = database.get_station_by_code(db_session, station_code)
+        db_station = db.get_station_by_code(db_session, station_code)
         if db_station is not None:
             station_id = db_station.id
         else:
@@ -173,14 +187,14 @@ def list_monthly_measurements(
     else:
         station_id = None
     if variable_name is not None:
-        db_variable = database.get_variable_by_name(db_session, variable_name)
+        db_variable = db.get_variable_by_name(db_session, variable_name)
         if db_variable is not None:
             variable_id = db_variable.id
         else:
             raise ValueError("Invalid variable name")
     else:
         variable_id = None
-    monthly_measurements, filtered_total = database.list_monthly_measurements(
+    monthly_measurements, filtered_total = db.list_monthly_measurements(
         db_session,
         limit=list_params.limit,
         offset=list_params.offset,
@@ -189,7 +203,7 @@ def list_monthly_measurements(
         month_filter=month,
         include_total=True,
     )
-    _, unfiltered_total = database.list_monthly_measurements(
+    _, unfiltered_total = db.list_monthly_measurements(
         db_session, limit=1, offset=0, include_total=True
     )
     return observations.MonthlyMeasurementList.from_items(
@@ -211,7 +225,7 @@ def get_monthly_measurement(
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     monthly_measurement_id: pydantic.UUID4,
 ):
-    db_monthly_measurement = database.get_monthly_measurement(
+    db_monthly_measurement = db.get_monthly_measurement(
         db_session, monthly_measurement_id
     )
     return observations.MonthlyMeasurementReadListItem.from_db_instance(
@@ -232,7 +246,7 @@ def list_seasonal_measurements(
 ):
     """List known seasonal measurements."""
     if station_code is not None:
-        db_station = database.get_station_by_code(db_session, station_code)
+        db_station = db.get_station_by_code(db_session, station_code)
         if db_station is not None:
             station_id = db_station.id
         else:
@@ -240,14 +254,14 @@ def list_seasonal_measurements(
     else:
         station_id = None
     if variable_name is not None:
-        db_variable = database.get_variable_by_name(db_session, variable_name)
+        db_variable = db.get_variable_by_name(db_session, variable_name)
         if db_variable is not None:
             variable_id = db_variable.id
         else:
             raise ValueError("Invalid variable name")
     else:
         variable_id = None
-    measurements, filtered_total = database.list_seasonal_measurements(
+    measurements, filtered_total = db.list_seasonal_measurements(
         db_session,
         limit=list_params.limit,
         offset=list_params.offset,
@@ -256,7 +270,7 @@ def list_seasonal_measurements(
         season_filter=season,
         include_total=True,
     )
-    _, unfiltered_total = database.list_seasonal_measurements(
+    _, unfiltered_total = db.list_seasonal_measurements(
         db_session, limit=1, offset=0, include_total=True
     )
     return observations.SeasonalMeasurementList.from_items(
@@ -278,7 +292,7 @@ def get_seasonal_measurement(
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     seasonal_measurement_id: pydantic.UUID4,
 ):
-    db_measurement = database.get_seasonal_measurement(
+    db_measurement = db.get_seasonal_measurement(
         db_session, seasonal_measurement_id
     )
     return observations.SeasonalMeasurementReadListItem.from_db_instance(
@@ -296,7 +310,7 @@ def list_yearly_measurements(
 ):
     """List known yearly measurements."""
     if station_code is not None:
-        db_station = database.get_station_by_code(db_session, station_code)
+        db_station = db.get_station_by_code(db_session, station_code)
         if db_station is not None:
             station_id = db_station.id
         else:
@@ -304,14 +318,14 @@ def list_yearly_measurements(
     else:
         station_id = None
     if variable_name is not None:
-        db_variable = database.get_variable_by_name(db_session, variable_name)
+        db_variable = db.get_variable_by_name(db_session, variable_name)
         if db_variable is not None:
             variable_id = db_variable.id
         else:
             raise ValueError("Invalid variable name")
     else:
         variable_id = None
-    measurements, filtered_total = database.list_yearly_measurements(
+    measurements, filtered_total = db.list_yearly_measurements(
         db_session,
         limit=list_params.limit,
         offset=list_params.offset,
@@ -319,7 +333,7 @@ def list_yearly_measurements(
         variable_id_filter=variable_id,
         include_total=True,
     )
-    _, unfiltered_total = database.list_yearly_measurements(
+    _, unfiltered_total = db.list_yearly_measurements(
         db_session, limit=1, offset=0, include_total=True
     )
     return observations.YearlyMeasurementList.from_items(
@@ -341,7 +355,67 @@ def get_yearly_measurement(
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     yearly_measurement_id: pydantic.UUID4,
 ):
-    db_measurement = database.get_yearly_measurement(db_session, yearly_measurement_id)
+    db_measurement = db.get_yearly_measurement(db_session, yearly_measurement_id)
     return observations.YearlyMeasurementReadListItem.from_db_instance(
         db_measurement, request
     )
+
+
+@router.get(
+    "/{station_id}/time-series/{month}/{variable_id}", response_model=TimeSeriesList
+)
+def get_time_series(
+        db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+        station_id: pydantic.UUID4,
+        month: Annotated[
+            int,
+            Path(ge=1, le=12)
+        ],
+        variable_id: pydantic.UUID4,
+        datetime: Optional[str] = "../..",
+        smoothing: Annotated[base.ObservationDataSmoothingStrategy, Query()] = base.ObservationDataSmoothingStrategy.NO_SMOOTHING,  # noqa
+        include_decade_data: bool = False,
+        include_mann_kendall_trend: bool = False,
+        mann_kendall_start_year: Optional[int] = None,
+        mann_kendall_end_year: Optional[int] = None,
+):
+    if (db_station := db.get_station(db_session, station_id)) is not None:
+        if (db_variable := db.get_variable(db_session, variable_id)) is not None:
+            if include_mann_kendall_trend:
+                mann_kendall = base.MannKendallParameters(
+                    start_year=mann_kendall_start_year,
+                    end_year=mann_kendall_end_year,
+                )
+            else:
+                mann_kendall = None
+            time_series = operations.get_observation_time_series(
+                db_session,
+                variable=db_variable,
+                station=db_station,
+                month=month,
+                temporal_range=datetime,
+                smoothing_strategy=smoothing,
+                include_decade_data=include_decade_data,
+                mann_kendall_parameters=mann_kendall
+            )
+
+            series = []
+            for series_name, series_measurements in time_series.to_dict().items():
+                measurements = []
+                for timestamp, value in series_measurements.items():
+                    if not math.isnan(value):
+                        measurements.append(
+                            TimeSeriesItem(value=value, datetime=timestamp)
+                        )
+                series.append(
+                    TimeSeries(
+                        name=series_name,
+                        values=measurements,
+                    )
+                )
+
+            return TimeSeriesList(series=series)
+        else:
+            raise HTTPException(status_code=400, detail="Invalid variable identifier")
+    else:
+        raise HTTPException(status_code=400, detail="Invalid station identifier")

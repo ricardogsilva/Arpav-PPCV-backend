@@ -56,6 +56,7 @@ jinja2 = "^3.1.4"
 pyyaml = "^6.0.1"
 alembic-postgresql-enum = "^1.2.0"
 loess = "^2.1.2"
+pymannkendall = "^1.4.3"
 
 
 [tool.poetry.group.dev]

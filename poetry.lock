@@ -2262,6 +2262,7 @@ description = "LOESS: smoothing via robust locally-weighted regression in one or
 optional = false
 python-versions = "*"
 files = [
+    {file = "loess-2.1.2-py3-none-any.whl", hash = "sha256:105f12daa0fdff5185855ae57c2d3f25420fb30b475ae3f4078843a5c61699b9"},
     {file = "loess-2.1.2.tar.gz", hash = "sha256:f0c1e83e70c5f9b95da635495c0ec555cf7c225186f7e6d978ed7c20d2f3828a"},
 ]
 
@@ -3041,6 +3042,7 @@ description = "PlotBin: Plotting Binned Maps and Other Utilities"
 optional = false
 python-versions = "*"
 files = [
+    {file = "plotbin-3.1.5-py3-none-any.whl", hash = "sha256:99b42dcff5fcc1930c0a24230113379eb913fa1702c2e377b169b793d9113b6f"},
     {file = "plotbin-3.1.5.tar.gz", hash = "sha256:9fb2d86bd887eaaad9612dea306f57fed5bcb4252a54d8ff040beb9bb1645410"},
 ]
 
@@ -3393,6 +3395,21 @@ files = [
 [package.extras]
 plugins = ["importlib-metadata"]
 windows-terminal = ["colorama (>=0.4.6)"]
+
+[[package]]
+name = "pymannkendall"
+version = "1.4.3"
+description = "A python package for non-parametric Mann-Kendall family of trend tests."
+optional = false
+python-versions = "*"
+files = [
+    {file = "pymannkendall-1.4.3-py3-none-any.whl", hash = "sha256:7d988efffae26c12c04b95f77042b946c8581da7526d94b2bbfb7416fb55681f"},
+    {file = "pymannkendall-1.4.3.tar.gz", hash = "sha256:f9e3bbbb583b5285d15082aa0007825e5bea4dde9858d2e7ca81ee6f1e378e82"},
+]
+
+[package.dependencies]
+numpy = "*"
+scipy = "*"
 
 [[package]]
 name = "pyopenssl"
@@ -5178,4 +5195,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a68fdc62c692336235c72313861151b3f75eed2b91f41a03bcb9df15887706ee"
+content-hash = "ebba6e34e7fdc3303e4637baf4665584cd2189fe26876342fefa3e9b2cb62af2"

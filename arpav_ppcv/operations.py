@@ -5,7 +5,9 @@ import logging
 from typing import Optional
 
 import httpx
+import numpy as np
 import pandas as pd
+import pymannkendall as mk
 import pyproj
 import shapely
 import shapely.io
@@ -26,6 +28,67 @@ from .schemas import (
 from .thredds import ncss
 
 logger = logging.getLogger(__name__)
+
+
+def get_observation_time_series(
+        session: sqlmodel.Session,
+        variable: observations.Variable,
+        station: observations.Station,
+        month: int,
+        temporal_range: str,
+        smoothing_strategy: base.ObservationDataSmoothingStrategy = base.ObservationDataSmoothingStrategy.NO_SMOOTHING,
+        include_decade_data: bool = False,
+        mann_kendall_parameters: base.MannKendallParameters | None = None
+) -> pd.DataFrame:
+    start, end = _parse_temporal_range(temporal_range)
+    raw_measurements = database.collect_all_monthly_measurements(
+        session=session,
+        station_id_filter=station.id,
+        variable_id_filter=variable.id,
+        month_filter=month,
+    )
+    df = pd.DataFrame([m.model_dump() for m in raw_measurements])
+    base_name = variable.name
+    df = df[["value", "date"]].rename(columns={"value": base_name})
+    df["time"] = pd.to_datetime(df["date"], utc=True)
+    df = df[["time", base_name]]
+    df.set_index("time", inplace=True)
+    if start is not None:
+        df = df[start:]
+    if end is not None:
+        df = df[:end]
+    col_name = "__".join((base_name, smoothing_strategy.value))
+    if smoothing_strategy == base.ObservationDataSmoothingStrategy.NO_SMOOTHING:
+        df[col_name] = df[base_name]
+    elif smoothing_strategy == base.ObservationDataSmoothingStrategy.MOVING_AVERAGE_5_YEARS:
+        df[col_name] = df[base_name].rolling(window=5, center=True).mean()
+    if include_decade_data:
+        decade_df = df.groupby((df.index.year // 10) * 10).mean()
+        df["decade"] = (df.index.year // 10) * 10
+        df = df.join(decade_df, on="decade", rsuffix="**DECADE_MEAN")
+        df = df.drop(
+            columns=[
+                "decade",
+                f"{base_name}__{smoothing_strategy.value}**DECADE_MEAN",
+            ]
+        )
+    if mann_kendall_parameters is not None:
+        mk_col = f"{base_name}**MANN_KENDALL"
+        mk_start = str(mann_kendall_parameters.start_year or df.index[0].year)
+        mk_end = str(mann_kendall_parameters.end_year or df.index[-1].year)
+        df_trend = df[mk_start:mk_end]
+        mk_result = mk.original_test(df_trend[base_name])
+        df[mk_col] = np.nan
+        df.loc[mk_start:mk_end, mk_col] = (
+                mk_result.slope * (df_trend.index.year - df_trend.index.year.min())
+                + mk_result.intercept
+        )
+    df = df.drop(
+        columns=[
+            base_name,
+        ]
+    )
+    return df
 
 
 def get_coverage_time_series(
