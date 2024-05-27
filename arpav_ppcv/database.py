@@ -208,13 +208,9 @@ def update_station(
     station_update: observations.StationUpdate,
 ) -> observations.Station:
     """Update a station."""
-    geom = from_shape(
-        shapely.io.from_geojson(station_update.geom.model_dump_json()))
+    geom = from_shape(shapely.io.from_geojson(station_update.geom.model_dump_json()))
     other_data = station_update.model_dump(exclude={"geom"}, exclude_unset=True)
-    data = {
-        **other_data,
-        "geom": geom
-    }
+    data = {**other_data, "geom": geom}
     for key, value in data.items():
         setattr(db_station, key, value)
     session.add(db_station)

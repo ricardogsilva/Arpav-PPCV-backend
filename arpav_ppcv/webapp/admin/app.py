@@ -58,8 +58,12 @@ def create_admin(settings: config.ArpavPpcvSettings) -> ArpavPpcvAdmin:
             Middleware(SqlModelDbSessionMiddleware, engine=engine),
         ],
     )
-    admin.add_view(coverage_views.ConfigurationParameterView(coverages.ConfigurationParameter))
-    admin.add_view(coverage_views.CoverageConfigurationView(coverages.CoverageConfiguration))
+    admin.add_view(
+        coverage_views.ConfigurationParameterView(coverages.ConfigurationParameter)
+    )
+    admin.add_view(
+        coverage_views.CoverageConfigurationView(coverages.CoverageConfiguration)
+    )
     admin.add_view(observations_views.VariableView(observations.Variable))
     admin.add_view(observations_views.StationView(observations.Station))
     admin.add_view(
@@ -67,10 +71,16 @@ def create_admin(settings: config.ArpavPpcvSettings) -> ArpavPpcvAdmin:
             "Measurements",
             icon="fa-solid fa-vials",
             views=[
-                observations_views.MonthlyMeasurementView(observations.MonthlyMeasurement),
-                observations_views.SeasonalMeasurementView(observations.SeasonalMeasurement),
-                observations_views.YearlyMeasurementView(observations.YearlyMeasurement),
-            ]
+                observations_views.MonthlyMeasurementView(
+                    observations.MonthlyMeasurement
+                ),
+                observations_views.SeasonalMeasurementView(
+                    observations.SeasonalMeasurement
+                ),
+                observations_views.YearlyMeasurementView(
+                    observations.YearlyMeasurement
+                ),
+            ],
         )
     )
     admin.add_view(
