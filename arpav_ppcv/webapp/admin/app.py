@@ -5,7 +5,10 @@ from starlette.middleware import Middleware
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.exceptions import HTTPException
 from starlette_admin.contrib.sqlmodel import Admin
-from starlette_admin.views import Link
+from starlette_admin.views import (
+    DropDown,
+    Link,
+)
 
 from ... import (
     config,
@@ -59,6 +62,17 @@ def create_admin(settings: config.ArpavPpcvSettings) -> ArpavPpcvAdmin:
     admin.add_view(coverage_views.CoverageConfigurationView(coverages.CoverageConfiguration))
     admin.add_view(observations_views.VariableView(observations.Variable))
     admin.add_view(observations_views.StationView(observations.Station))
+    admin.add_view(
+        DropDown(
+            "Measurements",
+            icon="fa-solid fa-vials",
+            views=[
+                observations_views.MonthlyMeasurementView(observations.MonthlyMeasurement),
+                observations_views.SeasonalMeasurementView(observations.SeasonalMeasurement),
+                observations_views.YearlyMeasurementView(observations.YearlyMeasurement),
+            ]
+        )
+    )
     admin.add_view(
         Link(
             "V2 API docs",

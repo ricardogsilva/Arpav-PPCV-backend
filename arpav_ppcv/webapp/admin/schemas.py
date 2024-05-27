@@ -4,7 +4,10 @@ import uuid
 
 import sqlmodel
 
-from ...schemas.base import ObservationAggregationType
+from ...schemas.base import (
+    ObservationAggregationType,
+    Season,
+)
 
 
 class ConfigurationParameterValueRead(sqlmodel.SQLModel):
@@ -79,3 +82,25 @@ class StationRead(sqlmodel.SQLModel):
     active_since: Optional[dt.date]
     active_until: Optional[dt.date]
     altitude_m: Optional[float]
+
+
+class MonthlyMeasurementRead(sqlmodel.SQLModel):
+    station: str
+    variable: str
+    date: dt.date
+    value: float
+
+
+class SeasonalMeasurementRead(sqlmodel.SQLModel):
+    station: str
+    variable: str
+    year: int
+    season: Season
+    value: float
+
+
+class YearlyMeasurementRead(sqlmodel.SQLModel):
+    station: str
+    variable: str
+    year: int
+    value: float
