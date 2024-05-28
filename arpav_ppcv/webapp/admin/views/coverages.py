@@ -1,4 +1,4 @@
-"""Views for the admin app.
+"""Views for the admin app's coverages.
 
 The classes contained in this module are derived from
 starlette_admin.contrib.sqlmodel.ModelView. This is done mostly for two reasons:
@@ -23,12 +23,12 @@ import starlette_admin
 from starlette.requests import Request
 from starlette_admin.contrib.sqlmodel import ModelView
 
-from ... import database
-from ...schemas import (
+from .... import database
+from ....schemas import (
     coverages,
     base,
 )
-from . import (
+from .. import (
     fields,
     schemas as read_schemas,
 )
@@ -115,6 +115,10 @@ class ConfigurationParameterView(ModelView):
             )
         ),
     )
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.icon = "fa-solid fa-quote-left"
 
     async def get_pk_value(self, request: Request, obj: Any) -> Any:
         # note: we need to cast the value, which is a uuid.UUID, to a string
@@ -312,6 +316,10 @@ class CoverageConfigurationView(ModelView):
         "related_coverages",
     )
     exclude_fields_from_edit = ("coverage_id_pattern",)
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.icon = "fa-solid fa-map"
 
     async def get_pk_value(self, request: Request, obj: Any) -> Any:
         # note: we need to cast the value, which is a uuid.UUID, to a string

@@ -143,7 +143,10 @@ def create_station(
     """Create a new station."""
     geom = shapely.io.from_geojson(station_create.geom.model_dump_json())
     wkbelement = from_shape(geom)
-    db_station = observations.Station(geom=wkbelement, code=station_create.code)
+    db_station = observations.Station(
+        **station_create.model_dump(exclude={"geom"}),
+        geom=wkbelement,
+    )
     session.add(db_station)
     try:
         session.commit()
@@ -205,8 +208,10 @@ def update_station(
     station_update: observations.StationUpdate,
 ) -> observations.Station:
     """Update a station."""
-    data_ = station_update.model_dump(exclude_unset=True)
-    for key, value in data_.items():
+    geom = from_shape(shapely.io.from_geojson(station_update.geom.model_dump_json()))
+    other_data = station_update.model_dump(exclude={"geom"}, exclude_unset=True)
+    data = {**other_data, "geom": geom}
+    for key, value in data.items():
         setattr(db_station, key, value)
     session.add(db_station)
     session.commit()

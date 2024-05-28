@@ -1,9 +1,13 @@
+import datetime as dt
 from typing import Optional
 import uuid
 
 import sqlmodel
 
-from ...schemas.base import ObservationAggregationType
+from ...schemas.base import (
+    ObservationAggregationType,
+    Season,
+)
 
 
 class ConfigurationParameterValueRead(sqlmodel.SQLModel):
@@ -59,3 +63,44 @@ class ObservationVariableRead(sqlmodel.SQLModel):
 class CoverageConfigurationReadListItem(sqlmodel.SQLModel):
     id: uuid.UUID
     name: str
+
+
+class VariableRead(sqlmodel.SQLModel):
+    id: uuid.UUID
+    name: str
+    description: str
+    unit: Optional[str]
+
+
+class StationRead(sqlmodel.SQLModel):
+    id: uuid.UUID
+    name: str
+    code: str
+    type: str
+    longitude: float
+    latitude: float
+    active_since: Optional[dt.date]
+    active_until: Optional[dt.date]
+    altitude_m: Optional[float]
+
+
+class MonthlyMeasurementRead(sqlmodel.SQLModel):
+    station: str
+    variable: str
+    date: dt.date
+    value: float
+
+
+class SeasonalMeasurementRead(sqlmodel.SQLModel):
+    station: str
+    variable: str
+    year: int
+    season: Season
+    value: float
+
+
+class YearlyMeasurementRead(sqlmodel.SQLModel):
+    station: str
+    variable: str
+    year: int
+    value: float
