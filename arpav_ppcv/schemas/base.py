@@ -1,6 +1,13 @@
+import dataclasses
 import enum
 import pydantic
 import sqlmodel
+
+
+@dataclasses.dataclass
+class MannKendallParameters:
+    start_year: int | None = None
+    end_year: int | None = None
 
 
 class Season(enum.Enum):

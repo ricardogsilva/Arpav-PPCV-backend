@@ -38,6 +38,11 @@ from ....schemas.base import (
 from ....schemas.coverages import CoverageInternal
 from ... import dependencies
 from ..schemas import coverages as coverage_schemas
+from ..schemas.base import (
+    TimeSeries,
+    TimeSeriesItem,
+    TimeSeriesList,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -246,9 +251,7 @@ async def wms_endpoint(
         raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
 
 
-@router.get(
-    "/time-series/{coverage_identifier}", response_model=coverage_schemas.TimeSeriesList
-)
+@router.get("/time-series/{coverage_identifier}", response_model=TimeSeriesList)
 def get_time_series(
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
@@ -266,9 +269,9 @@ def get_time_series(
             )
         ),
     ] = False,
-    coverage_data_smoothing: Annotated[list[CoverageDataSmoothingStrategy], Query()] = [
+    coverage_data_smoothing: Annotated[list[CoverageDataSmoothingStrategy], Query()] = [  # noqa
         ObservationDataSmoothingStrategy.NO_SMOOTHING
-    ],  # noqa
+    ],
     observation_data_smoothing: Annotated[
         list[ObservationDataSmoothingStrategy], Query()
     ] = [ObservationDataSmoothingStrategy.NO_SMOOTHING],  # noqa
@@ -392,7 +395,7 @@ def get_time_series(
                                 },
                             )
                             series.extend(station_series)
-                return coverage_schemas.TimeSeriesList(series=series)
+                return TimeSeriesList(series=series)
         else:
             raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
     else:
@@ -406,7 +409,7 @@ def _serialize_dataframe(
         ObservationDataSmoothingStrategy | CoverageDataSmoothingStrategy
     ],
     extra_info: Optional[dict[str, str]] = None,
-) -> list[coverage_schemas.TimeSeries]:
+) -> list[TimeSeries]:
     series = []
     for series_name, series_measurements in data_.to_dict().items():
         name_prefix, smoothing_strategy = series_name.rpartition("__")[::2]
@@ -419,11 +422,9 @@ def _serialize_dataframe(
         else:
             measurements = []
             for timestamp, value in series_measurements.items():
-                measurements.append(
-                    coverage_schemas.TimeSeriesItem(value=value, datetime=timestamp)
-                )
+                measurements.append(TimeSeriesItem(value=value, datetime=timestamp))
             series.append(
-                coverage_schemas.TimeSeries(
+                TimeSeries(
                     name=series_name,
                     values=measurements,
                     info={

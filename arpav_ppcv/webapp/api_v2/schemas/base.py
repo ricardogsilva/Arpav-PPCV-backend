@@ -1,3 +1,4 @@
+import datetime as dt
 import logging
 import typing
 
@@ -43,6 +44,21 @@ class ListLinks(pydantic.BaseModel):
     previous: str | None = None
     first: str | None = None
     last: str | None = None
+
+
+class TimeSeriesItem(pydantic.BaseModel):
+    value: float
+    datetime: dt.datetime
+
+
+class TimeSeries(pydantic.BaseModel):
+    name: str
+    values: list[TimeSeriesItem]
+    info: typing.Optional[dict[str, str | int | float | bool]] = None
+
+
+class TimeSeriesList(pydantic.BaseModel):
+    series: list[TimeSeries]
 
 
 class WebResourceList(base_schemas.ResourceList):

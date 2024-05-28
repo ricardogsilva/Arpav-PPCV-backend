@@ -1,6 +1,4 @@
-import datetime as dt
 import uuid
-from typing import Optional
 
 import pydantic
 from fastapi import Request
@@ -118,18 +116,3 @@ class ConfigurationParameterList(WebResourceList):
     items: list[ConfigurationParameterReadListItem]
     list_item_type = ConfigurationParameterReadListItem
     path_operation_name = "list_configuration_parameters"
-
-
-class TimeSeriesItem(pydantic.BaseModel):
-    value: float
-    datetime: dt.datetime
-
-
-class TimeSeries(pydantic.BaseModel):
-    name: str
-    values: list[TimeSeriesItem]
-    info: Optional[dict[str, str]] = None
-
-
-class TimeSeriesList(pydantic.BaseModel):
-    series: list[TimeSeries]
