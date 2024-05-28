@@ -251,9 +251,7 @@ async def wms_endpoint(
         raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
 
 
-@router.get(
-    "/time-series/{coverage_identifier}", response_model=TimeSeriesList
-)
+@router.get("/time-series/{coverage_identifier}", response_model=TimeSeriesList)
 def get_time_series(
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
@@ -271,9 +269,9 @@ def get_time_series(
             )
         ),
     ] = False,
-    coverage_data_smoothing: Annotated[list[CoverageDataSmoothingStrategy], Query()] = [
+    coverage_data_smoothing: Annotated[list[CoverageDataSmoothingStrategy], Query()] = [  # noqa
         ObservationDataSmoothingStrategy.NO_SMOOTHING
-    ],  # noqa
+    ],
     observation_data_smoothing: Annotated[
         list[ObservationDataSmoothingStrategy], Query()
     ] = [ObservationDataSmoothingStrategy.NO_SMOOTHING],  # noqa
@@ -424,9 +422,7 @@ def _serialize_dataframe(
         else:
             measurements = []
             for timestamp, value in series_measurements.items():
-                measurements.append(
-                    TimeSeriesItem(value=value, datetime=timestamp)
-                )
+                measurements.append(TimeSeriesItem(value=value, datetime=timestamp))
             series.append(
                 TimeSeries(
                     name=series_name,

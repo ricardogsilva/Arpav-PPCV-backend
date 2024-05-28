@@ -6,8 +6,9 @@ from typing import (
 )
 
 import fastapi
-import numpy as np
+import pandas as pd
 import pydantic
+from arpav_ppcv.schemas.base import ObservationDataSmoothingStrategy
 from fastapi import (
     APIRouter,
     Depends,
@@ -70,9 +71,7 @@ def list_stations(
     """List known stations."""
     filter_kwargs = {}
     if variable_name is not None:
-        if (
-            db_var := db.get_variable_by_name(db_session, variable_name)
-        ) is not None:
+        if (db_var := db.get_variable_by_name(db_session, variable_name)) is not None:
             filter_kwargs.update(
                 {
                     "variable_id_filter": db_var.id,
@@ -292,9 +291,7 @@ def get_seasonal_measurement(
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     seasonal_measurement_id: pydantic.UUID4,
 ):
-    db_measurement = db.get_seasonal_measurement(
-        db_session, seasonal_measurement_id
-    )
+    db_measurement = db.get_seasonal_measurement(db_session, seasonal_measurement_id)
     return observations.SeasonalMeasurementReadListItem.from_db_instance(
         db_measurement, request
     )
@@ -362,25 +359,26 @@ def get_yearly_measurement(
 
 
 @router.get(
-    "/{station_id}/time-series/{month}/{variable_id}", response_model=TimeSeriesList
+    "/time-series/{station_code}/{variable_name}/{month}", response_model=TimeSeriesList
 )
 def get_time_series(
-        db_session: Annotated[Session, Depends(dependencies.get_db_session)],
-        station_id: pydantic.UUID4,
-        month: Annotated[
-            int,
-            Path(ge=1, le=12)
-        ],
-        variable_id: pydantic.UUID4,
-        datetime: Optional[str] = "../..",
-        smoothing: Annotated[base.ObservationDataSmoothingStrategy, Query()] = base.ObservationDataSmoothingStrategy.NO_SMOOTHING,  # noqa
-        include_decade_data: bool = False,
-        include_mann_kendall_trend: bool = False,
-        mann_kendall_start_year: Optional[int] = None,
-        mann_kendall_end_year: Optional[int] = None,
+    db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+    station_code: str,
+    month: Annotated[int, Path(ge=1, le=12)],
+    variable_name: str,
+    datetime: Optional[str] = "../..",
+    smoothing: Annotated[list[base.ObservationDataSmoothingStrategy], Query()] = [  # noqa
+        base.ObservationDataSmoothingStrategy.NO_SMOOTHING
+    ],
+    include_decade_data: bool = False,
+    include_mann_kendall_trend: bool = False,
+    mann_kendall_start_year: Optional[int] = None,
+    mann_kendall_end_year: Optional[int] = None,
 ):
-    if (db_station := db.get_station(db_session, station_id)) is not None:
-        if (db_variable := db.get_variable(db_session, variable_id)) is not None:
+    if (db_station := db.get_station_by_code(db_session, station_code)) is not None:
+        if (
+            db_variable := db.get_variable_by_name(db_session, variable_name)
+        ) is not None:
             if include_mann_kendall_trend:
                 mann_kendall = base.MannKendallParameters(
                     start_year=mann_kendall_start_year,
@@ -388,34 +386,57 @@ def get_time_series(
                 )
             else:
                 mann_kendall = None
-            time_series = operations.get_observation_time_series(
+            obs_df, decade_df, mk_df, info = operations.get_observation_time_series(
                 db_session,
                 variable=db_variable,
                 station=db_station,
                 month=month,
                 temporal_range=datetime,
-                smoothing_strategy=smoothing,
+                smoothing_strategies=smoothing,
                 include_decade_data=include_decade_data,
-                mann_kendall_parameters=mann_kendall
+                mann_kendall_parameters=mann_kendall,
             )
-
             series = []
-            for series_name, series_measurements in time_series.to_dict().items():
-                measurements = []
-                for timestamp, value in series_measurements.items():
-                    if not math.isnan(value):
-                        measurements.append(
-                            TimeSeriesItem(value=value, datetime=timestamp)
-                        )
-                series.append(
-                    TimeSeries(
-                        name=series_name,
-                        values=measurements,
-                    )
+            if include_decade_data and decade_df is not None:
+                series.extend(_serialize_dataframe(decade_df))
+
+            if include_mann_kendall_trend and mk_df is not None:
+                series.extend(
+                    _serialize_dataframe(mk_df, info=(info or {}).get("mann_kendall"))
                 )
 
+            exclude_pattern = (
+                ObservationDataSmoothingStrategy.NO_SMOOTHING.value
+                if ObservationDataSmoothingStrategy.NO_SMOOTHING not in smoothing
+                else None
+            )
+            series.extend(
+                _serialize_dataframe(
+                    obs_df,
+                    exclude_series_name_pattern=exclude_pattern,
+                )
+            )
             return TimeSeriesList(series=series)
         else:
             raise HTTPException(status_code=400, detail="Invalid variable identifier")
     else:
         raise HTTPException(status_code=400, detail="Invalid station identifier")
+
+
+def _serialize_dataframe(
+    df: pd.DataFrame,
+    exclude_series_name_pattern: str | None = None,
+    info: dict[str, str] | None = None,
+) -> list[TimeSeries]:
+    series = []
+    for series_name, series_measurements in df.to_dict().items():
+        if (
+            exclude_series_name_pattern is None
+            or exclude_series_name_pattern not in series_name
+        ):
+            measurements = []
+            for timestamp, value in series_measurements.items():
+                if not math.isnan(value):
+                    measurements.append(TimeSeriesItem(value=value, datetime=timestamp))
+            series.append(TimeSeries(name=series_name, values=measurements, info=info))
+    return series

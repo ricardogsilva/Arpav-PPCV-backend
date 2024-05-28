@@ -54,7 +54,7 @@ class TimeSeriesItem(pydantic.BaseModel):
 class TimeSeries(pydantic.BaseModel):
     name: str
     values: list[TimeSeriesItem]
-    info: typing.Optional[dict[str, str]] = None
+    info: typing.Optional[dict[str, str | int | float | bool]] = None
 
 
 class TimeSeriesList(pydantic.BaseModel):
