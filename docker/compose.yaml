@@ -48,6 +48,9 @@ services:
         source: /var/run/docker.sock
         target: /var/run/docker.sock
 
+  frontend:
+    image: "ghcr.io/geobeyond/arpav-ppcv/arpav-ppcv:latest"
+
   webapp:
     image: "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend:latest"
     labels:

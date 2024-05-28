@@ -19,6 +19,7 @@ x-env-file-db: &env-file-db ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_DB_SERVICE:-/home/a
 x-env-file-legacy-db: &env-file-legacy-db ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_LEGACY_DB_SERVICE:-/home/arpav/environment-files/legacy-db-service.env}
 x-env-file-webapp: &env-file-webapp ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_WEBAPP_SERVICE:-/home/arpav/environment-files/webapp-service.env}
 x-env-file-martin: &env-file-martin ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_MARTIN_SERVICE:-/home/arpav/environment-files/martin-service.env}
+x-env-file-frontend: &env-file-frontend ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_FRONTEND_SERVICE:-/home/arpav/environment-files/frontend-service.env}
 
 name: arpav-ppcv-staging
 
@@ -48,6 +49,15 @@ services:
       - type: bind
         source: /home/arpav/docker/traefik/staging-config.toml
         target: /opt/traefik/traefik.toml
+
+  frontend:
+    env_file:
+      - *env-file-frontend
+    networks:
+      - back
+    labels:
+      - "traefik.http.routers.arpav-backend.entrypoints=web"
+      - "exposed.inside=true"
 
   webapp:
     networks:

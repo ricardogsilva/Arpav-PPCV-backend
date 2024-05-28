@@ -53,6 +53,12 @@ services:
         source: $PWD/docker/traefik/dev-config.toml
         target: /traefik.toml
 
+  frontend:
+    image: "ghcr.io/geobeyond/arpav-ppcv/arpav-ppcv:${FRONTEND_GIT_BRANCH:-latest}"
+    ports:
+      - target: 80
+        published: 5003
+
   webapp:
     image: *webapp-image
     environment:
