@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 import pydantic
 from fastapi import Request
@@ -10,8 +11,16 @@ from .base import WebResourceList
 logger = logging.getLogger(__name__)
 
 
+class VariableReadEmbeddedInStationRead(pydantic.BaseModel):
+    id: uuid.UUID
+    name: str
+
+
 class StationReadListItem(observations.StationBase):
     url: pydantic.AnyHttpUrl
+    monthly_variables: list[VariableReadEmbeddedInStationRead]
+    seasonal_variables: list[VariableReadEmbeddedInStationRead]
+    yearly_variables: list[VariableReadEmbeddedInStationRead]
 
     @classmethod
     def from_db_instance(
@@ -22,6 +31,18 @@ class StationReadListItem(observations.StationBase):
         url = request.url_for("get_station", **{"station_id": instance.id})
         return cls(
             **instance.model_dump(),
+            monthly_variables=[
+                VariableReadEmbeddedInStationRead(**v.model_dump())
+                for v in instance.monthly_variables
+            ],
+            seasonal_variables=[
+                VariableReadEmbeddedInStationRead(**v.model_dump())
+                for v in instance.seasonal_variables
+            ],
+            yearly_variables=[
+                VariableReadEmbeddedInStationRead(**v.model_dump())
+                for v in instance.yearly_variables
+            ],
             url=str(url),
         )
 

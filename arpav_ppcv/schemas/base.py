@@ -19,7 +19,7 @@ UNCERTAINTY_TIME_SERIES_PATTERN = "**UNCERTAINTY**"
 RELATED_TIME_SERIES_PATTERN = "**RELATED**"
 
 
-class ObservationAggregationType(enum.Enum):
+class ObservationAggregationType(str, enum.Enum):
     MONTHLY = "MONTHLY"
     SEASONAL = "SEASONAL"
     YEARLY = "YEARLY"
