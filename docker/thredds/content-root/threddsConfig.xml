@@ -10,7 +10,7 @@
 
     <abstract>Regional climate models and data</abstract>
     <keywords>meteorology, atmosphere, climate, ocean, earth science</keywords>
-    
+
     <contact>
       <name>Support</name>
       <organization>Geobeyond</organization>
@@ -73,8 +73,8 @@
     -->
 
   </htmlSetup>
-  
-  <!-- 
+
+  <!--
     The <TdsUpdateConfig> element controls if and how the TDS checks
     for updates. The default is for the TDS to check for the current
     stable and development release versions, and to log that information
@@ -164,7 +164,7 @@
     <typicalDataset>penultimate</typicalDataset>
   </Aggregation>
   -->
-  
+
   <NetcdfSubsetService>
     <scour>15 min</scour>
     <maxAge>30 min</maxAge>
@@ -185,7 +185,7 @@
     <serverVersion>opendap/3.7</serverVersion>
   </Opendap>
     -->
-  
+
   <!--
   The WCS Service is on by default.
   Also, off by default (and encouraged) is operating on a remote dataset.

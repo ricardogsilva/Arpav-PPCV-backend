@@ -82,5 +82,3 @@ class Command(BaseCommand):
 
 
         self.stdout.write("All regions imported!")
-
-
