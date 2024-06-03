@@ -1,4 +1,5 @@
 import fastapi
+from fastapi.middleware.cors import CORSMiddleware
 
 from ... import config
 from .routers.coverages import router as coverages_router
@@ -20,6 +21,13 @@ def create_app(settings: config.ArpavPpcvSettings) -> fastapi.FastAPI:
             "url": settings.contact.url,
             "email": settings.contact.email,
         },
+    )
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=settings.allow_cors_credentials,
+        allow_methods=settings.cors_methods,
+        allow_headers=["*"],
     )
     app.include_router(
         base_router,
