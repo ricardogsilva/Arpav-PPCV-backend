@@ -14,7 +14,7 @@ number of alternatives that currently exist and the project requirements, which 
 
 ## Decision Outcome
 
-Chosen option: "ruff", because it does both linting and formatting, supports all relevant features of the 
+Chosen option: "ruff", because it does both linting and formatting, supports all relevant features of the
 "flake8 + black" option and is fast to operate
 
 ### Consequences

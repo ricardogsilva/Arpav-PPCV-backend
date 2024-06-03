@@ -210,7 +210,7 @@ class Command(BaseCommand):
                 "id": "Rcp85",
                 "name": "rcp8.5",
                 "description": "",
-            }  
+            }
         ],
         "DataSeries" : [
             {

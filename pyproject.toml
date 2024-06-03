@@ -70,6 +70,7 @@ pytest-django = "^4.8.0"
 dagger-io = "^0.9.10"
 ruff = "^0.2.2"
 pytest-httpx = "^0.30.0"
+pre-commit = "^3.7.1"
 
 
 [tool.poetry.group.jupyter]

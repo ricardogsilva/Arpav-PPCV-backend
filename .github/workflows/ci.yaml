@@ -46,10 +46,10 @@ jobs:
         with:
           verb: run
           args: >-
-            poetry run python tests/ci/main.py 
+            poetry run python tests/ci/main.py
             --git-commit ${{ github.sha }}
             --with-linter
             --with-formatter
-            --with-tests 
+            --with-tests
             ${{ env.PUBLISH_IMAGE == 'TRUE' && format('--publish-docker-image {0}:{1}', env.IMAGE_NAME, env.IMAGE_TAG)  || ''}}
           version: 0.9.9

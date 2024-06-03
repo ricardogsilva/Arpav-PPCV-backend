@@ -6,7 +6,7 @@ app_name = 'thredds'
 router = routers.SimpleRouter()
 router.register(r'maps', MapList)
 
-urlpatterns = [  
+urlpatterns = [
     # path('wms/timeserie/', TimeSeries.as_view()),
     path('ncss/timeserie/', NCSSTimeserie.as_view()),
     path('ncss/netcdf/', NCSSSubset.as_view())

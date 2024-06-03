@@ -7,4 +7,3 @@ router = routers.SimpleRouter()
 router.register(r'cities', CitiesList)
 
 urlpatterns =  router.urls
-

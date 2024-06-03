@@ -127,18 +127,18 @@ class Map(models.Model):
     csr = models.CharField(max_length=255,null=True, blank=True, default='CRS:84')
     spatialbounds = models.PolygonField (blank=True, null=True)
 # LAYER
-    layer_id = models.CharField(max_length=255, null=False, blank=False) 
+    layer_id = models.CharField(max_length=255, null=False, blank=False)
     # layer_name = models.CharField(max_length=255, null=False, blank=False) #removed
-    path = models.CharField(max_length=400, null=False, blank=False) 
+    path = models.CharField(max_length=400, null=False, blank=False)
     # layer_url = models.URLField(max_length=800, blank=False, null=False)
     elevation = models.IntegerField(null=True, blank=True)
     # style = models.CharField(max_length=255, null=True, blank=True)
-    palette = models.CharField(max_length=255, null=True, blank=True) 
+    palette = models.CharField(max_length=255, null=True, blank=True)
     unit = models.CharField(max_length=255, null=True, blank=True)
     # numcolorbands = models.IntegerField(default=80)
     # color_scale_range = models.CharField(max_length=255, null=True, blank=True)
-    color_scale_min = models.IntegerField(null=True, blank=True)  
-    color_scale_max = models.IntegerField(null=True, blank=True) 
+    color_scale_min = models.IntegerField(null=True, blank=True)
+    color_scale_max = models.IntegerField(null=True, blank=True)
 
 ### MAP MODEL:
 class UserDownload(models.Model):

@@ -2,7 +2,7 @@
 
 ## Context and Problem Statement
 
-We want to use a tool to both manage project Python dependencies and packaging. Given the number of alternatives that 
+We want to use a tool to both manage project Python dependencies and packaging. Given the number of alternatives that
 currently exist and the project requirements, which would be an appropriate choice?
 
 
@@ -22,7 +22,7 @@ Chosen option: "poetry", because it meets the needs of the project and introduce
 ### Consequences
 
 - Good, because it is already known by the project development team
-- Good, because it covers all relevant use cases related to development and deployment for the project: 
+- Good, because it covers all relevant use cases related to development and deployment for the project:
   - uses pinned versions for dependencies
   - allows defining user scripts, for building custom commands
   - specify development-only dependencies, which can be kept off the docker image

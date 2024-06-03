@@ -123,4 +123,3 @@ class NCSSSubset(APIView, BaseRouter):
 
 #http://localhost:8000/thredds/ncss/netcdf/?id=7&time_start=1976-07-17T00%3A00%3A00Z&time_end=2099-07-17T00%3A00%3A00Z&north=46.0&west=13.0&east=14&south=45
 #http://192.167.167.61:8000/thredds/ncss/netcdf/?id=7&time_start=1976-07-17T00%3A00%3A00Z&time_end=2099-07-17T00%3A00%3A00Z&north=46.0&west=13.0&east=14&south=45
-

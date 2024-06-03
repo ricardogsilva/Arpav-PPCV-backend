@@ -48,12 +48,12 @@ Config directory: `docker/nginx`
 #### NodeJS (proxy Thredds Data Server)
 A NodeJs server-side proxy application can be used to perform a variety of tasks, such as load balancing, caching, and security filtering. For example, a load-balancing proxy can distribute incoming requests among multiple backend servers, improving the scalability and availability of web applications. A caching proxy can store frequently accessed data in memory or on disk, reducing the load on backend servers and improving the performance of web applications. A security filtering proxy can inspect incoming requests and filter out potentially harmful requests or data, protecting web applications from attacks. Node.js is a popular platform for building proxy servers due to its event-driven, non-blocking I/O model, which allows it to handle large numbers of concurrent connections efficiently,
 
-In this application it acts as an intermediary between clients and Thredds Data Server servers, allowing users to access a subset of THREDDS data and services without authentication. It receives requests from clients and forwards them to Thredds Data Server, and then sends the response back to the client. 
+In this application it acts as an intermediary between clients and Thredds Data Server servers, allowing users to access a subset of THREDDS data and services without authentication. It receives requests from clients and forwards them to Thredds Data Server, and then sends the response back to the client.
 
 Root directory: `backend`
 
 #### Martin
-Martin Vector Tile Server is an open-source vector tile server that allows users to serve vector tiles over the web. It is built for MapLibre, an open-source JavaScript library for interactive maps, and supports a variety of data sources, including GeoJSON, PostGIS, and Shapefile. 
+Martin Vector Tile Server is an open-source vector tile server that allows users to serve vector tiles over the web. It is built for MapLibre, an open-source JavaScript library for interactive maps, and supports a variety of data sources, including GeoJSON, PostGIS, and Shapefile.
 
 # Development
 
@@ -69,10 +69,10 @@ For development on your local machine, you need to install the following tools:
 
 
 #### Prepare the Environment
-    
+
 Starting from the root of the project, clone the backend repository, move on `develop` branch and clone frontend repository inside this project
 
-    
+
     git clone https://github.com/inkode-it/Arpav-PPCV-backend
     cd Arpav-PPCV-backend
     git checkout develop
@@ -100,7 +100,7 @@ NOTE: Both `Arpav-PPCV-backend` & `Arpav-PPCV` (the frontend) have a different .
     docker-compose -f docker-compose.dev.yml up --build -d
 
 
-#### Make django migrations: 
+#### Make django migrations:
 
     docker exec -ti backend.api python manage.py makemigrations users groups forecastattributes places thredds
 
@@ -156,7 +156,7 @@ If everything is ok and you followed also frontend README instructions, you shou
     docker-compose up --build -d
 
 
-#### Make django migrations: 
+#### Make django migrations:
 
     docker exec -ti backend.api python manage.py makemigrations users groups forecastattributes places thredds
 

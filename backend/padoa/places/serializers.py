@@ -29,5 +29,3 @@ class CitiesSerializer(ModelSerializer):
             'latlng',
             # 'bbox'
         )
-
-
