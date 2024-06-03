@@ -169,8 +169,8 @@ class ArpavPpcvSettings(BaseSettings):  # noqa
     log_config_file: Path | None = None
     session_secret_key: str = "changeme"
     admin_user: AdminUserSettings = AdminUserSettings()
-    cors_origins: list[str] = ["*"]
-    cors_methods: list[str] = ["GET"]
+    cors_origins: list[str] = []
+    cors_methods: list[str] = []
     allow_cors_credentials: bool = False
 
     @pydantic.model_validator(mode="after")

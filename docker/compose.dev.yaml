@@ -43,7 +43,10 @@ services:
   webapp:
     image: *webapp-image
     environment:
-      *common-env
+      <<: *common-env
+      ARPAV_PPCV__CORS_ORIGINS: '["*"]'
+      ARPAV_PPCV__CORS_METHODS: '["*"]'
+      ARPAV_PPCV__ALLOW_CORS_CREDENTIALS: true
     ports:
       - target: 5001
         published: 5001
