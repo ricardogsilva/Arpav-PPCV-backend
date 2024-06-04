@@ -344,7 +344,6 @@ class CoverageConfigurationCreate(sqlmodel.SQLModel):
     @classmethod
     def validate_thredds_url_pattern(cls, v: str) -> str:
         for match_obj in re.finditer(r"(\{.*?\})", v):
-            logger.debug(f"{match_obj.group(1)[1:-1]=}")
             if re.match(_NAME_PATTERN, match_obj.group(1)[1:-1]) is None:
                 raise ValueError(f"configuration parameter {v!r} has invalid name")
         return v.strip()
@@ -371,7 +370,6 @@ class CoverageConfigurationUpdate(sqlmodel.SQLModel):
     @classmethod
     def validate_thredds_url_pattern(cls, v: str) -> str:
         for match_obj in re.finditer(r"(\{.*?\})", v):
-            logger.debug(f"{match_obj.group(1)[1:-1]=}")
             if re.match(_NAME_PATTERN, match_obj.group(1)[1:-1]) is None:
                 raise ValueError(f"configuration parameter {v!r} has invalid name")
         return v.strip()

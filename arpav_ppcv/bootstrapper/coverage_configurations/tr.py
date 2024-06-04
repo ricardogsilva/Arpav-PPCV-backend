@@ -30,7 +30,7 @@ def generate_tr_configurations(
         CoverageConfigurationCreate(
             name="tr_annual_absolute_model_ensemble",
             netcdf_main_dataset_name="tr",
-            thredds_url_pattern="ensymbc/std/clipped/ecatr_20_avg_{scenario}_ts19762100_ls_VFVG.nc",
+            thredds_url_pattern="ensymbc/clipped/ecatr_20_avg_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
@@ -236,7 +236,7 @@ def generate_tr_configurations(
         CoverageConfigurationCreate(
             name="tr_annual_absolute_model_ensemble_lower_uncertainty",
             netcdf_main_dataset_name="tr_stddown",
-            thredds_url_pattern="ensymbc/std/clipped/ecatr_20_stddown_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
+            thredds_url_pattern="ensymbc/std/clipped/ecatr_20_stddown_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,

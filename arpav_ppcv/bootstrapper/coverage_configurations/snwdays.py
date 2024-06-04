@@ -29,7 +29,7 @@ def generate_snwdays_configurations(
         CoverageConfigurationCreate(
             name="snwdays_annual_absolute_model_ensemble",
             netcdf_main_dataset_name="snwdays",
-            thredds_url_pattern="ensymbc/std/clipped/snwdays_1mm_2oc_avg_ts19762100_{scenario}_ls_VFVG.nc",
+            thredds_url_pattern="ensymbc/clipped/snwdays_1mm_2oc_avg_ts19762100_{scenario}_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-BuYl-inv",
             color_scale_min=0,

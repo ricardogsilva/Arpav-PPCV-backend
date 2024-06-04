@@ -1156,7 +1156,7 @@ def generate_pr_configurations(
         CoverageConfigurationCreate(
             name="pr_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
             netcdf_main_dataset_name="pr",
-            thredds_url_pattern="taspr5rcm/clipped/pr_EC-EARTH_RACMO22E_{scenario}_seas_{time_window}_percentage{year_period}_VFVGTAA.nc",
+            thredds_url_pattern="taspr5rcm/clipped/pr_EC-EARTH_RACMO22E_{scenario}_seas_{time_window}_percentage_{year_period}_VFVGTAA.nc",
             unit="%",
             palette="default/div-BrBg",
             color_scale_min=-40,

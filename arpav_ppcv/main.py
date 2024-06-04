@@ -11,7 +11,7 @@ import alembic.command
 import alembic.config
 import anyio
 import django
-import httpx
+import sqlmodel
 import typer
 import yaml
 from django.conf import settings as django_settings
@@ -178,29 +178,28 @@ def django_admin(ctx: typer.Context, command: str):
 
 @dev_app.command()
 def import_thredds_datasets(
-    catalog: Annotated[
-        Optional[list[crawler.KnownCatalogIdentifier]],
-        typer.Option(
-            default_factory=list,
+    ctx: typer.Context,
+    base_thredds_url: Annotated[
+        str,
+        typer.Argument(
             help=(
-                "Catalogs to crawl in search of datasets. If this parameter is "
-                "not provided, then all known catalogs will be crawled."
-            ),
+                "Base URL of the THREDDS server. Example: "
+                "https://thredds.arpa.veneto.it/thredds"
+            )
         ),
     ],
     output_base_dir: Annotated[
-        Optional[Path],
+        Path, typer.Argument(help="Base path for downloaded NetCDF files.")
+    ],
+    name_filter: Annotated[
+        str,
         typer.Option(
             help=(
-                "Where datasets should be downloaded to. If this parameter is "
-                "not provided, only the total number of found datasets "
-                "is shown."
+                "Only process coverage configurations whose name contains "
+                "this substring"
             )
         ),
     ] = None,
-    wildcard_filter: Annotated[
-        str, typer.Option(help="Wildcard filter for selecting only relevant datasets")
-    ] = "*",
     force_download: Annotated[
         Optional[bool],
         typer.Option(
@@ -211,21 +210,25 @@ def import_thredds_datasets(
         ),
     ] = False,
 ):
-    relevant_catalogs = (
-        catalog if len(catalog) > 0 else list(crawler.KnownCatalogIdentifier)
-    )
-    client = httpx.Client()
-    for relevant_catalog in relevant_catalogs:
-        print(f"Processing catalog {relevant_catalog.value!r}...")
-        catalog_url = crawler.get_catalog_url(relevant_catalog)
-        contents = crawler.discover_catalog_contents(catalog_url, client)
-        print(f"Found {len(contents.get_public_datasets(wildcard_filter))} datasets")
-        if output_base_dir is not None:
-            print("Downloading datasets...")
-            anyio.run(
-                crawler.download_datasets,  # noqa
-                output_base_dir,
-                contents,
-                wildcard_filter,
-                force_download,
+    """Import NetCDF datasets from a THREDDS server."""
+    with sqlmodel.Session(ctx.obj["engine"]) as session:
+        all_cov_confs = database.collect_all_coverage_configurations(session)
+        if name_filter:
+            relevant_cov_confs = [cc for cc in all_cov_confs if name_filter in cc.name]
+        else:
+            relevant_cov_confs = all_cov_confs
+        urls = []
+        for cov_conf in relevant_cov_confs:
+            cov_conf_urls = crawler.get_coverage_configuration_urls(
+                session, base_thredds_url, cov_conf
             )
+            urls.extend(cov_conf_urls)
+
+    print(f"Trying to download {len(urls)} datasets...")
+    anyio.run(
+        crawler.download_datasets,  # noqa
+        urls,
+        base_thredds_url,
+        output_base_dir,
+        force_download,
+    )

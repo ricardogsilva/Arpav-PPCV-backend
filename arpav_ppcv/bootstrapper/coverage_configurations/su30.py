@@ -30,7 +30,7 @@ def generate_su30_configurations(
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_ensemble",
             netcdf_main_dataset_name="su30",
-            thredds_url_pattern="ensymbc/std/clipped/ecasu_30_avg_{scenario}_ts19762100_ls_VFVG.nc",
+            thredds_url_pattern="ensymbc/clipped/ecasu_30_avg_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
@@ -236,7 +236,7 @@ def generate_su30_configurations(
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_ensemble_lower_uncertainty",
             netcdf_main_dataset_name="su30_stddown",
-            thredds_url_pattern="ensymbc/std/clipped/ecasu_30_stddown_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
+            thredds_url_pattern="ensymbc/std/clipped/ecasu_30_stddown_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
@@ -442,7 +442,7 @@ def generate_su30_configurations(
         CoverageConfigurationCreate(
             name="su30_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
             netcdf_main_dataset_name="su30",
-            thredds_url_pattern="indici5rcm/clipped/ecasuan_0_MPI-ESM-LR_REMO2009_{scenario}_{time_window}_ls_VFVG.nc",
+            thredds_url_pattern="indici5rcm/clipped/ecasuan_30_MPI-ESM-LR_REMO2009_{scenario}_{time_window}_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=-5,
