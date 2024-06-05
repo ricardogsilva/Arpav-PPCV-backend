@@ -12,8 +12,10 @@ from ..schemas.coverages import (
     ConfigurationParameterValueCreateEmbeddedInConfigurationParameter,
 )
 
+from .coverage_configurations.cdd import generate_cdd_configurations
 from .coverage_configurations.fd import generate_fd_configurations
 from .coverage_configurations.pr import generate_pr_configurations
+from .coverage_configurations.r95ptot import generate_r95ptot_configurations
 from .coverage_configurations.snwdays import generate_snwdays_configurations
 from .coverage_configurations.su30 import generate_su30_configurations
 from .coverage_configurations.tas import generate_tas_configurations
@@ -164,12 +166,14 @@ def bootstrap_coverage_configurations(
             for pv in all_conf_param_values
         }
     coverage_configurations = []
+    coverage_configurations.extend(generate_cdd_configurations(conf_param_values))
     coverage_configurations.extend(
         generate_fd_configurations(conf_param_values, variables)
     )
     coverage_configurations.extend(
         generate_pr_configurations(conf_param_values, variables)
     )
+    coverage_configurations.extend(generate_r95ptot_configurations(conf_param_values))
     coverage_configurations.extend(generate_snwdays_configurations(conf_param_values))
     coverage_configurations.extend(
         generate_su30_configurations(conf_param_values, variables)
