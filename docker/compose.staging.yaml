@@ -40,22 +40,26 @@ services:
       - type: bind
         source: $HOME/data/arpav-ppcv/netcdf-uncertainty-example
         target: /home/appuser/data/additional
+    restart: unless-stopped
 
   legacy-db:
     env_file:
       - *env-file-legacy-db
     volumes:
       - legacy-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
 
   db:
     env_file:
       - *env-file-db
     volumes:
       - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
 
   martin:
     env_file:
       - *env-file-webapp
+    restart: unless-stopped
 
   thredds:
     image: unidata/thredds-docker:5.4
@@ -80,6 +84,7 @@ services:
       - type: bind
         source: /home/arpav/data/arpav-ppcv/netcdf-uncertainty-example
         target: /additional
+    restart: unless-stopped
 
 volumes:
   db-data:
