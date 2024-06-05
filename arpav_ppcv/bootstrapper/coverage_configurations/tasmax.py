@@ -41,7 +41,7 @@ def generate_tasmax_configurations(
         CoverageConfigurationCreate(
             name="tasmax_seasonal_absolute_model_ensemble",
             netcdf_main_dataset_name="tasmax",
-            thredds_url_pattern="ensymbc/std/clipped/tasmax_avg_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
+            thredds_url_pattern="ensymbc/clipped/tasmax_avg_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-3,
