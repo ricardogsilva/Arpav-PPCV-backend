@@ -5,11 +5,21 @@ from rich import print
 from sqlalchemy.exc import IntegrityError
 
 from .. import database
-from ..schemas import (
-    base,
-    coverages,
-    observations,
+from ..schemas import observations
+
+from ..schemas.coverages import (
+    ConfigurationParameterCreate,
+    ConfigurationParameterValueCreateEmbeddedInConfigurationParameter,
 )
+
+from .coverage_configurations.fd import generate_fd_configurations
+from .coverage_configurations.pr import generate_pr_configurations
+from .coverage_configurations.snwdays import generate_snwdays_configurations
+from .coverage_configurations.su30 import generate_su30_configurations
+from .coverage_configurations.tas import generate_tas_configurations
+from .coverage_configurations.tasmax import generate_tasmax_configurations
+from .coverage_configurations.tasmin import generate_tasmin_configurations
+from .coverage_configurations.tr import generate_tr_configurations
 
 app = typer.Typer()
 
@@ -58,58 +68,64 @@ def bootstrap_coverage_configuration_parameters(
 ):
     """Create initial coverage configuration parameters."""
     params = [
-        coverages.ConfigurationParameterCreate(
+        ConfigurationParameterCreate(
             name="scenario",
             description=(
                 "Represents the path fragment related to forecast model scenario"
             ),
             allowed_values=[
-                coverages.ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     name="rcp26", description="Represents the RCP2.6 scenario"
                 ),
-                coverages.ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     name="rcp45", description="Represents the RCP4.5 scenario"
                 ),
-                coverages.ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     name="rcp85", description="Represents the RCP8.5 scenario"
                 ),
             ],
         ),
-        coverages.ConfigurationParameterCreate(
+        ConfigurationParameterCreate(
             name="time_window",
             description=(
-                "Represents the path fragment related to forecast model time window"
+                "Represents the path fragment related to forecast model time window for the anomalies"
             ),
             allowed_values=[
-                coverages.ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     name="tw1",
-                    description="Represents the first time window, which spans the period 2021-2050",
+                    description=(
+                        "Represents the first anomaly time window, which spans the "
+                        "period 2021-2050, with regard to the 1976-2005 period"
+                    ),
                 ),
-                coverages.ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     name="tw2",
-                    description="Represents the second time window, which spans the period 2071-2100",
+                    description=(
+                        "Represents the second anomaly time window, which spans the "
+                        "period 2071-2100, with regard to the 1976-2005 period"
+                    ),
                 ),
             ],
         ),
-        coverages.ConfigurationParameterCreate(
+        ConfigurationParameterCreate(
             name="year_period",
             description=(
                 "Represents the yearly temporal aggregation period in file paths"
             ),
             allowed_values=[
-                coverages.ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     name="DJF",
                     description="Represents the winter season (December, January, February)",
                 ),
-                coverages.ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     name="MAM",
                     description="Represents the spring season (March, April, May)",
                 ),
-                coverages.ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     name="JJA",
                     description="Represents the summer season (June, July, August)",
                 ),
-                coverages.ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     name="SON",
                     description="Represents the autumn season (September, October, November)",
                 ),
@@ -147,58 +163,30 @@ def bootstrap_coverage_configurations(
             (pv.configuration_parameter.name, pv.name): pv
             for pv in all_conf_param_values
         }
-    coverage_configurations = [
-        coverages.CoverageConfigurationCreate(
-            name="tas_absolute",
-            netcdf_main_dataset_name="tas",
-            thredds_url_pattern="ensymbc/tas_avg_{scenario}_{year_period}_ts19762100_ls.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-3.0,
-            color_scale_max=32.0,
-            possible_values=[
-                coverages.ConfigurationParameterPossibleValueCreate(
-                    configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp26")
-                    ].id
-                ),
-                coverages.ConfigurationParameterPossibleValueCreate(
-                    configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp45")
-                    ].id
-                ),
-                coverages.ConfigurationParameterPossibleValueCreate(
-                    configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp85")
-                    ].id
-                ),
-                coverages.ConfigurationParameterPossibleValueCreate(
-                    configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "DJF")
-                    ].id
-                ),
-                coverages.ConfigurationParameterPossibleValueCreate(
-                    configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "MAM")
-                    ].id
-                ),
-                coverages.ConfigurationParameterPossibleValueCreate(
-                    configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "JJA")
-                    ].id
-                ),
-                coverages.ConfigurationParameterPossibleValueCreate(
-                    configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "SON")
-                    ].id
-                ),
-            ],
-            observation_variable_id=v.id
-            if (v := variables.get("TDd")) is not None
-            else None,
-            observation_variable_aggregation_type=base.ObservationAggregationType.SEASONAL,
-        ),
-    ]
+    coverage_configurations = []
+    coverage_configurations.extend(
+        generate_fd_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        generate_pr_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(generate_snwdays_configurations(conf_param_values))
+    coverage_configurations.extend(
+        generate_su30_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        generate_tas_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        generate_tasmax_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        generate_tasmin_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        generate_tr_configurations(conf_param_values, variables)
+    )
+
     for cov_conf_create in coverage_configurations:
         try:
             db_cov_conf = database.create_coverage_configuration(

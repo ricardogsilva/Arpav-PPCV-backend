@@ -733,7 +733,6 @@ def create_configuration_parameter(
     session: sqlmodel.Session,
     configuration_parameter_create: coverages.ConfigurationParameterCreate,
 ) -> coverages.ConfigurationParameter:
-    logger.debug(f"inside database.create_configuration_parameter - {locals()=}")
     to_refresh = []
     db_configuration_parameter = coverages.ConfigurationParameter(
         name=configuration_parameter_create.name,
@@ -859,7 +858,6 @@ def create_coverage_configuration(
     session: sqlmodel.Session,
     coverage_configuration_create: coverages.CoverageConfigurationCreate,
 ) -> coverages.CoverageConfiguration:
-    logger.debug(f"inside database.create_coverage_configuration - {locals()=}")
     to_refresh = []
     db_coverage_configuration = coverages.CoverageConfiguration(
         name=coverage_configuration_create.name,
