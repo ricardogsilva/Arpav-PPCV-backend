@@ -144,7 +144,7 @@ def generate_pr_configurations(
         CoverageConfigurationCreate(
             name="pr_seasonal_anomaly_model_ec_earth_racmo22e",
             netcdf_main_dataset_name="pr",
-            thredds_url_pattern="EC-EARTH_RACMO22Eym/pr_EC-EARTH_RACMO22E_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
+            thredds_url_pattern="EC-EARTH_RACMO22Eym/clipped/pr_EC-EARTH_RACMO22E_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
             unit="%",
             palette="default/div-BrBg",
             color_scale_min=-40,
@@ -190,7 +190,7 @@ def generate_pr_configurations(
         CoverageConfigurationCreate(
             name="pr_seasonal_anomaly_model_ec_earth_rca4",
             netcdf_main_dataset_name="pr",
-            thredds_url_pattern="EC-EARTH_RCA4ym/pr_EC-EARTH_RCA4_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
+            thredds_url_pattern="EC-EARTH_RCA4ym/clipped/pr_EC-EARTH_RCA4_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
             unit="%",
             palette="default/div-BrBg",
             color_scale_min=-40,
@@ -236,7 +236,7 @@ def generate_pr_configurations(
         CoverageConfigurationCreate(
             name="pr_seasonal_anomaly_model_hadgem2_es_racmo22e",
             netcdf_main_dataset_name="pr",
-            thredds_url_pattern="HadGEM2-ES_RACMO22Eym/pr_HadGEM2-ES_RACMO22E_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
+            thredds_url_pattern="HadGEM2-ES_RACMO22Eym/clipped/pr_HadGEM2-ES_RACMO22E_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
             unit="%",
             palette="default/div-BrBg",
             color_scale_min=-40,
@@ -282,7 +282,7 @@ def generate_pr_configurations(
         CoverageConfigurationCreate(
             name="pr_seasonal_anomaly_model_mpi_esm_lr_remo2009",
             netcdf_main_dataset_name="pr",
-            thredds_url_pattern="MPI-ESM-LR_REMO2009ym/pr_MPI-ESM-LR_REMO2009_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
+            thredds_url_pattern="MPI-ESM-LR_REMO2009ym/clipped/pr_MPI-ESM-LR_REMO2009_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
             unit="%",
             palette="default/div-BrBg",
             color_scale_min=-40,
@@ -420,7 +420,7 @@ def generate_pr_configurations(
         CoverageConfigurationCreate(
             name="pr_seasonal_absolute_model_ensemble",
             netcdf_main_dataset_name="pr",
-            thredds_url_pattern="ensymbc/std/clipped/pr_avg_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
+            thredds_url_pattern="ensymbc/clipped/pr_avg_{scenario}_{year_period}_ts19762100_ls_VFVGTAA.nc",
             unit="mm",
             palette="default/seq-BuYl-inv",
             color_scale_min=0,
