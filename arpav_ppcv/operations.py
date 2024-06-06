@@ -400,7 +400,6 @@ def _process_coverage_data(
                 )
                 df[column_name] = loess_smoothed
         df = df.drop(columns=[base_column_name])
-        df = df.dropna()
         return df
 
 

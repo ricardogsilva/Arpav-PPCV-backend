@@ -1,4 +1,5 @@
 import logging
+import math
 import urllib.parse
 import uuid
 from typing import (
@@ -422,7 +423,8 @@ def _serialize_dataframe(
         else:
             measurements = []
             for timestamp, value in series_measurements.items():
-                measurements.append(TimeSeriesItem(value=value, datetime=timestamp))
+                if not math.isnan(value):
+                    measurements.append(TimeSeriesItem(value=value, datetime=timestamp))
             series.append(
                 TimeSeries(
                     name=series_name,
