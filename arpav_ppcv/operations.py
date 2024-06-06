@@ -70,13 +70,21 @@ def get_observation_time_series(
     info = {}
 
     if include_decade_data:
-        decade_df = df.groupby((df.index.year // 10) * 10).mean()
-        decade_df = decade_df.drop(columns=[base_name])
+        # group values by climatological decade, which starts at year 1 and ends at year 10
+        decade_grouper = df.groupby(((df.index.year - 1) // 10) * 10)
+
+        mean_column_name = f"{base_name}__DECADE_MEAN"
+        decade_df = decade_grouper.agg(
+            num_values=(unsmoothed_col_name, "size"),
+            **{mean_column_name: (unsmoothed_col_name, "mean")},
+        )
+
+        # discard decades where there are less than 7 years
+        decade_df = decade_df[decade_df.num_values >= 7]
+
+        decade_df = decade_df.drop(columns=["num_values"])
         decade_df["time"] = pd.to_datetime(decade_df.index.astype(str), utc=True)
         decade_df.set_index("time", inplace=True)
-        decade_df = decade_df.rename(
-            columns={unsmoothed_col_name: f"{base_name}__DECADE_MEAN"}
-        )
     else:
         decade_df = None
 
