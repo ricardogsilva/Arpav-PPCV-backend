@@ -57,6 +57,7 @@ pyyaml = "^6.0.1"
 alembic-postgresql-enum = "^1.2.0"
 loess = "^2.1.2"
 pymannkendall = "^1.4.3"
+typing-extensions = "^4.12.1"
 
 
 [tool.poetry.group.dev]
