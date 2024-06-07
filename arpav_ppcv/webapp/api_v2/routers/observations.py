@@ -1,3 +1,4 @@
+import json
 import logging
 import math
 from typing import (
@@ -380,43 +381,53 @@ def get_time_series(
             db_variable := db.get_variable_by_name(db_session, variable_name)
         ) is not None:
             if include_mann_kendall_trend:
-                mann_kendall = base.MannKendallParameters(
-                    start_year=mann_kendall_start_year,
-                    end_year=mann_kendall_end_year,
-                )
+                try:
+                    mann_kendall = base.MannKendallParameters(
+                        start_year=mann_kendall_start_year,
+                        end_year=mann_kendall_end_year,
+                    )
+                except pydantic.ValidationError as err:
+                    error_dict = json.loads(err.json())
+                    raise HTTPException(status_code=400, detail=error_dict)
             else:
                 mann_kendall = None
-            obs_df, decade_df, mk_df, info = operations.get_observation_time_series(
-                db_session,
-                variable=db_variable,
-                station=db_station,
-                month=month,
-                temporal_range=datetime,
-                smoothing_strategies=smoothing,
-                include_decade_data=include_decade_data,
-                mann_kendall_parameters=mann_kendall,
-            )
-            series = []
-            if include_decade_data and decade_df is not None:
-                series.extend(_serialize_dataframe(decade_df))
+            try:
+                obs_df, decade_df, mk_df, info = operations.get_observation_time_series(
+                    db_session,
+                    variable=db_variable,
+                    station=db_station,
+                    month=month,
+                    temporal_range=datetime,
+                    smoothing_strategies=smoothing,
+                    include_decade_data=include_decade_data,
+                    mann_kendall_parameters=mann_kendall,
+                )
+            except ValueError as err:
+                raise HTTPException(status_code=400, detail=str(err))
+            else:
+                series = []
+                if include_decade_data and decade_df is not None:
+                    series.extend(_serialize_dataframe(decade_df))
 
-            if include_mann_kendall_trend and mk_df is not None:
+                if include_mann_kendall_trend and mk_df is not None:
+                    series.extend(
+                        _serialize_dataframe(
+                            mk_df, info=(info or {}).get("mann_kendall")
+                        )
+                    )
+
+                exclude_pattern = (
+                    ObservationDataSmoothingStrategy.NO_SMOOTHING.value
+                    if ObservationDataSmoothingStrategy.NO_SMOOTHING not in smoothing
+                    else None
+                )
                 series.extend(
-                    _serialize_dataframe(mk_df, info=(info or {}).get("mann_kendall"))
+                    _serialize_dataframe(
+                        obs_df,
+                        exclude_series_name_pattern=exclude_pattern,
+                    )
                 )
-
-            exclude_pattern = (
-                ObservationDataSmoothingStrategy.NO_SMOOTHING.value
-                if ObservationDataSmoothingStrategy.NO_SMOOTHING not in smoothing
-                else None
-            )
-            series.extend(
-                _serialize_dataframe(
-                    obs_df,
-                    exclude_series_name_pattern=exclude_pattern,
-                )
-            )
-            return TimeSeriesList(series=series)
+                return TimeSeriesList(series=series)
         else:
             raise HTTPException(status_code=400, detail="Invalid variable identifier")
     else:
