@@ -2,6 +2,7 @@ import logging
 import math
 import urllib.parse
 import uuid
+from xml.etree import ElementTree as et
 from typing import (
     Annotated,
     Optional,
@@ -209,13 +210,6 @@ async def wms_endpoint(
                         settings.thredds_server.uncertainty_visualization_scale_range
                     ),
                 )
-            elif query_params.get("request") == "GetCapabilities":
-                # TODO: need to tweak the reported URLs
-                # the response to a GetCapabilities request includes URLs for each
-                # operation and some clients (like QGIS) use them for GetMap and
-                # GetLegendGraphic - need to ensure these do not refer to the underlying
-                # THREDDS server
-                ...
             logger.debug(f"{query_params=}")
             wms_url = parsed_url._replace(
                 query=urllib.parse.urlencode(
@@ -242,14 +236,81 @@ async def wms_endpoint(
                     status_code=status.HTTP_502_BAD_GATEWAY,
                 ) from err
             else:
+                if query_params.get("request") == "GetCapabilities":
+                    response_content = _modify_capabilities_response(
+                        wms_response.text, str(request.url).partition("?")[0]
+                    )
+                else:
+                    response_content = wms_response.content
                 response = Response(
-                    content=wms_response.content,
+                    content=response_content,
                     status_code=wms_response.status_code,
                     headers=dict(wms_response.headers),
                 )
             return response
     else:
         raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
+
+
+def _modify_capabilities_response(
+    raw_response_content: str,
+    wms_public_url: str,
+) -> bytes:
+    ns = {
+        "wms": "http://www.opengis.net/wms",
+        "xlink": "http://www.w3.org/1999/xlink",
+        "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+        "edal": "http://reading-escience-centre.github.io/edal-java/wms",
+    }
+    et.register_namespace("", ns["wms"])
+    for prefix, uri in {k: v for k, v in ns.items() if k != "wms"}.items():
+        et.register_namespace(prefix, uri)
+    root = et.fromstring(raw_response_content)
+    service_el = root.findall(f"{{{ns['wms']}}}Service")[0]
+
+    # Remove the OnlineResource element, since we do not expose other
+    # internal THREDDS server URLs
+    for online_resource_el in service_el.findall(f"{{{ns['wms']}}}OnlineResource"):
+        service_el.remove(online_resource_el)
+    request_el = root.findall(f"{{{ns['wms']}}}Capability/{{{ns['wms']}}}Request")[0]
+
+    # modify URLs for GetCapabilities, GetMap and GetFeatureInfo methods
+    get_caps_el = request_el.findall(f"{{{ns['wms']}}}GetCapabilities")[0]
+    get_map_el = request_el.findall(f"{{{ns['wms']}}}GetMap")[0]
+    get_feature_info_el = request_el.findall(f"{{{ns['wms']}}}GetFeatureInfo")[0]
+    for parent_el in (get_caps_el, get_map_el, get_feature_info_el):
+        resource_el = parent_el.findall(
+            f"{{{ns['wms']}}}DCPType/"
+            f"{{{ns['wms']}}}HTTP/"
+            f"{{{ns['wms']}}}Get/"
+            f"{{{ns['wms']}}}OnlineResource"
+        )[0]
+        resource_el.set(f"{{{ns['xlink']}}}href", wms_public_url)
+    # for each relevant layer, modify LegendURL and Style abstract
+    for layer_el in root.findall(f".//{{{ns['wms']}}}Layer"):
+        for legend_online_resource_el in layer_el.findall(
+            f"./"
+            f"{{{ns['wms']}}}Style/"
+            f"{{{ns['wms']}}}LegendURL/"
+            f"{{{ns['wms']}}}OnlineResource"
+        ):
+            attribute_name = f"{{{ns['xlink']}}}href"
+            private_url = legend_online_resource_el.get(attribute_name)
+            url_query = private_url.partition("?")[-1]
+            new_url = "?".join((wms_public_url, url_query))
+            legend_online_resource_el.set(f"{{{ns['xlink']}}}href", new_url)
+        for abstract_el in layer_el.findall(
+            f"./" f"{{{ns['wms']}}}Style/" f"{{{ns['wms']}}}Abstract"
+        ):
+            old_url_start = abstract_el.text.find("http")
+            old_url = abstract_el.text[old_url_start:]
+            query = old_url.partition("?")[-1]
+            new_url = "?".join((wms_public_url, query))
+            abstract_el.text = abstract_el.text[:old_url_start] + new_url
+    return et.tostring(
+        root,
+        encoding="utf-8",
+    )
 
 
 @router.get("/time-series/{coverage_identifier}", response_model=TimeSeriesList)
