@@ -90,30 +90,35 @@ def get_observation_time_series(
 
     if mann_kendall_parameters is not None:
         mk_col = f"{base_name}__MANN_KENDALL"
-        mk_start = str(mann_kendall_parameters.start_year or df.index[0].year)
-        mk_end = str(mann_kendall_parameters.end_year or df.index[-1].year)
-        mk_df = df[mk_start:mk_end].copy()
-        mk_result = mk.original_test(mk_df[base_name])
-        mk_df[mk_col] = (
-            mk_result.slope * (mk_df.index.year - mk_df.index.year.min())
-            + mk_result.intercept
-        )
-        mk_df = mk_df.drop(columns=[base_name, unsmoothed_col_name])
-        info.update(
-            {
-                "mann_kendall": {
-                    "trend": mk_result.trend,
-                    "h": mk_result.h,
-                    "p": mk_result.p,
-                    "z": mk_result.z,
-                    "tau": mk_result.Tau,
-                    "s": mk_result.s,
-                    "var_s": mk_result.var_s,
-                    "slope": mk_result.slope,
-                    "intercept": mk_result.intercept,
+        mk_start = mann_kendall_parameters.start_year or df.index[0].year
+        mk_end = mann_kendall_parameters.end_year or df.index[-1].year
+        if mk_end - mk_start >= 27:
+            mk_df = df[str(mk_start) : str(mk_end)].copy()
+            mk_result = mk.original_test(mk_df[base_name])
+            mk_df[mk_col] = (
+                mk_result.slope * (mk_df.index.year - mk_df.index.year.min())
+                + mk_result.intercept
+            )
+            mk_df = mk_df.drop(columns=[base_name, unsmoothed_col_name])
+            info.update(
+                {
+                    "mann_kendall": {
+                        "trend": mk_result.trend,
+                        "h": mk_result.h,
+                        "p": mk_result.p,
+                        "z": mk_result.z,
+                        "tau": mk_result.Tau,
+                        "s": mk_result.s,
+                        "var_s": mk_result.var_s,
+                        "slope": mk_result.slope,
+                        "intercept": mk_result.intercept,
+                    }
                 }
-            }
-        )
+            )
+        else:
+            raise ValueError(
+                "Mann-Kendall start and end year must span at least 27 years"
+            )
     else:
         mk_df = None
 
