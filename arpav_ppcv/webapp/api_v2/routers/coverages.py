@@ -286,7 +286,7 @@ def _modify_capabilities_response(
             f"{{{ns['wms']}}}OnlineResource"
         )[0]
         resource_el.set(f"{{{ns['xlink']}}}href", wms_public_url)
-    # for each relevant layer, modify GetLegendGraphic urls
+    # for each relevant layer, modify LegendURL and Style abstract
     for layer_el in root.findall(f".//{{{ns['wms']}}}Layer"):
         for legend_online_resource_el in layer_el.findall(
             f"./"
@@ -299,11 +299,18 @@ def _modify_capabilities_response(
             url_query = private_url.partition("?")[-1]
             new_url = "?".join((wms_public_url, url_query))
             legend_online_resource_el.set(f"{{{ns['xlink']}}}href", new_url)
+        for abstract_el in layer_el.findall(
+            f"./" f"{{{ns['wms']}}}Style/" f"{{{ns['wms']}}}Abstract"
+        ):
+            old_url_start = abstract_el.text.find("http")
+            old_url = abstract_el.text[old_url_start:]
+            query = old_url.partition("?")[-1]
+            new_url = "?".join((wms_public_url, query))
+            abstract_el.text = abstract_el.text[:old_url_start] + new_url
     return et.tostring(
         root,
         encoding="utf-8",
     )
-    # return raw_response_content.encode()
 
 
 @router.get("/time-series/{coverage_identifier}", response_model=TimeSeriesList)
