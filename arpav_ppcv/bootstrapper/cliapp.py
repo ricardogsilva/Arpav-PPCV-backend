@@ -1,11 +1,17 @@
-import typer
+import json
+from pathlib import Path
 
+import geojson_pydantic
 import sqlmodel
+import typer
 from rich import print
 from sqlalchemy.exc import IntegrityError
 
 from .. import database
-from ..schemas import observations
+from ..schemas import (
+    municipalities,
+    observations,
+)
 
 from ..schemas.coverages import (
     ConfigurationParameterCreate,
@@ -24,6 +30,34 @@ from .coverage_configurations.tasmin import generate_tasmin_configurations
 from .coverage_configurations.tr import generate_tr_configurations
 
 app = typer.Typer()
+
+
+@app.command("municipalities")
+def bootstrap_municipalities(ctx: typer.Context) -> None:
+    """Bootstrap Italian municipalities."""
+    data_directory = Path(__file__).parents[2] / "data"
+    municipalities_dataset = data_directory / "limits_IT_municipalities.geojson"
+    to_create = []
+    with municipalities_dataset.open() as fh:
+        municipalities_geojson = json.load(fh)
+        for idx, feature in enumerate(municipalities_geojson["features"]):
+            print(
+                f"parsing feature ({idx+1}/{len(municipalities_geojson['features'])})..."
+            )
+            props = feature["properties"]
+            mun_create = municipalities.MunicipalityCreate(
+                geom=geojson_pydantic.MultiPolygon(
+                    type="MultiPolygon", coordinates=feature["geometry"]["coordinates"]
+                ),
+                name=props["name"],
+                province_name=props["prov_name"],
+                region_name=props["reg_name"],
+            )
+            to_create.append(mun_create)
+    print(f"About to save {len(to_create)} municipalities...")
+    with sqlmodel.Session(ctx.obj["engine"]) as session:
+        database.create_many_municipalities(session, to_create)
+    print("Done!")
 
 
 @app.command("observation-variables")

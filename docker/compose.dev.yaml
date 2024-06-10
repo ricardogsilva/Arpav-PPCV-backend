@@ -26,6 +26,7 @@ x-common-env: &common-env
   ARPAV_PPCV__DJANGO_APP__REDIS_DSN: redis://redis:6379
   ARPAV_PPCV__DJANGO_APP__SECRET_KEY: some-dev-key
   ARPAV_PPCV__THREDDS_SERVER__BASE_URL: http://thredds:8080/thredds
+  ARPAV_PPCV__MARTIN_TILE_SERVER_BASE_URL: http://martin:3000
 
 x-common-volumes: &common-volumes
   - type: bind
@@ -148,9 +149,14 @@ services:
     ports:
       - target: 3000
         published: 3000
+    command: ["--config", "/martin-config.yaml"]
     environment:
-      DATABASE_URL: postgres://postgres:postgres@legacy-db/postgres
+      DATABASE_URL: postgres://arpav:arpavpassword@db/arpav_ppcv
       RUST_LOG: actix_web=info,martin=debug,tokio_postgres=debug
+    volumes:
+      - type: bind
+        source: /$PWD/docker/martin/config.yaml
+        target: /martin-config.yaml
 
 volumes:
   db-data:

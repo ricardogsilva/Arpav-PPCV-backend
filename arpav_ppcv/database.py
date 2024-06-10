@@ -20,6 +20,7 @@ from . import config
 from .schemas import (
     base,
     coverages,
+    municipalities,
     observations,
 )
 
@@ -1021,6 +1022,31 @@ def list_allowed_coverage_identifiers(
             dataset_id = "-".join((db_cov_conf.name, *combination))
             result.append(dataset_id)
     return result
+
+
+def create_many_municipalities(
+    session: sqlmodel.Session,
+    municipalities_to_create: Sequence[municipalities.MunicipalityCreate],
+) -> list[municipalities.Municipality]:
+    """Create several municipalities."""
+    db_records = []
+    for mun_create in municipalities_to_create:
+        geom = shapely.io.from_geojson(mun_create.geom.model_dump_json())
+        wkbelement = from_shape(geom)
+        db_mun = municipalities.Municipality(
+            **mun_create.model_dump(exclude={"geom"}),
+            geom=wkbelement,
+        )
+        db_records.append(db_mun)
+        session.add(db_mun)
+    try:
+        session.commit()
+    except sqlalchemy.exc.DBAPIError:
+        raise
+    else:
+        for db_record in db_records:
+            session.refresh(db_record)
+        return db_records
 
 
 def _get_total_num_records(session: sqlmodel.Session, statement):
