@@ -162,6 +162,7 @@ class ArpavPpcvSettings(BaseSettings):  # noqa
     templates_dir: Optional[Path] = Path(__file__).parent / "webapp/templates"
     static_dir: Optional[Path] = Path(__file__).parent / "webapp/static"
     thredds_server: ThreddsServerSettings = ThreddsServerSettings()
+    martin_tile_server_base_url: str = "http://localhost:3000"
     nearest_station_radius_meters: int = 10_000
     v1_api_mount_prefix: str = "/api/v1"
     v2_api_mount_prefix: str = "/api/v2"

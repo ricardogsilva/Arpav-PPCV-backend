@@ -41,8 +41,19 @@ name: arpav-ppcv
 
 services:
 
+  reverse-proxy:
+    image: traefik:3.0.2
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+
   webapp:
     image: "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend:latest"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.arpav-backend-router.rule=PathRegexp(`^/(api|admin)`)"
+      - "traefik.http.services.arpav-backend-service.loadbalancer.server.port=5001"
     depends_on:
       legacy-db:
         condition: service_healthy
@@ -67,6 +78,12 @@ services:
 
   martin:
     image: 'ghcr.io/maplibre/martin:v0.13.0'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.martin-router.rule=PathPrefix(`/vector-tiles`)"
+      - "traefik.http.services.martin-service.loadbalancer.server.port=3000"
+      - "traefik.http.middlewares.strip-martin-prefix-middleware.stripprefix.prefixes=/vector-tiles"
+      - "traefik.http.routers.martin-router.middlewares=strip-martin-prefix-middleware@docker"
     depends_on:
       db:
         condition: service_healthy

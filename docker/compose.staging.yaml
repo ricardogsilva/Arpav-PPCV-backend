@@ -23,16 +23,24 @@ name: arpav-ppcv-staging
 
 services:
 
+  reverse-proxy:
+    command: --configFile /opt/traefik/traefik.toml
+    volumes:
+      - type: bind
+        source: home/arpav/docker/traefik/staging-config.toml
+        target: /opt/traefik/traefik.toml
+      - type: bind
+        source: /opt/traefik/certs
+        target: /opt/traefik/certs
+
   webapp:
     env_file:
       - *env-file-webapp
     labels:
-      - "traefik.enable=true"
       - "traefik.http.routers.arpav-backend.entrypoints=webSecure"
       - "traefik.http.routers.arpav-backend.tls=true"
       - "traefik.http.routers.arpav-backend.tls.certResolver=letsEncryptResolver"
       - "traefik.http.routers.arpav-backend.rule=Host(`arpav.geobeyond.dev`)"
-      - "traefik.http.services.arpav-backend-service.loadbalancer.server.port=5001"
     volumes:
       - type: bind
         source: $HOME/data/arpav-ppcv/datasets
@@ -59,6 +67,11 @@ services:
   martin:
     env_file:
       - *env-file-webapp
+    labels:
+      - "traefik.http.routers.martin-router.entrypoints=webSecure"
+      - "traefik.http.routers.martin-router.tls=true"
+      - "traefik.http.routers.martin-router.tls.certResolver=letsEncryptResolver"
+      - "traefik.http.routers.martin-router.rule=Host(`arpav.geobeyond.dev`)"
     restart: unless-stopped
 
   thredds:
