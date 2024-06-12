@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from ... import config
 from .routers.coverages import router as coverages_router
+from .routers.municipalities import router as municipalities_router
 from .routers.observations import router as observations_router
 from .routers.base import router as base_router
 
@@ -48,6 +49,13 @@ def create_app(settings: config.ArpavPpcvSettings) -> fastapi.FastAPI:
         prefix="/observations",
         tags=[
             "observations",
+        ],
+    )
+    app.include_router(
+        municipalities_router,
+        prefix="/municipalities",
+        tags=[
+            "municipalities",
         ],
     )
     return app

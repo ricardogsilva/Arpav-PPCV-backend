@@ -27,6 +27,7 @@ from .... import (
     database as db,
     operations,
 )
+from ...responses import GeoJsonResponse
 from ....schemas import base
 from ... import dependencies
 from ..schemas import observations
@@ -39,10 +40,6 @@ from ..schemas.base import (
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-
-
-class GeoJsonResponse(JSONResponse):
-    media_type = "application/geo+json"
 
 
 @router.get(

@@ -9,7 +9,7 @@ from typing import (
     Sequence,
 )
 
-import shapely.geometry
+import shapely
 import shapely.io
 import sqlalchemy.exc
 import sqlmodel
@@ -1022,6 +1022,57 @@ def list_allowed_coverage_identifiers(
             dataset_id = "-".join((db_cov_conf.name, *combination))
             result.append(dataset_id)
     return result
+
+
+def list_municipalities(
+    session: sqlmodel.Session,
+    *,
+    limit: int = 20,
+    offset: int = 0,
+    include_total: bool = False,
+    polygon_intersection_filter: shapely.Polygon = None,
+    point_filter: shapely.Point = None,
+    name_filter: Optional[str] = None,
+    province_name_filter: Optional[str] = None,
+    region_name_filter: Optional[str] = None,
+) -> Optional[municipalities.Municipality]:
+    """List existing municipalities.
+
+    Both ``polygon_intersection_filter`` and ``point_filter`` parameters are expected
+    to be a geometries in the EPSG:4326 CRS.
+    """
+    statement = sqlmodel.select(municipalities.Municipality).order_by(
+        municipalities.Municipality.name
+    )
+    if name_filter is not None:
+        statement = statement.where(municipalities.Municipality.name.ilike(name_filter))
+    if province_name_filter is not None:
+        statement = statement.where(
+            municipalities.Municipality.province_name.ilike(province_name_filter)
+        )
+    if region_name_filter is not None:
+        statement = statement.where(
+            municipalities.Municipality.region_name.ilike(region_name_filter)
+        )
+    if polygon_intersection_filter is not None:
+        statement = statement.where(
+            func.ST_Intersects(
+                municipalities.Municipality.geom,
+                func.ST_GeomFromWKB(
+                    shapely.io.to_wkb(polygon_intersection_filter), 4326
+                ),
+            )
+        )
+    if point_filter is not None:
+        statement = statement.where(
+            func.ST_Intersects(
+                municipalities.Municipality.geom,
+                func.ST_GeomFromWKB(shapely.io.to_wkb(point_filter), 4326),
+            )
+        )
+    items = session.exec(statement.offset(offset).limit(limit)).all()
+    num_items = _get_total_num_records(session, statement) if include_total else None
+    return items, num_items
 
 
 def create_many_municipalities(
