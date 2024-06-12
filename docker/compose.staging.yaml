@@ -23,15 +23,15 @@ name: arpav-ppcv-staging
 
 services:
 
+  # NOTE: this traefik instance does not deal with TLS at all, as we assume there
+  # is another proxy running on top of this one, provided
+  # by the staging env
   reverse-proxy:
     command: --configFile /opt/traefik/traefik.toml
     volumes:
       - type: bind
-        source: home/arpav/docker/traefik/staging-config.toml
+        source: /home/arpav/docker/traefik/staging-config.toml
         target: /opt/traefik/traefik.toml
-      - type: bind
-        source: /opt/traefik/certs
-        target: /opt/traefik/certs
 
   webapp:
     env_file:
