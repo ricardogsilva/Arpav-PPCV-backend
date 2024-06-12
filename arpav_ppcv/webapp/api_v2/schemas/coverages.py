@@ -1,4 +1,5 @@
 import uuid
+import typing
 
 import pydantic
 from fastapi import Request
@@ -108,8 +109,26 @@ class CoverageConfigurationList(WebResourceList):
 
 class CoverageIdentifierList(WebResourceList):
     items: list[str]
-    list_item_type = str
     path_operation_name = "list_coverage_identifiers"
+
+    @classmethod
+    def from_items(
+        cls,
+        items: typing.Sequence[str],
+        request: Request,
+        *,
+        limit: int,
+        offset: int,
+        filtered_total: int,
+        unfiltered_total: int,
+    ):
+        return cls(
+            meta=cls._get_meta(len(items), unfiltered_total, filtered_total),
+            links=cls._get_list_links(
+                request, limit, offset, filtered_total, len(items)
+            ),
+            items=[i for i in items],
+        )
 
 
 class ConfigurationParameterList(WebResourceList):

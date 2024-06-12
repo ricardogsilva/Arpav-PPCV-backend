@@ -163,6 +163,36 @@ def get_coverage_configuration(
     )
 
 
+@router.get(
+    "/coverage-identifiers",
+    response_model=coverage_schemas.CoverageIdentifierList,
+)
+def list_coverage_identifiers(
+    request: Request,
+    db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+    list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
+    name_contains: Annotated[list[str], Query()] = None,
+):
+    cov_ids, filtered_total = db.list_coverage_identifiers(
+        db_session,
+        limit=list_params.limit,
+        offset=list_params.offset,
+        include_total=True,
+        name_filter=name_contains,
+    )
+    _, unfiltered_total = db.list_coverage_identifiers(
+        db_session, limit=1, offset=0, include_total=True
+    )
+    return coverage_schemas.CoverageIdentifierList.from_items(
+        cov_ids,
+        request=request,
+        limit=list_params.limit,
+        offset=list_params.offset,
+        filtered_total=filtered_total,
+        unfiltered_total=unfiltered_total,
+    )
+
+
 @router.get("/wms/{coverage_identifier}")
 async def wms_endpoint(
     request: Request,

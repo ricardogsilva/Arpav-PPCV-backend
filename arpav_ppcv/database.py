@@ -1049,6 +1049,38 @@ def create_many_municipalities(
         return db_records
 
 
+def list_coverage_identifiers(
+    session: sqlmodel.Session,
+    *,
+    limit: int = 20,
+    offset: int = 0,
+    include_total: bool = False,
+    name_filter: list[str] | None = None,
+) -> tuple[list[str], Optional[int]]:
+    all_cov_ids = collect_all_coverage_identifiers(session)
+    if name_filter is not None:
+        for fragment in name_filter:
+            all_cov_ids = [i for i in all_cov_ids if fragment.lower() in i.lower()]
+    return (
+        all_cov_ids[offset : offset + limit],
+        len(all_cov_ids) if include_total else None,
+    )
+
+
+def collect_all_coverage_identifiers(
+    session: sqlmodel.Session,
+):
+    cov_confs = collect_all_coverage_configurations(session)
+    cov_ids = []
+    for cov_conf in cov_confs:
+        cov_ids.extend(
+            list_allowed_coverage_identifiers(
+                session, coverage_configuration_id=cov_conf.id
+            )
+        )
+    return cov_ids
+
+
 def _get_total_num_records(session: sqlmodel.Session, statement):
     return session.exec(
         sqlmodel.select(sqlmodel.func.count()).select_from(statement)
