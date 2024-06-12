@@ -22,3 +22,5 @@ insecure = true
 
 [providers.docker]
 exposedByDefault = false
+network = "back"
+constraints = "Label(`exposed.inside`, `true`)"
