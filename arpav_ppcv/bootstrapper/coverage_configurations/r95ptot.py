@@ -22,7 +22,7 @@ def generate_configurations(
             netcdf_main_dataset_name="r95ptot",
             thredds_url_pattern="ensembletwbc/std/clipped/pr_change_cumulative_check_avgagree_{time_window}_{scenario}_{year_period}_VFVGTAA.nc",
             unit="%",
-            palette="uncert-stippled/div-BrBg",
+            palette="uncert-stippled/div-BrBG",
             color_scale_min=-160,
             color_scale_max=160,
             possible_values=[
@@ -78,7 +78,7 @@ def generate_configurations(
             netcdf_main_dataset_name="r95ptot",
             thredds_url_pattern="indici5rcm/clipped/pr_change_cumulative_EC-EARTH_CCLM4-8-17_{year_period}_{scenario}_{time_window}_VFVGTAA.nc",
             unit="%",
-            palette="default/div-BrBg",
+            palette="default/div-BrBG",
             color_scale_min=-160,
             color_scale_max=160,
             possible_values=[
@@ -134,7 +134,7 @@ def generate_configurations(
             netcdf_main_dataset_name="r95ptot",
             thredds_url_pattern="indici5rcm/clipped/pr_change_cumulative_EC-EARTH_RACMO22E_{year_period}_{scenario}_{time_window}_VFVGTAA.nc",
             unit="%",
-            palette="default/div-BrBg",
+            palette="default/div-BrBG",
             color_scale_min=-160,
             color_scale_max=160,
             possible_values=[
@@ -190,7 +190,7 @@ def generate_configurations(
             netcdf_main_dataset_name="r95ptot",
             thredds_url_pattern="indici5rcm/clipped/pr_change_cumulative_EC-EARTH_RCA4_{year_period}_{scenario}_{time_window}_VFVGTAA.nc",
             unit="%",
-            palette="default/div-BrBg",
+            palette="default/div-BrBG",
             color_scale_min=-160,
             color_scale_max=160,
             possible_values=[
@@ -246,7 +246,7 @@ def generate_configurations(
             netcdf_main_dataset_name="r95ptot",
             thredds_url_pattern="indici5rcm/clipped/pr_change_cumulative_HadGEM2-ES_RACMO22E_{year_period}_{scenario}_{time_window}_VFVGTAA.nc",
             unit="%",
-            palette="default/div-BrBg",
+            palette="default/div-BrBG",
             color_scale_min=-160,
             color_scale_max=160,
             possible_values=[
@@ -302,7 +302,7 @@ def generate_configurations(
             netcdf_main_dataset_name="r95ptot",
             thredds_url_pattern="indici5rcm/clipped/pr_change_cumulative_MPI-ESM-LR_REMO2009_{year_period}_{scenario}_{time_window}_VFVGTAA.nc",
             unit="%",
-            palette="default/div-BrBg",
+            palette="default/div-BrBG",
             color_scale_min=-160,
             color_scale_max=160,
             possible_values=[

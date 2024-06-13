@@ -22,7 +22,7 @@ def generate_configurations(
             netcdf_main_dataset_name="cdd",
             thredds_url_pattern="ensembletwbc/std/clipped/eca_cdd_an_avgagree_{time_window}_{scenario}_{year_period}_ls_VFVGTAA.nc",
             unit="gg",
-            palette="uncert-stippled/div-BrBg-inv",
+            palette="uncert-stippled/div-BrBG-inv",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
@@ -78,7 +78,7 @@ def generate_configurations(
             netcdf_main_dataset_name="cdd",
             thredds_url_pattern="indici5rcm/clipped/eca_cdd_an_EC-EARTH_CCLM4-8-17_{scenario}_{year_period}_{time_window}_ls_VFVGTAA.nc",
             unit="gg",
-            palette="default/div-BrBg-inv",
+            palette="default/div-BrBG-inv",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
@@ -134,7 +134,7 @@ def generate_configurations(
             netcdf_main_dataset_name="cdd",
             thredds_url_pattern="indici5rcm/clipped/eca_cdd_an_EC-EARTH_RACMO22E_{scenario}_{year_period}_{time_window}_ls_VFVGTAA.nc",
             unit="gg",
-            palette="default/div-BrBg-inv",
+            palette="default/div-BrBG-inv",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
@@ -190,7 +190,7 @@ def generate_configurations(
             netcdf_main_dataset_name="cdd",
             thredds_url_pattern="indici5rcm/clipped/eca_cdd_an_EC-EARTH_RCA4_{scenario}_{year_period}_{time_window}_ls_VFVGTAA.nc",
             unit="gg",
-            palette="default/div-BrBg-inv",
+            palette="default/div-BrBG-inv",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
@@ -246,7 +246,7 @@ def generate_configurations(
             netcdf_main_dataset_name="cdd",
             thredds_url_pattern="indici5rcm/clipped/eca_cdd_an_HadGEM2-ES_RACMO22E_{scenario}_{year_period}_{time_window}_ls_VFVGTAA.nc",
             unit="gg",
-            palette="default/div-BrBg-inv",
+            palette="default/div-BrBG-inv",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
@@ -302,7 +302,7 @@ def generate_configurations(
             netcdf_main_dataset_name="cdd",
             thredds_url_pattern="indici5rcm/clipped/eca_cdd_an_MPI-ESM-LR_REMO2009_{scenario}_{year_period}_{time_window}_ls_VFVGTAA.nc",
             unit="gg",
-            palette="default/div-BrBg-inv",
+            palette="default/div-BrBG-inv",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[

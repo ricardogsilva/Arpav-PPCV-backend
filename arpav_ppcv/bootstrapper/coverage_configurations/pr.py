@@ -54,7 +54,7 @@ def generate_configurations(
             netcdf_main_dataset_name="pr",
             thredds_url_pattern="ens5ym/clipped/pr_anom_pp_ts_{scenario}_{year_period}_VFVGTAA.nc",
             unit="%",
-            palette="default/div-BrBg",
+            palette="default/div-BrBG",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
@@ -100,7 +100,7 @@ def generate_configurations(
             netcdf_main_dataset_name="pr",
             thredds_url_pattern="EC-EARTH_CCLM4-8-17ym/clipped/pr_EC-EARTH_CCLM4-8-17_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
             unit="%",
-            palette="default/div-BrBg",
+            palette="default/div-BrBG",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
@@ -146,7 +146,7 @@ def generate_configurations(
             netcdf_main_dataset_name="pr",
             thredds_url_pattern="EC-EARTH_RACMO22Eym/clipped/pr_EC-EARTH_RACMO22E_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
             unit="%",
-            palette="default/div-BrBg",
+            palette="default/div-BrBG",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
@@ -192,7 +192,7 @@ def generate_configurations(
             netcdf_main_dataset_name="pr",
             thredds_url_pattern="EC-EARTH_RCA4ym/clipped/pr_EC-EARTH_RCA4_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
             unit="%",
-            palette="default/div-BrBg",
+            palette="default/div-BrBG",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
@@ -238,7 +238,7 @@ def generate_configurations(
             netcdf_main_dataset_name="pr",
             thredds_url_pattern="HadGEM2-ES_RACMO22Eym/clipped/pr_HadGEM2-ES_RACMO22E_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
             unit="%",
-            palette="default/div-BrBg",
+            palette="default/div-BrBG",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
@@ -284,7 +284,7 @@ def generate_configurations(
             netcdf_main_dataset_name="pr",
             thredds_url_pattern="MPI-ESM-LR_REMO2009ym/clipped/pr_MPI-ESM-LR_REMO2009_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
             unit="%",
-            palette="default/div-BrBg",
+            palette="default/div-BrBG",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
@@ -1046,7 +1046,7 @@ def generate_configurations(
             netcdf_main_dataset_name="pr",
             thredds_url_pattern="ensembletwbc/std/clipped/pr_avgagree_percentage_{time_window}_{scenario}_{year_period}_VFVGTAA.nc",
             unit="%",
-            palette="uncert-stippled/div-BrBg",
+            palette="uncert-stippled/div-BrBG",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
@@ -1102,7 +1102,7 @@ def generate_configurations(
             netcdf_main_dataset_name="pr",
             thredds_url_pattern="taspr5rcm/clipped/pr_EC-EARTH_CCLM4-8-17_{scenario}_seas_{time_window}_percentage_{year_period}_VFVGTAA.nc",
             unit="%",
-            palette="default/div-BrBg",
+            palette="default/div-BrBG",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
@@ -1158,7 +1158,7 @@ def generate_configurations(
             netcdf_main_dataset_name="pr",
             thredds_url_pattern="taspr5rcm/clipped/pr_EC-EARTH_RACMO22E_{scenario}_seas_{time_window}_percentage_{year_period}_VFVGTAA.nc",
             unit="%",
-            palette="default/div-BrBg",
+            palette="default/div-BrBG",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
@@ -1214,7 +1214,7 @@ def generate_configurations(
             netcdf_main_dataset_name="pr",
             thredds_url_pattern="taspr5rcm/clipped/pr_EC-EARTH_RCA4_{scenario}_seas_{time_window}_percentage_{year_period}_VFVGTAA.nc",
             unit="%",
-            palette="default/div-BrBg",
+            palette="default/div-BrBG",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
@@ -1270,7 +1270,7 @@ def generate_configurations(
             netcdf_main_dataset_name="pr",
             thredds_url_pattern="taspr5rcm/clipped/pr_HadGEM2-ES_RACMO22E_{scenario}_seas_{time_window}_percentage_{year_period}_VFVGTAA.nc",
             unit="%",
-            palette="default/div-BrBg",
+            palette="default/div-BrBG",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
@@ -1326,7 +1326,7 @@ def generate_configurations(
             netcdf_main_dataset_name="pr",
             thredds_url_pattern="taspr5rcm/clipped/pr_MPI-ESM-LR_REMO2009_{scenario}_seas_{time_window}_percentage_{year_period}_VFVGTAA.nc",
             unit="%",
-            palette="default/div-BrBg",
+            palette="default/div-BrBG",
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
