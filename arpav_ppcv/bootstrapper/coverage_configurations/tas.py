@@ -46,7 +46,7 @@ from ...schemas.coverages import (
 )
 
 
-def generate_tas_configurations(
+def generate_configurations(
     conf_param_values, variables
 ) -> list[CoverageConfigurationCreate]:
     return [
@@ -1379,3 +1379,193 @@ def generate_tas_configurations(
             ],
         ),
     ]
+
+
+def get_related_map() -> dict[str, list[str]]:
+    return {
+        "tas_seasonal_anomaly_model_ensemble": [
+            "tas_seasonal_anomaly_model_ec_earth_cclm4_8_17",
+            "tas_seasonal_anomaly_model_ec_earth_racmo22e",
+            "tas_seasonal_anomaly_model_ec_earth_rca4",
+            "tas_seasonal_anomaly_model_hadgem2_es_racmo22e",
+            "tas_seasonal_anomaly_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_seasonal_anomaly_model_ec_earth_cclm4_8_17": [
+            "tas_seasonal_anomaly_model_ensemble",
+            "tas_seasonal_anomaly_model_ec_earth_racmo22e",
+            "tas_seasonal_anomaly_model_ec_earth_rca4",
+            "tas_seasonal_anomaly_model_hadgem2_es_racmo22e",
+            "tas_seasonal_anomaly_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_seasonal_anomaly_model_ec_earth_racmo22e": [
+            "tas_seasonal_anomaly_model_ensemble",
+            "tas_seasonal_anomaly_model_ec_earth_cclm4_8_17",
+            "tas_seasonal_anomaly_model_ec_earth_rca4",
+            "tas_seasonal_anomaly_model_hadgem2_es_racmo22e",
+            "tas_seasonal_anomaly_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_seasonal_anomaly_model_ec_earth_rca4": [
+            "tas_seasonal_anomaly_model_ensemble",
+            "tas_seasonal_anomaly_model_ec_earth_cclm4_8_17",
+            "tas_seasonal_anomaly_model_ec_earth_racmo22e",
+            "tas_seasonal_anomaly_model_hadgem2_es_racmo22e",
+            "tas_seasonal_anomaly_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_seasonal_anomaly_model_hadgem2_es_racmo22e": [
+            "tas_seasonal_anomaly_model_ensemble",
+            "tas_seasonal_anomaly_model_ec_earth_cclm4_8_17",
+            "tas_seasonal_anomaly_model_ec_earth_racmo22e",
+            "tas_seasonal_anomaly_model_ec_earth_rca4",
+            "tas_seasonal_anomaly_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_seasonal_anomaly_model_mpi_esm_lr_remo2009": [
+            "tas_seasonal_anomaly_model_ensemble",
+            "tas_seasonal_anomaly_model_ec_earth_cclm4_8_17",
+            "tas_seasonal_anomaly_model_ec_earth_racmo22e",
+            "tas_seasonal_anomaly_model_ec_earth_rca4",
+            "tas_seasonal_anomaly_model_hadgem2_es_racmo22e",
+        ],
+        "tas_seasonal_absolute_model_ensemble": [
+            "tas_seasonal_absolute_model_ec_earth_cclm4_8_17",
+            "tas_seasonal_absolute_model_ec_earth_racmo22e",
+            "tas_seasonal_absolute_model_ec_earth_rca4",
+            "tas_seasonal_absolute_model_hadgem2_es_racmo22e",
+            "tas_seasonal_absolute_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_seasonal_absolute_model_ec_earth_cclm4_8_17": [
+            "tas_seasonal_absolute_model_ensemble",
+            "tas_seasonal_absolute_model_ec_earth_racmo22e",
+            "tas_seasonal_absolute_model_ec_earth_rca4",
+            "tas_seasonal_absolute_model_hadgem2_es_racmo22e",
+            "tas_seasonal_absolute_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_seasonal_absolute_model_ec_earth_racmo22e": [
+            "tas_seasonal_absolute_model_ensemble",
+            "tas_seasonal_absolute_model_ec_earth_cclm4_8_17",
+            "tas_seasonal_absolute_model_ec_earth_rca4",
+            "tas_seasonal_absolute_model_hadgem2_es_racmo22e",
+            "tas_seasonal_absolute_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_seasonal_absolute_model_ec_earth_rca4": [
+            "tas_seasonal_absolute_model_ensemble",
+            "tas_seasonal_absolute_model_ec_earth_cclm4_8_17",
+            "tas_seasonal_absolute_model_ec_earth_racmo22e",
+            "tas_seasonal_absolute_model_hadgem2_es_racmo22e",
+            "tas_seasonal_absolute_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_seasonal_absolute_model_hadgem2_es_racmo22e": [
+            "tas_seasonal_absolute_model_ensemble",
+            "tas_seasonal_absolute_model_ec_earth_cclm4_8_17",
+            "tas_seasonal_absolute_model_ec_earth_racmo22e",
+            "tas_seasonal_absolute_model_ec_earth_rca4",
+            "tas_seasonal_absolute_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_seasonal_absolute_model_mpi_esm_lr_remo2009": [
+            "tas_seasonal_absolute_model_ensemble",
+            "tas_seasonal_absolute_model_ec_earth_cclm4_8_17",
+            "tas_seasonal_absolute_model_ec_earth_racmo22e",
+            "tas_seasonal_absolute_model_ec_earth_rca4",
+            "tas_seasonal_absolute_model_hadgem2_es_racmo22e",
+        ],
+        "tas_annual_absolute_model_ensemble": [
+            "tas_annual_absolute_model_ec_earth_cclm4_8_17",
+            "tas_annual_absolute_model_ec_earth_racmo22e",
+            "tas_annual_absolute_model_ec_earth_rca4",
+            "tas_annual_absolute_model_hadgem2_es_racmo22e",
+            "tas_annual_absolute_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_annual_absolute_model_ec_earth_cclm4_8_17": [
+            "tas_annual_absolute_model_ensemble",
+            "tas_annual_absolute_model_ec_earth_racmo22e",
+            "tas_annual_absolute_model_ec_earth_rca4",
+            "tas_annual_absolute_model_hadgem2_es_racmo22e",
+            "tas_annual_absolute_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_annual_absolute_model_ec_earth_racmo22e": [
+            "tas_annual_absolute_model_ensemble",
+            "tas_annual_absolute_model_ec_earth_cclm4_8_17",
+            "tas_annual_absolute_model_ec_earth_rca4",
+            "tas_annual_absolute_model_hadgem2_es_racmo22e",
+            "tas_annual_absolute_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_annual_absolute_model_ec_earth_rca4": [
+            "tas_annual_absolute_model_ensemble",
+            "tas_annual_absolute_model_ec_earth_cclm4_8_17",
+            "tas_annual_absolute_model_ec_earth_racmo22e",
+            "tas_annual_absolute_model_hadgem2_es_racmo22e",
+            "tas_annual_absolute_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_annual_absolute_model_hadgem2_es_racmo22e": [
+            "tas_annual_absolute_model_ensemble",
+            "tas_annual_absolute_model_ec_earth_cclm4_8_17",
+            "tas_annual_absolute_model_ec_earth_racmo22e",
+            "tas_annual_absolute_model_ec_earth_rca4",
+            "tas_annual_absolute_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_annual_absolute_model_mpi_esm_lr_remo2009": [
+            "tas_annual_absolute_model_ensemble",
+            "tas_annual_absolute_model_ec_earth_cclm4_8_17",
+            "tas_annual_absolute_model_ec_earth_racmo22e",
+            "tas_annual_absolute_model_ec_earth_rca4",
+            "tas_annual_absolute_model_hadgem2_es_racmo22e",
+        ],
+        "tas_30yr_anomaly_seasonal_agree_model_ensemble": [
+            "tas_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
+            "tas_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
+            "tas_30yr_anomaly_seasonal_model_ec_earth_rca4",
+            "tas_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
+            "tas_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17": [
+            "tas_30yr_anomaly_seasonal_agree_model_ensemble",
+            "tas_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
+            "tas_30yr_anomaly_seasonal_model_ec_earth_rca4",
+            "tas_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
+            "tas_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_30yr_anomaly_seasonal_model_ec_earth_racmo22e": [
+            "tas_30yr_anomaly_seasonal_agree_model_ensemble",
+            "tas_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
+            "tas_30yr_anomaly_seasonal_model_ec_earth_rca4",
+            "tas_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
+            "tas_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_30yr_anomaly_seasonal_model_ec_earth_rca4": [
+            "tas_30yr_anomaly_seasonal_agree_model_ensemble",
+            "tas_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
+            "tas_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
+            "tas_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
+            "tas_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e": [
+            "tas_30yr_anomaly_seasonal_agree_model_ensemble",
+            "tas_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
+            "tas_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
+            "tas_30yr_anomaly_seasonal_model_ec_earth_rca4",
+            "tas_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
+        ],
+        "tas_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009": [
+            "tas_30yr_anomaly_seasonal_agree_model_ensemble",
+            "tas_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
+            "tas_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
+            "tas_30yr_anomaly_seasonal_model_ec_earth_rca4",
+            "tas_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
+        ],
+    }
+
+
+def get_uncertainty_map() -> dict[str, tuple[str, str]]:
+    return {
+        "tas_seasonal_anomaly_model_ensemble": (
+            "tas_seasonal_anomaly_model_ensemble_lower_uncertainty",
+            "tas_seasonal_anomaly_model_ensemble_upper_uncertainty",
+        ),
+        "tas_seasonal_absolute_model_ensemble": (
+            "tas_seasonal_absolute_model_ensemble_lower_uncertainty",
+            "tas_seasonal_absolute_model_ensemble_upper_uncertainty",
+        ),
+        "tas_annual_absolute_model_ensemble": (
+            "tas_annual_absolute_model_ensemble_lower_uncertainty",
+            "tas_annual_absolute_model_ensemble_upper_uncertainty",
+        ),
+    }

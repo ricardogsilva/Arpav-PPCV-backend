@@ -16,18 +16,22 @@ from ..schemas import (
 from ..schemas.coverages import (
     ConfigurationParameterCreate,
     ConfigurationParameterValueCreateEmbeddedInConfigurationParameter,
+    ConfigurationParameterPossibleValueUpdate,
+    CoverageConfigurationUpdate,
 )
 
-from .coverage_configurations.cdd import generate_cdd_configurations
-from .coverage_configurations.fd import generate_fd_configurations
-from .coverage_configurations.pr import generate_pr_configurations
-from .coverage_configurations.r95ptot import generate_r95ptot_configurations
-from .coverage_configurations.snwdays import generate_snwdays_configurations
-from .coverage_configurations.su30 import generate_su30_configurations
-from .coverage_configurations.tas import generate_tas_configurations
-from .coverage_configurations.tasmax import generate_tasmax_configurations
-from .coverage_configurations.tasmin import generate_tasmin_configurations
-from .coverage_configurations.tr import generate_tr_configurations
+from .coverage_configurations import (
+    cdd,
+    fd,
+    pr,
+    r95ptot,
+    snwdays,
+    su30,
+    tas,
+    tasmax,
+    tasmin,
+    tr,
+)
 
 app = typer.Typer()
 
@@ -200,29 +204,29 @@ def bootstrap_coverage_configurations(
             for pv in all_conf_param_values
         }
     coverage_configurations = []
-    coverage_configurations.extend(generate_cdd_configurations(conf_param_values))
+    coverage_configurations.extend(cdd.generate_configurations(conf_param_values))
     coverage_configurations.extend(
-        generate_fd_configurations(conf_param_values, variables)
+        fd.generate_configurations(conf_param_values, variables)
     )
     coverage_configurations.extend(
-        generate_pr_configurations(conf_param_values, variables)
+        pr.generate_configurations(conf_param_values, variables)
     )
-    coverage_configurations.extend(generate_r95ptot_configurations(conf_param_values))
-    coverage_configurations.extend(generate_snwdays_configurations(conf_param_values))
+    coverage_configurations.extend(r95ptot.generate_configurations(conf_param_values))
+    coverage_configurations.extend(snwdays.generate_configurations(conf_param_values))
     coverage_configurations.extend(
-        generate_su30_configurations(conf_param_values, variables)
-    )
-    coverage_configurations.extend(
-        generate_tas_configurations(conf_param_values, variables)
+        su30.generate_configurations(conf_param_values, variables)
     )
     coverage_configurations.extend(
-        generate_tasmax_configurations(conf_param_values, variables)
+        tas.generate_configurations(conf_param_values, variables)
     )
     coverage_configurations.extend(
-        generate_tasmin_configurations(conf_param_values, variables)
+        tasmax.generate_configurations(conf_param_values, variables)
     )
     coverage_configurations.extend(
-        generate_tr_configurations(conf_param_values, variables)
+        tasmin.generate_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        tr.generate_configurations(conf_param_values, variables)
     )
 
     for cov_conf_create in coverage_configurations:
@@ -237,3 +241,86 @@ def bootstrap_coverage_configurations(
                 f"{cov_conf_create.name!r}: {err}"
             )
             session.rollback()
+
+    print("Creating related coverage relationships...")
+    all_cov_confs = {
+        cc.name: cc for cc in database.collect_all_coverage_configurations(session)
+    }
+
+    to_update = {}
+    for name, related_names in {
+        **cdd.get_related_map(),
+        **fd.get_related_map(),
+        **pr.get_related_map(),
+        **r95ptot.get_related_map(),
+        **snwdays.get_related_map(),
+        **su30.get_related_map(),
+        **tas.get_related_map(),
+        **tasmax.get_related_map(),
+        **tasmin.get_related_map(),
+        **tr.get_related_map(),
+    }.items():
+        to_update[name] = {
+            "related": related_names,
+        }
+
+    for name, uncertainties in {
+        **cdd.get_uncertainty_map(),
+        **fd.get_uncertainty_map(),
+        **pr.get_uncertainty_map(),
+        **r95ptot.get_uncertainty_map(),
+        **snwdays.get_uncertainty_map(),
+        **su30.get_uncertainty_map(),
+        **tas.get_uncertainty_map(),
+        **tasmax.get_uncertainty_map(),
+        **tasmin.get_uncertainty_map(),
+        **tr.get_uncertainty_map(),
+    }.items():
+        info = to_update.setdefault(name, {})
+        info["uncertainties"] = uncertainties
+
+    for name, info in to_update.items():
+        main_cov_conf = all_cov_confs[name]
+        secondaries = info.get("related")
+        uncertainties = info.get("uncertainties")
+        update_kwargs = {}
+        if secondaries is not None:
+            secondary_cov_confs = [
+                cc for name, cc in all_cov_confs.items() if name in secondaries
+            ]
+            update_kwargs["secondary_coverage_configurations_ids"] = [
+                cc.id for cc in secondary_cov_confs
+            ]
+        if uncertainties is not None:
+            lower_uncert_id = [
+                cc.id for name, cc in all_cov_confs.items() if name == uncertainties[0]
+            ][0]
+            upper_uncert_id = [
+                cc.id for name, cc in all_cov_confs.items() if name == uncertainties[1]
+            ][0]
+            update_kwargs.update(
+                uncertainty_lower_bounds_coverage_configuration_id=lower_uncert_id,
+                uncertainty_upper_bounds_coverage_configuration_id=upper_uncert_id,
+            )
+        cov_update = CoverageConfigurationUpdate(
+            **main_cov_conf.model_dump(
+                exclude={
+                    "uncertainty_lower_bounds_coverage_configuration_id",
+                    "uncertainty_upper_bounds_coverage_configuration_id",
+                    "secondary_coverage_configurations_ids",
+                    "possible_values",
+                }
+            ),
+            **update_kwargs,
+            possible_values=[
+                ConfigurationParameterPossibleValueUpdate(
+                    configuration_parameter_value_id=pv.configuration_parameter_value_id
+                )
+                for pv in main_cov_conf.possible_values
+            ],
+        )
+        database.update_coverage_configuration(
+            session,
+            main_cov_conf,
+            cov_update,
+        )

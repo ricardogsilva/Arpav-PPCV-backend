@@ -13,7 +13,7 @@ from ...schemas.coverages import (
 )
 
 
-def generate_cdd_configurations(
+def generate_configurations(
     conf_param_values,
 ) -> list[CoverageConfigurationCreate]:
     return [
@@ -354,3 +354,54 @@ def generate_cdd_configurations(
             ],
         ),
     ]
+
+
+def get_related_map() -> dict[str, list[str]]:
+    return {
+        "cdd_30yr_anomaly_annual_agree_model_ensemble": [
+            "cdd_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            "cdd_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            "cdd_30yr_anomaly_annual_model_ec_earth_rca4",
+            "cdd_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+            "cdd_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+        ],
+        "cdd_30yr_anomaly_annual_model_ec_earth_cclm4_8_17": [
+            "cdd_30yr_anomaly_annual_agree_model_ensemble",
+            "cdd_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            "cdd_30yr_anomaly_annual_model_ec_earth_rca4",
+            "cdd_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+            "cdd_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+        ],
+        "cdd_30yr_anomaly_annual_model_ec_earth_racmo22e": [
+            "cdd_30yr_anomaly_annual_agree_model_ensemble",
+            "cdd_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            "cdd_30yr_anomaly_annual_model_ec_earth_rca4",
+            "cdd_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+            "cdd_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+        ],
+        "cdd_30yr_anomaly_annual_model_ec_earth_rca4": [
+            "cdd_30yr_anomaly_annual_agree_model_ensemble",
+            "cdd_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            "cdd_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            "cdd_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+            "cdd_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+        ],
+        "cdd_30yr_anomaly_annual_model_hadgem2_es_racmo22e": [
+            "cdd_30yr_anomaly_annual_agree_model_ensemble",
+            "cdd_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            "cdd_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            "cdd_30yr_anomaly_annual_model_ec_earth_rca4",
+            "cdd_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+        ],
+        "cdd_30yr_anomaly_annual_model_mpi_esm_lr_remo2009": [
+            "cdd_30yr_anomaly_annual_agree_model_ensemble",
+            "cdd_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            "cdd_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            "cdd_30yr_anomaly_annual_model_ec_earth_rca4",
+            "cdd_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+        ],
+    }
+
+
+def get_uncertainty_map() -> dict[str, tuple[str, str]]:
+    return {}
