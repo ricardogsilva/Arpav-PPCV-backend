@@ -44,6 +44,7 @@ class CoverageConfigurationReadListItem(pydantic.BaseModel):
     url: pydantic.AnyHttpUrl
     id: uuid.UUID
     name: str
+    wms_main_layer_name: str | None
     coverage_id_pattern: str
     possible_values: list[ConfigurationParameterPossibleValueRead]
 
