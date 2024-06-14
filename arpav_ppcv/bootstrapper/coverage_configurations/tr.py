@@ -23,7 +23,7 @@ from ...schemas.coverages import (
 )
 
 
-def generate_tr_configurations(
+def generate_configurations(
     conf_param_values, variables
 ) -> list[CoverageConfigurationCreate]:
     return [
@@ -476,3 +476,101 @@ def generate_tr_configurations(
             ],
         ),
     ]
+
+
+def get_related_map() -> dict[str, list[str]]:
+    return {
+        "tr_annual_absolute_model_ensemble": [
+            "tr_annual_absolute_model_ec_earth_cclm4_8_17",
+            "tr_annual_absolute_model_ec_earth_racmo22e",
+            "tr_annual_absolute_model_ec_earth_rca4",
+            "tr_annual_absolute_model_hadgem2_es_racmo22e",
+            "tr_annual_absolute_model_mpi_esm_lr_remo2009",
+        ],
+        "tr_annual_absolute_model_ec_earth_cclm4_8_17": [
+            "tr_annual_absolute_model_ensemble",
+            "tr_annual_absolute_model_ec_earth_racmo22e",
+            "tr_annual_absolute_model_ec_earth_rca4",
+            "tr_annual_absolute_model_hadgem2_es_racmo22e",
+            "tr_annual_absolute_model_mpi_esm_lr_remo2009",
+        ],
+        "tr_annual_absolute_model_ec_earth_racmo22e": [
+            "tr_annual_absolute_model_ensemble",
+            "tr_annual_absolute_model_ec_earth_cclm4_8_17",
+            "tr_annual_absolute_model_ec_earth_rca4",
+            "tr_annual_absolute_model_hadgem2_es_racmo22e",
+            "tr_annual_absolute_model_mpi_esm_lr_remo2009",
+        ],
+        "tr_annual_absolute_model_ec_earth_rca4": [
+            "tr_annual_absolute_model_ensemble",
+            "tr_annual_absolute_model_ec_earth_cclm4_8_17",
+            "tr_annual_absolute_model_ec_earth_racmo22e",
+            "tr_annual_absolute_model_hadgem2_es_racmo22e",
+            "tr_annual_absolute_model_mpi_esm_lr_remo2009",
+        ],
+        "tr_annual_absolute_model_hadgem2_es_racmo22e": [
+            "tr_annual_absolute_model_ensemble",
+            "tr_annual_absolute_model_ec_earth_cclm4_8_17",
+            "tr_annual_absolute_model_ec_earth_racmo22e",
+            "tr_annual_absolute_model_ec_earth_rca4",
+            "tr_annual_absolute_model_mpi_esm_lr_remo2009",
+        ],
+        "tr_annual_absolute_model_mpi_esm_lr_remo2009": [
+            "tr_annual_absolute_model_ensemble",
+            "tr_annual_absolute_model_ec_earth_cclm4_8_17",
+            "tr_annual_absolute_model_ec_earth_racmo22e",
+            "tr_annual_absolute_model_ec_earth_rca4",
+            "tr_annual_absolute_model_hadgem2_es_racmo22e",
+        ],
+        "tr_30yr_anomaly_annual_agree_model_ensemble": [
+            "tr_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            "tr_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            "tr_30yr_anomaly_annual_model_ec_earth_rca4",
+            "tr_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+            "tr_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+        ],
+        "tr_30yr_anomaly_annual_model_ec_earth_cclm4_8_17": [
+            "tr_30yr_anomaly_annual_agree_model_ensemble",
+            "tr_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            "tr_30yr_anomaly_annual_model_ec_earth_rca4",
+            "tr_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+            "tr_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+        ],
+        "tr_30yr_anomaly_annual_model_ec_earth_racmo22e": [
+            "tr_30yr_anomaly_annual_agree_model_ensemble",
+            "tr_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            "tr_30yr_anomaly_annual_model_ec_earth_rca4",
+            "tr_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+            "tr_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+        ],
+        "tr_30yr_anomaly_annual_model_ec_earth_rca4": [
+            "tr_30yr_anomaly_annual_agree_model_ensemble",
+            "tr_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            "tr_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            "tr_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+            "tr_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+        ],
+        "tr_30yr_anomaly_annual_model_hadgem2_es_racmo22e": [
+            "tr_30yr_anomaly_annual_agree_model_ensemble",
+            "tr_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            "tr_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            "tr_30yr_anomaly_annual_model_ec_earth_rca4",
+            "tr_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+        ],
+        "tr_30yr_anomaly_annual_model_mpi_esm_lr_remo2009": [
+            "tr_30yr_anomaly_annual_agree_model_ensemble",
+            "tr_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            "tr_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            "tr_30yr_anomaly_annual_model_ec_earth_rca4",
+            "tr_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+        ],
+    }
+
+
+def get_uncertainty_map() -> dict[str, tuple[str, str]]:
+    return {
+        "tr_annual_absolute_model_ensemble": (
+            "tr_annual_absolute_model_ensemble_upper_uncertainty",
+            "tr_annual_absolute_model_ensemble_lower_uncertainty",
+        )
+    }
