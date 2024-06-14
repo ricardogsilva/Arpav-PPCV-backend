@@ -184,29 +184,11 @@ def list_coverage_identifiers(
     _, unfiltered_total = db.list_coverage_identifiers(
         db_session, limit=1, offset=0, include_total=True
     )
-    records = []
-    for cov_internal in cov_internals:
-        thredds_url_fragment = cov_internal.configuration.get_thredds_url_fragment(
-            cov_internal.identifier
-        )
-        wms_base_url = "/".join(
-            (
-                settings.thredds_server.base_url,
-                settings.thredds_server.wms_service_url_fragment,
-                thredds_url_fragment,
-            )
-        )
-        records.append(
-            coverage_schemas.CoverageIdentifierReadListItem(
-                identifier=cov_internal.identifier,
-                wms_base_url=wms_base_url,
-                wms_main_layer_name=cov_internal.configuration.wms_main_layer_name,
-            )
-        )
 
     return coverage_schemas.CoverageIdentifierList.from_items(
-        records,
-        request=request,
+        cov_internals,
+        request,
+        settings=settings,
         limit=list_params.limit,
         offset=list_params.offset,
         filtered_total=filtered_total,
