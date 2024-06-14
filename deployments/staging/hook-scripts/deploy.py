@@ -133,7 +133,7 @@ class _FindEnvFiles:
 
 
 @dataclasses.dataclass
-class _PullImage:
+class _PullImages:
     images: Sequence[str]
     name: str = "pull new docker images from container registry"
 
@@ -148,6 +148,7 @@ class _StartCompose:
     env_file_legacy_db_service: Path
     env_file_webapp_service: Path
     env_file_frontend_service: Path
+    env_file_martin_service: Path
     compose_files_fragment: str
     name: str = "start docker compose"
 
@@ -164,6 +165,7 @@ class _StartCompose:
                 "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_LEGACY_DB_SERVICE": self.env_file_legacy_db_service,  # noqa
                 "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_WEBAPP_SERVICE": self.env_file_webapp_service,  # noqa
                 "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_FRONTEND_SERVICE": self.env_file_frontend_service,  # noqa
+                "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_MARTIN_SERVICE": self.env_file_martin_service,  # noqa
             },
             check=True,
         )
@@ -230,15 +232,13 @@ def perform_deployment(
     clone_destination = Path("/tmp/arpav-ppcv-backend")
     deployment_env_files = {
         "db_service": deployment_root / "environment-files/db-service.env",
-        "legacy_db_service": deployment_root
-        / "environment-files/legacy-db-service.env",
+        "legacy_db_service": (
+            deployment_root / "environment-files/legacy-db-service.env"
+        ),
         "webapp_service": deployment_root / "environment-files/webapp-service.env",
         "frontend_service": deployment_root / "environment-files/frontend-service.env",
+        "martin_service": deployment_root / "environment-files/martin-service.env",
     }
-    relevant_images = (
-        "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend",
-        "ghcr.io/geobeyond/arpav-ppcv/arpav-ppcv",
-    )
     webapp_service_name = "arpav-ppcv-staging-webapp-1"
     deployment_steps = [
         _ValidateRequestPayload(raw_payload=raw_request_payload),
@@ -247,12 +247,18 @@ def perform_deployment(
         _StopCompose(docker_dir=docker_dir, compose_files_fragment=compose_files),
         _CloneRepo(clone_destination=clone_destination),
         _ReplaceDockerDir(repo_dir=clone_destination, docker_dir=docker_dir),
-        _PullImage(images=relevant_images),
+        _PullImages(
+            images=(
+                "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend",
+                "ghcr.io/geobeyond/arpav-ppcv/arpav-ppcv",
+            )
+        ),
         _StartCompose(
             env_file_db_service=deployment_env_files["db_service"],
             env_file_legacy_db_service=deployment_env_files["legacy_db_service"],
             env_file_webapp_service=deployment_env_files["webapp_service"],
             env_file_frontend_service=deployment_env_files["frontend_service"],
+            env_file_martin_service=deployment_env_files["martin_service"],
             compose_files_fragment=compose_files,
         ),
         _RunMigrations(webapp_service_name=webapp_service_name),

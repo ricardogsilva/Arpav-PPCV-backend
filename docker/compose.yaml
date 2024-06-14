@@ -50,6 +50,10 @@ services:
 
   frontend:
     image: "ghcr.io/geobeyond/arpav-ppcv/arpav-ppcv:latest"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.arpav-frontend-router.rule=!PathRegexp(`^/(api|admin|vector-tiles)`)"
+      - "traefik.http.services.arpav-frontend-service.loadbalancer.server.port=80"
 
   webapp:
     image: "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend:latest"
