@@ -108,8 +108,14 @@ class CoverageConfigurationList(WebResourceList):
     path_operation_name = "list_coverage_configurations"
 
 
+class CoverageIdentifierReadListItem(pydantic.BaseModel):
+    identifier: str
+    wms_base_url: str
+    wms_main_layer_name: str | None = None
+
+
 class CoverageIdentifierList(WebResourceList):
-    items: list[str]
+    items: list[CoverageIdentifierReadListItem]
     path_operation_name = "list_coverage_identifiers"
 
     @classmethod

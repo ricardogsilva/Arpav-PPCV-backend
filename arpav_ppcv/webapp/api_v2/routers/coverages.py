@@ -169,11 +169,12 @@ def get_coverage_configuration(
 )
 def list_coverage_identifiers(
     request: Request,
+    settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
     name_contains: Annotated[list[str], Query()] = None,
 ):
-    cov_ids, filtered_total = db.list_coverage_identifiers(
+    cov_internals, filtered_total = db.list_coverage_identifiers(
         db_session,
         limit=list_params.limit,
         offset=list_params.offset,
@@ -183,8 +184,28 @@ def list_coverage_identifiers(
     _, unfiltered_total = db.list_coverage_identifiers(
         db_session, limit=1, offset=0, include_total=True
     )
+    records = []
+    for cov_internal in cov_internals:
+        thredds_url_fragment = cov_internal.configuration.get_thredds_url_fragment(
+            cov_internal.identifier
+        )
+        wms_base_url = "/".join(
+            (
+                settings.thredds_server.base_url,
+                settings.thredds_server.wms_service_url_fragment,
+                thredds_url_fragment,
+            )
+        )
+        records.append(
+            coverage_schemas.CoverageIdentifierReadListItem(
+                identifier=cov_internal.identifier,
+                wms_base_url=wms_base_url,
+                wms_main_layer_name=cov_internal.configuration.wms_main_layer_name,
+            )
+        )
+
     return coverage_schemas.CoverageIdentifierList.from_items(
-        cov_ids,
+        records,
         request=request,
         limit=list_params.limit,
         offset=list_params.offset,
