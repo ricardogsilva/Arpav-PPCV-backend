@@ -91,4 +91,12 @@ def create_admin(settings: config.ArpavPpcvSettings) -> ArpavPpcvAdmin:
             target="blank_",
         )
     )
+    admin.add_view(
+        Link(
+            "Public site",
+            icon="fa fa-link",
+            url=f"{settings.public_url}",
+            target="blank_",
+        )
+    )
     return admin
