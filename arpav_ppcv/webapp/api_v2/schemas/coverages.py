@@ -4,8 +4,9 @@ import typing
 import pydantic
 from fastapi import Request
 
-from .base import WebResourceList
+from ....config import ArpavPpcvSettings
 from ....schemas import coverages as app_models
+from .base import WebResourceList
 
 
 class ConfigurationParameterValueEmbeddedInConfigurationParameter(pydantic.BaseModel):
@@ -44,6 +45,7 @@ class CoverageConfigurationReadListItem(pydantic.BaseModel):
     url: pydantic.AnyHttpUrl
     id: uuid.UUID
     name: str
+    wms_main_layer_name: str | None
     coverage_id_pattern: str
     possible_values: list[ConfigurationParameterPossibleValueRead]
 
@@ -107,16 +109,54 @@ class CoverageConfigurationList(WebResourceList):
     path_operation_name = "list_coverage_configurations"
 
 
+class CoverageIdentifierReadListItem(pydantic.BaseModel):
+    identifier: str
+    related_coverage_configuration_url: str
+    wms_base_url: str
+    wms_main_layer_name: str | None = None
+
+    @classmethod
+    def from_db_instance(
+        cls,
+        instance: app_models.CoverageInternal,
+        settings: ArpavPpcvSettings,
+        request: Request,
+    ) -> "CoverageIdentifierReadListItem":
+        thredds_url_fragment = instance.configuration.get_thredds_url_fragment(
+            instance.identifier
+        )
+        wms_base_url = "/".join(
+            (
+                settings.thredds_server.base_url,
+                settings.thredds_server.wms_service_url_fragment,
+                thredds_url_fragment,
+            )
+        )
+
+        return cls(
+            identifier=instance.identifier,
+            wms_base_url=wms_base_url,
+            wms_main_layer_name=instance.configuration.wms_main_layer_name,
+            related_coverage_configuration_url=str(
+                request.url_for(
+                    "get_coverage_configuration",
+                    coverage_configuration_id=instance.configuration.id,
+                )
+            ),
+        )
+
+
 class CoverageIdentifierList(WebResourceList):
-    items: list[str]
+    items: list[CoverageIdentifierReadListItem]
     path_operation_name = "list_coverage_identifiers"
 
     @classmethod
     def from_items(
         cls,
-        items: typing.Sequence[str],
+        items: typing.Sequence[app_models.CoverageInternal],
         request: Request,
         *,
+        settings: ArpavPpcvSettings,
         limit: int,
         offset: int,
         filtered_total: int,
@@ -127,7 +167,10 @@ class CoverageIdentifierList(WebResourceList):
             links=cls._get_list_links(
                 request, limit, offset, filtered_total, len(items)
             ),
-            items=[i for i in items],
+            items=[
+                CoverageIdentifierReadListItem.from_db_instance(i, settings, request)
+                for i in items
+            ],
         )
 
 

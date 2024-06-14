@@ -20,6 +20,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="cdd_30yr_anomaly_annual_agree_model_ensemble",
             netcdf_main_dataset_name="cdd",
+            wms_main_layer_name="consecutive_dry_days_index_per_time_period-uncertainty_group",
             thredds_url_pattern="ensembletwbc/std/clipped/eca_cdd_an_avgagree_{time_window}_{scenario}_{year_period}_ls_VFVGTAA.nc",
             unit="gg",
             palette="uncert-stippled/div-BrBG-inv",
@@ -76,6 +77,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="cdd_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
             netcdf_main_dataset_name="cdd",
+            wms_main_layer_name="consecutive_dry_days_index_per_time_period",
             thredds_url_pattern="indici5rcm/clipped/eca_cdd_an_EC-EARTH_CCLM4-8-17_{scenario}_{year_period}_{time_window}_ls_VFVGTAA.nc",
             unit="gg",
             palette="default/div-BrBG-inv",
@@ -132,6 +134,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="cdd_30yr_anomaly_annual_model_ec_earth_racmo22e",
             netcdf_main_dataset_name="cdd",
+            wms_main_layer_name="consecutive_dry_days_index_per_time_period",
             thredds_url_pattern="indici5rcm/clipped/eca_cdd_an_EC-EARTH_RACMO22E_{scenario}_{year_period}_{time_window}_ls_VFVGTAA.nc",
             unit="gg",
             palette="default/div-BrBG-inv",
@@ -188,6 +191,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="cdd_30yr_anomaly_annual_model_ec_earth_rca4",
             netcdf_main_dataset_name="cdd",
+            wms_main_layer_name="consecutive_dry_days_index_per_time_period",
             thredds_url_pattern="indici5rcm/clipped/eca_cdd_an_EC-EARTH_RCA4_{scenario}_{year_period}_{time_window}_ls_VFVGTAA.nc",
             unit="gg",
             palette="default/div-BrBG-inv",
@@ -244,6 +248,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="cdd_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
             netcdf_main_dataset_name="cdd",
+            wms_main_layer_name="consecutive_dry_days_index_per_time_period",
             thredds_url_pattern="indici5rcm/clipped/eca_cdd_an_HadGEM2-ES_RACMO22E_{scenario}_{year_period}_{time_window}_ls_VFVGTAA.nc",
             unit="gg",
             palette="default/div-BrBG-inv",
@@ -300,6 +305,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="cdd_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
             netcdf_main_dataset_name="cdd",
+            wms_main_layer_name="consecutive_dry_days_index_per_time_period",
             thredds_url_pattern="indici5rcm/clipped/eca_cdd_an_MPI-ESM-LR_REMO2009_{scenario}_{year_period}_{time_window}_ls_VFVGTAA.nc",
             unit="gg",
             palette="default/div-BrBG-inv",

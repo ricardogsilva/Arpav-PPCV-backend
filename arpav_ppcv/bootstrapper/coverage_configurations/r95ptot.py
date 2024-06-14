@@ -20,6 +20,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="r95ptot_30yr_anomaly_annual_agree_model_ensemble",
             netcdf_main_dataset_name="r95ptot",
+            wms_main_layer_name="r95ptot-uncertainty_group",
             thredds_url_pattern="ensembletwbc/std/clipped/pr_change_cumulative_check_avgagree_{time_window}_{scenario}_{year_period}_VFVGTAA.nc",
             unit="%",
             palette="uncert-stippled/div-BrBG",
@@ -76,6 +77,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="r95ptot_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
             netcdf_main_dataset_name="r95ptot",
+            wms_main_layer_name="r95ptot",
             thredds_url_pattern="indici5rcm/clipped/pr_change_cumulative_EC-EARTH_CCLM4-8-17_{year_period}_{scenario}_{time_window}_VFVGTAA.nc",
             unit="%",
             palette="default/div-BrBG",
@@ -132,6 +134,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="r95ptot_30yr_anomaly_annual_model_ec_earth_racmo22e",
             netcdf_main_dataset_name="r95ptot",
+            wms_main_layer_name="r95ptot",
             thredds_url_pattern="indici5rcm/clipped/pr_change_cumulative_EC-EARTH_RACMO22E_{year_period}_{scenario}_{time_window}_VFVGTAA.nc",
             unit="%",
             palette="default/div-BrBG",
@@ -188,6 +191,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="r95ptot_30yr_anomaly_annual_model_ec_earth_rca4",
             netcdf_main_dataset_name="r95ptot",
+            wms_main_layer_name="r95ptot",
             thredds_url_pattern="indici5rcm/clipped/pr_change_cumulative_EC-EARTH_RCA4_{year_period}_{scenario}_{time_window}_VFVGTAA.nc",
             unit="%",
             palette="default/div-BrBG",
@@ -244,6 +248,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="r95ptot_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
             netcdf_main_dataset_name="r95ptot",
+            wms_main_layer_name="r95ptot",
             thredds_url_pattern="indici5rcm/clipped/pr_change_cumulative_HadGEM2-ES_RACMO22E_{year_period}_{scenario}_{time_window}_VFVGTAA.nc",
             unit="%",
             palette="default/div-BrBG",
@@ -300,6 +305,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="r95ptot_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
             netcdf_main_dataset_name="r95ptot",
+            wms_main_layer_name="r95ptot",
             thredds_url_pattern="indici5rcm/clipped/pr_change_cumulative_MPI-ESM-LR_REMO2009_{year_period}_{scenario}_{time_window}_VFVGTAA.nc",
             unit="%",
             palette="default/div-BrBG",

@@ -252,6 +252,7 @@ class CoverageConfigurationView(ModelView):
         fields.UuidField("id"),
         starlette_admin.StringField("name", required=True),
         starlette_admin.StringField("netcdf_main_dataset_name", required=True),
+        starlette_admin.StringField("wms_main_layer_name", required=True),
         starlette_admin.StringField("thredds_url_pattern", required=True),
         starlette_admin.StringField("coverage_id_pattern", disabled=True),
         starlette_admin.StringField("unit", required=True),
@@ -303,6 +304,7 @@ class CoverageConfigurationView(ModelView):
     exclude_fields_from_list = (
         "id",
         "netcdf_main_dataset_name",
+        "wms_main_layer_name",
         "coverage_id_pattern",
         "possible_values",
         "unit",

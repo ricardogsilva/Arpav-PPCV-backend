@@ -169,11 +169,12 @@ def get_coverage_configuration(
 )
 def list_coverage_identifiers(
     request: Request,
+    settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
     name_contains: Annotated[list[str], Query()] = None,
 ):
-    cov_ids, filtered_total = db.list_coverage_identifiers(
+    cov_internals, filtered_total = db.list_coverage_identifiers(
         db_session,
         limit=list_params.limit,
         offset=list_params.offset,
@@ -183,9 +184,11 @@ def list_coverage_identifiers(
     _, unfiltered_total = db.list_coverage_identifiers(
         db_session, limit=1, offset=0, include_total=True
     )
+
     return coverage_schemas.CoverageIdentifierList.from_items(
-        cov_ids,
-        request=request,
+        cov_internals,
+        request,
+        settings=settings,
         limit=list_params.limit,
         offset=list_params.offset,
         filtered_total=filtered_total,

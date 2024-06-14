@@ -53,6 +53,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_seasonal_anomaly_model_ensemble",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="ens5ym/clipped/tas_anom_pp_ts_{scenario}_{year_period}_VFVGTAA.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -99,6 +100,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_seasonal_anomaly_model_ec_earth_cclm4_8_17",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="EC-EARTH_CCLM4-8-17ym/clipped/tas_EC-EARTH_CCLM4-8-17_{scenario}_{year_period}_anomaly_pp_VFVGTAA.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -145,6 +147,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_seasonal_anomaly_model_ec_earth_racmo22e",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="EC-EARTH_RACMO22Eym/clipped/tas_EC-EARTH_RACMO22E_{scenario}_{year_period}_anomaly_pp_VFVGTAA.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -191,6 +194,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_seasonal_anomaly_model_ec_earth_rca4",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="EC-EARTH_RCA4ym/clipped/tas_EC-EARTH_RCA4_{scenario}_{year_period}_anomaly_pp_VFVGTAA.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -237,6 +241,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_seasonal_anomaly_model_hadgem2_es_racmo22e",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="HadGEM2-ES_RACMO22Eym/clipped/tas_HadGEM2-ES_RACMO22E_{scenario}_{year_period}_anomaly_pp_VFVGTAA.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -283,6 +288,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_seasonal_anomaly_model_mpi_esm_lr_remo2009",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="MPI-ESM-LR_REMO2009ym/clipped/tas_MPI-ESM-LR_REMO2009_{scenario}_{year_period}_anomaly_pp_VFVGTAA.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -329,6 +335,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_seasonal_anomaly_model_ensemble_upper_uncertainty",
             netcdf_main_dataset_name="tas_stdup",
+            wms_main_layer_name="tas_stdup",
             thredds_url_pattern="ens5ym/std/clipped/tas_anom_stdup_pp_ts_{scenario}_{year_period}_VFVGTAA.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -375,6 +382,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_seasonal_anomaly_model_ensemble_lower_uncertainty",
             netcdf_main_dataset_name="tas_stddown",
+            wms_main_layer_name="tas_stddown",
             thredds_url_pattern="ens5ym/std/clipped/tas_anom_stddown_pp_ts_{scenario}_{year_period}_VFVGTAA.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -421,6 +429,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_seasonal_absolute_model_ensemble",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="ensymbc/clipped/tas_avg_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -471,6 +480,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_annual_absolute_model_ensemble",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="ensymbc/clipped/tas_avg_{scenario}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -501,6 +511,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_seasonal_absolute_model_ec_earth_cclm4_8_17",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="EC-EARTH_CCLM4-8-17ymbc/clipped/tas_EC-EARTH_CCLM4-8-17_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -551,6 +562,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_annual_absolute_model_ec_earth_cclm4_8_17",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="EC-EARTH_CCLM4-8-17ymbc/clipped/tas_EC-EARTH_CCLM4-8-17_{scenario}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -581,6 +593,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_seasonal_absolute_model_ec_earth_racmo22e",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="EC-EARTH_RACMO22Eymbc/clipped/tas_EC-EARTH_RACMO22E_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -631,6 +644,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_annual_absolute_model_ec_earth_racmo22e",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="EC-EARTH_RACMO22Eymbc/clipped/tas_EC-EARTH_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -661,6 +675,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_seasonal_absolute_model_ec_earth_rca4",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="EC-EARTH_RCA4ymbc/clipped/tas_EC-EARTH_RCA4_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -711,6 +726,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_annual_absolute_model_ec_earth_rca4",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="EC-EARTH_RCA4ymbc/clipped/tas_EC-EARTH_RCA4_{scenario}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -741,6 +757,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_seasonal_absolute_model_hadgem2_es_racmo22e",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="HadGEM2-ES_RACMO22Eymbc/clipped/tas_HadGEM2-ES_RACMO22E_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -791,6 +808,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_annual_absolute_model_hadgem2_es_racmo22e",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="HadGEM2-ES_RACMO22Eymbc/clipped/tas_HadGEM2-ES_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -821,6 +839,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_seasonal_absolute_model_mpi_esm_lr_remo2009",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="MPI-ESM-LR_REMO2009ymbc/clipped/tas_MPI-ESM-LR_REMO2009_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -871,6 +890,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_annual_absolute_model_mpi_esm_lr_remo2009",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="MPI-ESM-LR_REMO2009ymbc/clipped/tas_MPI-ESM-LR_REMO2009_{scenario}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -901,6 +921,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_seasonal_absolute_model_ensemble_upper_uncertainty",
             netcdf_main_dataset_name="tas_stdup",
+            wms_main_layer_name="tas_stdup",
             thredds_url_pattern="ensymbc/std/clipped/tas_stdup_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -947,6 +968,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_seasonal_absolute_model_ensemble_lower_uncertainty",
             netcdf_main_dataset_name="tas_stddown",
+            wms_main_layer_name="tas_stddown",
             thredds_url_pattern="ensymbc/std/clipped/tas_stddown_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -993,6 +1015,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_annual_absolute_model_ensemble_upper_uncertainty",
             netcdf_main_dataset_name="tas_stdup",
+            wms_main_layer_name="tas_stdup",
             thredds_url_pattern="ensymbc/std/clipped/tas_stdup_{scenario}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -1019,6 +1042,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_annual_absolute_model_ensemble_lower_uncertainty",
             netcdf_main_dataset_name="tas_stddown",
+            wms_main_layer_name="tas_stddown",
             thredds_url_pattern="ensymbc/std/clipped/tas_stddown_{scenario}_ts19762100_ls_VFVG.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -1045,6 +1069,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_30yr_anomaly_seasonal_agree_model_ensemble",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas-uncertainty_group",
             thredds_url_pattern="ensembletwbc/std/clipped/tas_avgagree_anom_{time_window}_{scenario}_{year_period}_VFVGTAA.nc",
             unit="ºC",
             palette="uncert-stippled/seq-YlOrRd",
@@ -1101,6 +1126,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="taspr5rcm/clipped/tas_EC-EARTH_CCLM4-8-17_{scenario}_seas_{time_window}{year_period}_VFVGTAA.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -1157,6 +1183,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="taspr5rcm/clipped/tas_EC-EARTH_RACMO22E_{scenario}_seas_{time_window}{year_period}_VFVGTAA.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -1213,6 +1240,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_30yr_anomaly_seasonal_model_ec_earth_rca4",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="taspr5rcm/clipped/tas_EC-EARTH_RCA4_{scenario}_seas_{time_window}{year_period}_VFVGTAA.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -1269,6 +1297,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="taspr5rcm/clipped/tas_HadGEM2-ES_RACMO22E_{scenario}_seas_{time_window}{year_period}_VFVGTAA.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",
@@ -1325,6 +1354,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="tas_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
             netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
             thredds_url_pattern="taspr5rcm/clipped/tas_MPI-ESM-LR_REMO2009_{scenario}_seas_{time_window}{year_period}_VFVGTAA.nc",
             unit="ºC",
             palette="default/seq-YlOrRd",

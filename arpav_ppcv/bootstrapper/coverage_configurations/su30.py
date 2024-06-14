@@ -30,6 +30,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_ensemble",
             netcdf_main_dataset_name="su30",
+            wms_main_layer_name="su30",
             thredds_url_pattern="ensymbc/clipped/ecasu_30_avg_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
@@ -60,6 +61,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_ec_earth_cclm4_8_17",
             netcdf_main_dataset_name="su30",
+            wms_main_layer_name="su30",
             thredds_url_pattern="EC-EARTH_CCLM4-8-17ymbc/clipped/ecasu_30_EC-EARTH_CCLM4-8-17_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
@@ -90,6 +92,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_ec_earth_racmo22e",
             netcdf_main_dataset_name="su30",
+            wms_main_layer_name="su30",
             thredds_url_pattern="EC-EARTH_RACMO22Eymbc/clipped/ecasu_30_EC-EARTH_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
@@ -120,6 +123,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_ec_earth_rca4",
             netcdf_main_dataset_name="su30",
+            wms_main_layer_name="su30",
             thredds_url_pattern="EC-EARTH_RCA4ymbc/clipped/ecasu_30_EC-EARTH_RCA4_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
@@ -150,6 +154,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_hadgem2_es_racmo22e",
             netcdf_main_dataset_name="su30",
+            wms_main_layer_name="su30",
             thredds_url_pattern="HadGEM2-ES_RACMO22Eymbc/clipped/ecasu_30_HadGEM2-ES_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
@@ -180,6 +185,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_mpi_esm_lr_remo2009",
             netcdf_main_dataset_name="su30",
+            wms_main_layer_name="su30",
             thredds_url_pattern="MPI-ESM-LR_REMO2009ymbc/clipped/ecasu_30_MPI-ESM-LR_REMO2009_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
@@ -210,6 +216,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_ensemble_upper_uncertainty",
             netcdf_main_dataset_name="su30_stdup",
+            wms_main_layer_name="su30_stdup",
             thredds_url_pattern="ensymbc/std/clipped/ecasu_30_stdup_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
@@ -236,6 +243,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_ensemble_lower_uncertainty",
             netcdf_main_dataset_name="su30_stddown",
+            wms_main_layer_name="su30_stddown",
             thredds_url_pattern="ensymbc/std/clipped/ecasu_30_stddown_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
@@ -262,6 +270,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="su30_30yr_anomaly_annual_agree_model_ensemble",
             netcdf_main_dataset_name="su30",
+            wms_main_layer_name="su30-uncertainty_group",
             thredds_url_pattern="ensembletwbc/std/clipped/ecasuan_30_avgagree_{time_window}_{scenario}_ls_VFVG.nc",
             unit="gg",
             palette="uncert-stippled/seq-YlOrRd",
@@ -298,6 +307,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="su30_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
             netcdf_main_dataset_name="su30",
+            wms_main_layer_name="su30",
             thredds_url_pattern="indici5rcm/clipped/ecasuan_30_EC-EARTH_CCLM4-8-17_{scenario}_{time_window}_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
@@ -334,6 +344,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="su30_30yr_anomaly_annual_model_ec_earth_racmo22e",
             netcdf_main_dataset_name="su30",
+            wms_main_layer_name="su30",
             thredds_url_pattern="indici5rcm/clipped/ecasuan_30_EC-EARTH_RACMO22E_{scenario}_{time_window}_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
@@ -370,6 +381,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="su30_30yr_anomaly_annual_model_ec_earth_rca4",
             netcdf_main_dataset_name="su30",
+            wms_main_layer_name="su30",
             thredds_url_pattern="indici5rcm/clipped/ecasuan_30_EC-EARTH_RCA4_{scenario}_{time_window}_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
@@ -406,6 +418,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="su30_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
             netcdf_main_dataset_name="su30",
+            wms_main_layer_name="su30",
             thredds_url_pattern="indici5rcm/clipped/ecasuan_30_HadGEM2-ES_RACMO22E_{scenario}_{time_window}_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",
@@ -442,6 +455,7 @@ def generate_configurations(
         CoverageConfigurationCreate(
             name="su30_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
             netcdf_main_dataset_name="su30",
+            wms_main_layer_name="su30",
             thredds_url_pattern="indici5rcm/clipped/ecasuan_30_MPI-ESM-LR_REMO2009_{scenario}_{time_window}_ls_VFVG.nc",
             unit="gg",
             palette="default/seq-YlOrRd",

@@ -863,6 +863,7 @@ def create_coverage_configuration(
     db_coverage_configuration = coverages.CoverageConfiguration(
         name=coverage_configuration_create.name,
         netcdf_main_dataset_name=coverage_configuration_create.netcdf_main_dataset_name,
+        wms_main_layer_name=coverage_configuration_create.wms_main_layer_name,
         thredds_url_pattern=coverage_configuration_create.thredds_url_pattern,
         unit=coverage_configuration_create.unit,
         palette=coverage_configuration_create.palette,
@@ -1107,28 +1108,31 @@ def list_coverage_identifiers(
     offset: int = 0,
     include_total: bool = False,
     name_filter: list[str] | None = None,
-) -> tuple[list[str], Optional[int]]:
+) -> tuple[list[coverages.CoverageInternal], Optional[int]]:
     all_cov_ids = collect_all_coverage_identifiers(session)
     if name_filter is not None:
         for fragment in name_filter:
-            all_cov_ids = [i for i in all_cov_ids if fragment.lower() in i.lower()]
+            all_cov_ids = [
+                i for i in all_cov_ids if fragment.lower() in i.identifier.lower()
+            ]
     return (
-        all_cov_ids[offset : offset + limit],
+        all_cov_ids[offset : (offset + limit)],
         len(all_cov_ids) if include_total else None,
     )
 
 
 def collect_all_coverage_identifiers(
     session: sqlmodel.Session,
-):
+) -> list[coverages.CoverageInternal]:
     cov_confs = collect_all_coverage_configurations(session)
     cov_ids = []
     for cov_conf in cov_confs:
-        cov_ids.extend(
-            list_allowed_coverage_identifiers(
-                session, coverage_configuration_id=cov_conf.id
+        for cov_id in list_allowed_coverage_identifiers(
+            session, coverage_configuration_id=cov_conf.id
+        ):
+            cov_ids.append(
+                coverages.CoverageInternal(configuration=cov_conf, identifier=cov_id)
             )
-        )
     return cov_ids
 
 
