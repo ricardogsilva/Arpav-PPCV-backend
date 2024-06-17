@@ -139,7 +139,8 @@ class _PullImages:
 
     def handle(self) -> None:
         print("Pulling updated docker images...")
-        run(shlex.split(f"docker pull {' '.join(self.images)}"), check=True)
+        for image in self.images:
+            run(shlex.split(f"docker pull {image}"), check=True)
 
 
 @dataclasses.dataclass
