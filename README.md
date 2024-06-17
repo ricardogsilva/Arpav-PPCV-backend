@@ -1,5 +1,112 @@
 # Backend - Piattaforma Proiezioni Climatiche per il Nord-Est
 
+{Intro - about}
+
+This repository contains the source code for the backend components of the ARPAV-PPCV platform.
+
+Its main goal is to serve climate-related data in the form of both historical observations and forecast models.
+
+Briefly, the backend component is a web application that serves an OpenAPI API that is consumed by the frontend.
+It contains some additional services, which are used to support it and provide additional functionality, namely:
+
+- a vector tile server
+- The integration with ARPA's THREDDS server, which is used for tasks related to model data (WMS service, download of
+  NetCDF files, data subsetting for time series visualizations)
+
+The main application is launched by maeans of a custom CLI command. This CLI additionally provides a multitude of
+maintenance commands, such as upgrading the database schema, refreshing historical observations data, etc.
+
+This component is implemented in Python, using these main libraries and frameworks:
+
+- starlette
+- starlette_admin
+- FastAPI
+- pydantic
+- htmx
+- sqlalchemy
+- geoalchemy2
+- shapely
+
+
+### Installation
+
+The primary means of installing the various backend components is by using docker compose. Use the `compose.*` files
+provided in the `docker` directory.
+
+For example, for development:
+
+```shell
+docker compose -f docker/compose.yaml -f compose.dev.yaml up -d
+```
+
+Standing up the various components without docker is also possible, check out the compose file for how to do it. The
+main web application uses poetry, so installing it is just a matter of doing `poetry install`.
+
+
+### Configuration
+
+This application is configured via environment variables. By defaul all settings are prefixed with `ARPAV_PPCV__`, but
+this can also be modified if needed. The system recognizes the following environment variables:
+
+- `ARPAV_PPCV__DEBUG` - (bool - `False`) Whether the application runs in debug mode or not. Debug mode outputs more logging
+  information and can be slower. Additionally, it may leak sensitive data to the console. Use it only during development
+- `ARPAV_PPCV__BIND_HOST` - (str - `"127.0.0.1"`) Which host is allowed to make requests to the web application server.
+  When running under docker, be sure to set this to allow all hosts (`*`).
+- `ARPAV_PPCV__BIND_PORT` - (int - `5001`) Which port is the web application server accepting requests on.
+- `ARPAV_PPCV__PUBLIC_URL` - (str - `"http://localhost:5001"`) The public URL of the web application.
+- `ARPAV_PPCV__DB_DSN` - (pydantic.PostgresDsn - `"postgresql://user:password@localhost:5432/arpav_ppcv"`) Connection
+  string to be used for accessing the backend database. This application only works with postgresql as the DB server.
+- `ARPAV_PPCV__TEST_DB_DSN` - (pydantic.PostgresDsn - `None`) Connection string used to connect to the test database.
+  This is only needed for running the tests.
+- `ARPAV_PPCV__VERBOSE_DB_LOGS` - (bool - `False`) Whether to output verbose logs related to database-related commands.
+  Use this only in development, as it will slow down the system.
+- `ARPAV_PPCV__CONTACT__NAME` - (str - `"info@geobeyond.it"`)
+- `ARPAV_PPCV__CONTACT__URL` - (str - `"http://geobeyond.it"`)
+- `ARPAV_PPCV__CONTACT__EMAIL` - (str - `"info@geobeyond.it"`)
+- `ARPAV_PPCV__TEMPLATES_DIR` - (Path - `"webapp/templates"`) Where to store custom templates. This is mainly useful
+  for development, so avoid modifying it.
+- `ARPAV_PPCV__STATIC_DIR` - (Path - `"webapp/static"`) Where to store static files. This is mainly useful for
+  development, so avoid modifying it.
+- `ARPAV_PPCV__THREDDS_SERVER__BASE_URL` - (str - `"http://localhost:8080/thredds"`) Base URL of the THREDDS server
+- `ARPAV_PPCV__THREDDS_SERVER__WMS_SERVICE_URL_FRAGMENT` - (str - `"wms"`) URL fragment used by the THREDDS server's
+  WMS service. This is mainly useful for development, so avoid modifying it.
+- `ARPAV_PPCV__THREDDS_SERVER__NETCDF_SUBSET_SERVICE_URL_FRAGMENT` - (str - `"ncss/grid"`) URL fragment used by the
+  THREDDS server's NetCDF subset service. This is mainly useful for development, so avoid modifying it.
+- `ARPAV_PPCV__THREDDS_SERVER__UNCERTAINTY_VISUALIZATION_SCALE_RANGE` - (tuple[float, float] - `(0, 9)`) - Min, max
+  values for the uncertainty pattern used in the WMS uncertainty visualization display.
+
+- `ARPAV_PPCV__MARTIN_TILE_SERVER_BASE_URL` - (str - "http://localhost:3000") Base URL of the Martin vector tile server.
+- `ARPAV_PPCV__NEAREST_STATION_RADIUS_METERS` - (int - 10_000) Distance to use when looking for the nearest
+  observation station.
+- `ARPAV_PPCV__V1_API_MOUNT_PREFIX` - (str - "/api/v1") URL prefix of the legacy API. Do not modify this unless you
+  know what you are doing, as other parts of the system rely on it.
+- `ARPAV_PPCV__V2_API_MOUNT_PREFIX` - (str - "/api/v2") URL prefix of the web application API. Do not modify this unless
+  you know what you are doing, as other parts of the system rely on it.
+
+- `ARPAV_PPCV__DJANGO_APP`: DjangoAppSettings = DjangoAppSettings()
+
+- `ARPAV_PPCV__LOG_CONFIG_FILE`: Path | None = None
+- `ARPAV_PPCV__SESSION_SECRET_KEY`: str = "changeme"
+
+- `ARPAV_PPCV__ADMIN_USER`: AdminUserSettings = AdminUserSettings()
+
+- `ARPAV_PPCV__CORS_ORIGINS`: list[str] = []
+- `ARPAV_PPCV__CORS_METHODS`: list[str] = []
+- `ARPAV_PPCV__ALLOW_CORS_CREDENTIALS`: bool = False
+
+
+### Operations
+
+##### Accessing the CLI
+##### Accessing the web API
+##### Using the web admin
+
+### Deployment
+
+### Testing
+
+
+
 #### Climate Projections Platform for North-Eastern Italy - Backend structure for support future climates indicators and models outputs web service platform
 [![Piattaforma Proiezioni Climatiche per il Nord-Est](https://github.com/inkode-it/Arpav-PPCV/raw/main/public/img/screenshot.png)](https://clima.arpa.veneto.it/)
 
