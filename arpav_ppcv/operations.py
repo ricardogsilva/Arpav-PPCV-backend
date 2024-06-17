@@ -410,6 +410,8 @@ def _process_coverage_data(
                 _, loess_smoothed, _ = loess_1d(
                     df.index.astype("int64"),
                     df[base_column_name],
+                    degree=0.2,
+                    frac=0.75,
                 )
                 df[column_name] = loess_smoothed
         df = df.drop(columns=[base_column_name])
