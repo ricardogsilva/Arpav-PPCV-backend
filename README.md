@@ -2,6 +2,19 @@
 
 {Intro - about}
 
+This work is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by-sa/3.0/it/deed.en">Creative Commons Attribution-ShareAlike 3.0 IT License</a>.
+<br/><a rel="license" href="https://creativecommons.org/licenses/by-sa/3.0/it/deed.en"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a>
+
+Commissioned by & Data credits to <br/>
+<a href="https://www.arpa.veneto.it/"><img src="https://github.com/inkode-it/Arpav-PPCV/raw/main/public/img/logo_arpav.png" alt="ARPAV" style="background-color:white;padding:4px"></a>
+
+Current version was designed and developed in Italy by <br/>
+<a rel="author" href="mailto:info@geobeyond.it"><img src="https://avatars.githubusercontent.com/u/1163234?s=200&v=4" alt="Geobeyond"></a>
+
+A previous version had originally been developed by [inkode](http://inkode.it)
+
+---
+
 This repository contains the source code for the backend components of the ARPAV-PPCV platform.
 
 Its main goal is to serve climate-related data in the form of both historical observations and forecast models.
@@ -18,14 +31,15 @@ maintenance commands, such as upgrading the database schema, refreshing historic
 
 This component is implemented in Python, using these main libraries and frameworks:
 
+- FastAPI
+- geoalchemy2
+- httpx
+- pydantic
+- shapely
 - starlette
 - starlette_admin
-- FastAPI
-- pydantic
-- htmx
 - sqlalchemy
-- geoalchemy2
-- shapely
+- uvicorn
 
 
 ### Installation
@@ -40,7 +54,8 @@ docker compose -f docker/compose.yaml -f compose.dev.yaml up -d
 ```
 
 Standing up the various components without docker is also possible, check out the compose file for how to do it. The
-main web application uses poetry, so installing it is just a matter of doing `poetry install`.
+main web application uses [poetry](https://python-poetry.org/), so installing it is just a matter
+of doing `poetry install`.
 
 
 ### Configuration
@@ -74,7 +89,6 @@ this can also be modified if needed. The system recognizes the following environ
   THREDDS server's NetCDF subset service. This is mainly useful for development, so avoid modifying it.
 - `ARPAV_PPCV__THREDDS_SERVER__UNCERTAINTY_VISUALIZATION_SCALE_RANGE` - (tuple[float, float] - `(0, 9)`) - Min, max
   values for the uncertainty pattern used in the WMS uncertainty visualization display.
-
 - `ARPAV_PPCV__MARTIN_TILE_SERVER_BASE_URL` - (str - "http://localhost:3000") Base URL of the Martin vector tile server.
 - `ARPAV_PPCV__NEAREST_STATION_RADIUS_METERS` - (int - 10_000) Distance to use when looking for the nearest
   observation station.
@@ -82,232 +96,163 @@ this can also be modified if needed. The system recognizes the following environ
   know what you are doing, as other parts of the system rely on it.
 - `ARPAV_PPCV__V2_API_MOUNT_PREFIX` - (str - "/api/v2") URL prefix of the web application API. Do not modify this unless
   you know what you are doing, as other parts of the system rely on it.
-
-- `ARPAV_PPCV__DJANGO_APP`: DjangoAppSettings = DjangoAppSettings()
-
-- `ARPAV_PPCV__LOG_CONFIG_FILE`: Path | None = None
-- `ARPAV_PPCV__SESSION_SECRET_KEY`: str = "changeme"
-
-- `ARPAV_PPCV__ADMIN_USER`: AdminUserSettings = AdminUserSettings()
-
-- `ARPAV_PPCV__CORS_ORIGINS`: list[str] = []
-- `ARPAV_PPCV__CORS_METHODS`: list[str] = []
-- `ARPAV_PPCV__ALLOW_CORS_CREDENTIALS`: bool = False
+- `ARPAV_PPCV__DJANGO_APP` - (`DjangoAppSettings`) - Django-related settings - THESE ARE NOT DOCUMENTED, AS THE LEGACY
+  DJANGO APP IS DEPRECATED AND SHALL BE REMOVED SOON.
+- `ARPAV_PPCV__LOG_CONFIG_FILE` - (Path - `None`) - Path to the config file for the logging of the application.
+- `ARPAV_PPCV__SESSION_SECRET_KEY` - (str - `"changeme"`) - Secret key used by starlette sessions. Set this to a big
+  random string.
+- `ARPAV_PPCV__ADMIN_USER__USERNAME` - (str - `"arpavadmin"`) username of the admin user
+- `ARPAV_PPCV__ADMIN_USER__PASSWORD` - (str - `"arpavpassword"`) password of the admin user. Change it to a hard
+  to guess string.
+- `ARPAV_PPCV__ADMIN_USER__NAME` - (str - `"Admin"`) Name for the admin user. It gets displayed on the admin section.
+- `ARPAV_PPCV__ADMIN_USER__AVATAR` - (str - `None`) Optional URL for admin user's avatar image.
+- `ARPAV_PPCV__ADMIN_USER__COMPANY_LOGO_URL` - (str - `None`) Optional URL for the admin user's company image
+- `ARPAV_PPCV__ADMIN_USER__ROLES` - (list[str] - `["read", "create", "edit", "delete", "action_make_published"]`) User
+  roles of the admin user. This is mainly useful for development, so avoid modifying it.
+- `ARPAV_PPCV__CORS_ORIGINS` - (list[str] - `[]`) Origins that are allowed to make cross-origin requests.
+- `ARPAV_PPCV__CORS_METHODS` - (list[str] - `[]`) Methods allowed for cross-origin requests.
+- `ARPAV_PPCV__ALLOW_CORS_CREDENTIALS` - (bool - `False`) Whether to allow credentials on cross-origin requests.
 
 
 ### Operations
 
 ##### Accessing the CLI
+
+The CLI is named `arpav-ppcv`. When running under docker compose, it can be used with the following incantation:
+
+```shell
+docker exec -ti arpav-ppcv-webapp-1 poetry run arpav-ppcv <sub-command>
+```
+
+There are numerous sub-commands and each may accept additional arguments, so please check the help of the sub-command
+you want to run, by passing the `--help` flag.
+
+For example, running the web application  server can be achieved with:
+
+```shell
+docker exec -ti poetry run arpav-ppcv run-server
+```
+
 ##### Accessing the web API
+
+When using the development docker compose file(s), the web application server is accessible at:
+
+    http://localhost:8877
+
+The auto-generated API docs are accessible at the `/api/v2/docs` endpoint
+
+
 ##### Using the web admin
+
+When using the development docker compose file(s), the admin section is available at:
+
+    http://localhost:8877/admin
+
 
 ### Deployment
 
+##### Development environment
+
+dev environment is located at individual devs machine(s). In order to get a working dev deployment set up:
+
+- Ensure you have `git` installed
+- Clone (or fork+clone) this repo to your local machine
+- Ensure you have docker installed
+- Run the following command:
+
+    ```shell
+    docker compose -f docker/compose.yaml -f docker/compose.dev.yaml up -d
+    ```
+
+- The system will eventually be initialized. Now bootstrap the system by running:
+
+    ```shell
+    docker exec -ti arpav-ppcv-webapp-1 poetry run arpav-ppcv db upgrade
+    docker exec -ti arpav-ppcv-webapp-1 poetry run arpav-ppcv bootstrap municipalities
+    docker exec -ti arpav-ppcv-webapp-1 poetry run arpav-ppcv bootstrap observation-variables
+    docker exec -ti arpav-ppcv-webapp-1 poetry run arpav-ppcv bootstrap coverage-configuration-parameters
+    docker exec -ti arpav-ppcv-webapp-1 poetry run arpav-ppcv bootstrap coverage-configurations
+    ```
+
+- If needed, you can download some NetCDF datasets from the remote THREDDS server by running
+  the `arpav-ppcv dev import-thredds-datasets` command. Check its help for more detail. As an example:
+
+    ```shell
+    # downloads all su30 netcdf datasets in order to use them in the dev environment
+    docker exec -ti arpav-ppcv-webapp-1 poetry run arpav-ppcv dev import-thredds-datasets \
+        https://thredds.arpa.veneto.it/thredds \
+        /home/appuser/data/datasets \
+        --name-filter su30
+    ```
+
+- The system shall be available at
+
+    ```shell
+    http://localhost:8877
+    ```
+
+- Since this is a dev deployment, your local source code directory is mounted inside the container and you can modify it
+  and have the web application server automatically reload. Look into the contents of the docker compose file(s) in
+  order to check which env variables are set and how to further interact with the system
+
+
+##### Staging environment
+
+Deployments to the staging environment are automated and happen whenever a new docker image is published to the
+project's container registry. This is governed by a two-stage workflow, orchestrated via github actions:
+
+- When a new change is merged into the `main` branch, a new docker image is built and published to the container
+  registry;
+- After being published a webhook is triggered, which causes github to send a request to the staging environment,
+  notifying it of the availability of this new docker image;
+- The staging environment's infrastructure then takes care of downloading the new docker image and restarting its
+  own deployment in such a way as to have the system run with the updated code
+
+The strategy described above employs an installation of the [webhook](https://github.com/adnanh/webhook) server,
+together with some custom deployment scripts.
+
+
+##### Production environment
+
+TBD
+
+
 ### Testing
 
+The system has a set of automated tests which run whenever a new PR is submitted and also whenever a change is merged
+to the repository's `main` branch. This is triggered by means of a github actions workflow and uses
+(dagger)[https://dagger.io/] for the actual testing pipeline. Running the same pipeline locally can be achieved by:
 
+- Ensuring both dagger and poetry are installed locally
+- Running the following command:
 
-#### Climate Projections Platform for North-Eastern Italy - Backend structure for support future climates indicators and models outputs web service platform
-[![Piattaforma Proiezioni Climatiche per il Nord-Est](https://github.com/inkode-it/Arpav-PPCV/raw/main/public/img/screenshot.png)](https://clima.arpa.veneto.it/)
+    ```shell
+    dagger run poetry run python tests/ci/main.py \
+        --with-formatter \
+        --with-linter \
+        --with-tests
+    ```
 
-## About
-This work is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by-sa/3.0/it/deed.en">Creative Commons Attribution-ShareAlike 3.0 IT License</a>.
-<br/><a rel="license" href="https://creativecommons.org/licenses/by-sa/3.0/it/deed.en"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a>
+Testing uses these main additional libraries/frameworks:
 
-Commissioned by & Data credits to <br/>
-<a href="https://www.arpa.veneto.it/"><img src="https://github.com/inkode-it/Arpav-PPCV/raw/main/public/img/logo_arpav.png" alt="ARPAV" style="background-color:white;padding:4px"></a>
+- pytest
+- ruff
 
-Designed and developed in Italy by <br/>
-<a rel="author" href="mailto:info@inkode.it"><img src="https://avatars.githubusercontent.com/u/64135645" alt="INKODE soc coop"></a>
 
+##### Git pre-commit
 
-## Structure: Docker services
-### Django
-Django, Django Rest Framework (DRF), and GeoDjango are used together to build web applications that require geospatial data processing and API development.
+In order to ensure a speedier cycle between making a PR and having the changes reviewed and merged, you can
+install [pre-commit](https://pre-commit.com/) and enable the configuration provided in this repo. This will ensure that
+commits will be suitably formatted and checked and that when they are pushed to the official repo they will be in a
+clean state.
 
-Django is a popular web framework for building Python-based web applications. It provides a lot of built-in features, such as an ORM for database interactions, a templating engine, and a powerful admin interface, which can speed up development time.
 
-DRF is a Django package that provides tools for building RESTful APIs. It extends Django's built-in views and serializers to provide a more flexible and powerful way of building APIs. DRF is widely used to build APIs for web and mobile applications.
+### Vulnerability scanning
 
-GeoDjango is a Django package that adds support for geospatial data processing to Django. It allows developers to store, retrieve, and process geospatial data in the context of a Django application. GeoDjango provides many GIS-related tools, such as spatial indexing, geographic data models, and geospatial functions.
+There is a github actions workflow that runs daily and checks the code for known vulnerabilities. This uses
+[trivy](https://aquasecurity.github.io/trivy/v0.38/). The vulnerability scan can also be run locally by using the
+command:
 
-By combining Django, DRF, and GeoDjango, developers can build web applications that can store, process, and serve geospatial data through RESTful APIs. This can be useful for a variety of applications, such as mapping services, location-based services, and data visualization tools that require geospatial data processing.
-
-In this application, Django framework and packages are used to:
-
-- provide REST APIs to the frontend
-- scan NetCDF files provided by Thredds and handle the attributes of climate projection models.
-
-Root directory: `backend`
-
-#### PostGIS
-PostGIS is a spatial database extender for the PostgreSQL relational database management system. It allows you to store, query, and manipulate spatial data such as points, lines, and polygons, as well as geospatial data formats such as GeoJSON and KML. PostGIS adds support for geographic objects, allowing spatial queries to be run in SQL. It provides a wide range of spatial functions and operators for performing geometric operations such as intersection, union, and buffering, as well as distance calculations and projections. PostGIS is widely used in geographic information systems (GIS), web mapping applications, and other spatially enabled applications. It is an open-source project and is actively developed and maintained by a community of developers around the world.
-
-In this application, PostGIS is used to query all available climate projections, manage administrative users, and geographic locations.
-
-#### Nginx
-Nginx (pronounced "engine-x") is a high-performance, open-source web server and reverse proxy server. It is designed to handle large amounts of traffic and to act as a load balancer for web applications. Nginx can serve static files quickly and efficiently, and also supports dynamic content generated by backend applications such as PHP, Python, and Node.js. In addition to its role as a web server, Nginx can also be used as a reverse proxy, which allows it to distribute incoming traffic among multiple backend servers, improve the reliability and scalability of web applications, and provide additional security features such as SSL/TLS encryption and HTTP authentication. Nginx is free and open-source software, and its development is supported by Nginx, Inc. and a community of developers around the world.
-
-In this application, Nginx is used as a proxy-pass for other web services.
-
-Config directory: `docker/nginx`
-
-#### NodeJS (proxy Thredds Data Server)
-A NodeJs server-side proxy application can be used to perform a variety of tasks, such as load balancing, caching, and security filtering. For example, a load-balancing proxy can distribute incoming requests among multiple backend servers, improving the scalability and availability of web applications. A caching proxy can store frequently accessed data in memory or on disk, reducing the load on backend servers and improving the performance of web applications. A security filtering proxy can inspect incoming requests and filter out potentially harmful requests or data, protecting web applications from attacks. Node.js is a popular platform for building proxy servers due to its event-driven, non-blocking I/O model, which allows it to handle large numbers of concurrent connections efficiently,
-
-In this application it acts as an intermediary between clients and Thredds Data Server servers, allowing users to access a subset of THREDDS data and services without authentication. It receives requests from clients and forwards them to Thredds Data Server, and then sends the response back to the client.
-
-Root directory: `backend`
-
-#### Martin
-Martin Vector Tile Server is an open-source vector tile server that allows users to serve vector tiles over the web. It is built for MapLibre, an open-source JavaScript library for interactive maps, and supports a variety of data sources, including GeoJSON, PostGIS, and Shapefile.
-
-# Development
-
-GIT BRANCH: `develop`
-
-#### Required tools for development
-
-For development on your local machine, you need to install the following tools:
-   - git
-   - docker
-   - docker-compose -f docker-compose.dev.yml
-   - a text editor or an IDE (Eg. Visual Studio Code)
-
-
-#### Prepare the Environment
-
-Starting from the root of the project, clone the backend repository, move on `develop` branch and clone frontend repository inside this project
-
-
-    git clone https://github.com/inkode-it/Arpav-PPCV-backend
-    cd Arpav-PPCV-backend
-    git checkout develop
-    git clone https://github.com/inkode-it/Arpav-PPCV
-
-#### Copy `.env.example` in `.env` and **customize it with your local settings** both for the backend and the frontend.
-
-NOTE: `.env`'s file are used to set the environment variables for the docker-compose -f docker-compose.dev.yml file and the running services, to configure the backend and frontend services, the PostGIS database, Nginx web server etc..
-
-
-#### For Frontend `Arpav-PPCV`, follow the instructions in the *frontend README.md file to start the frontend*
-
-NOTE: Both `Arpav-PPCV-backend` & `Arpav-PPCV` (the frontend) have a different .env file configuration with different variables
-
-
-#### Run docker-compose to start it up
-
-
-    docker-compose -f docker-compose.dev.yml build --no-cache
-    docker-compose -f docker-compose.dev.yml up -d
-
-
-#### Build images & start containers:
-
-    docker-compose -f docker-compose.dev.yml up --build -d
-
-
-#### Make django migrations:
-
-    docker exec -ti backend.api python manage.py makemigrations users groups forecastattributes places thredds
-
-#### Migrate database:
-
-    docker exec -ti backend.api python manage.py migrate
-
-
-#### Create a Super User to access the Django Admin interface:
-
-    docker exec -ti backend.api python manage.py import_super_user
-
-NOTE: this super user is intended for development in local environment, default credential are:
-- username: `info@inkode.it`
-- password: `inkode`
-
-
-#### To create base layer attributes as Variables, Forecast models, Scenario e etc. Run:
-
-    docker exec -ti backend.api python manage.py import_attributes
-
-
-#### To collect all Municipalities (from the geojson) and define geographical boundaries:
-
-     docker exec -ti backend.api python manage.py import_regions
-
-
-#### Scanning selected Threeds folders and copying metadata:
-
-    docker exec -ti backend.api python manage.py import_layers
-
-NOTES:
-- to update already imported layers, run the command with the `--refresh` flag
-- to fully clean layers and & re-import them, run the command with the `--destroy` flag
-
-
-If everything is ok and you followed also frontend README instructions, you should be able to access:
-- the frontend at http://localhost:3000
-- the backend administration at http://localhost/admin
-
-
-## PRODUCTION USAGE
-
-#### Clean build & start containers
-
-
-    docker-compose build --no-cache
-    docker-compose up -d
-
-
-#### Build images & start containers:
-
-    docker-compose up --build -d
-
-
-#### Make django migrations:
-
-    docker exec -ti backend.api python manage.py makemigrations users groups forecastattributes places thredds
-
-
-#### Migrate database:
-
-    docker exec -ti backend.api python manage.py migrate
-
-
-#### Create a Super User to access the Django Admin interface:
-
-    docker exec -ti backend.api python manage.py createsuperuser
-
-NOTE: prompt for username, email, password
-
-
-#### To create base layer attributes as Variables, Forecast models, Scenario e etc. Run:
-
-    docker exec -ti backend.api python manage.py import_attributes
-
-
-#### To collect all Municipalities (from the geojson) and define geographical boundaries:
-
-     docker exec -ti backend.api python manage.py import_regions
-
-
-#### Scanning selected Threeds folders and copying metadata:
-
-    docker exec -ti backend.api python manage.py import_layers
-
-
-#### Re-build & deploy frontend:
-
-    cd ~/Arpav-PPCV-backend/Arpav-PPCV/;git pull;cd ..;docker-compose build frontend;docker-compose up -d
-
-NOTES:
-- to update already imported layers, run the command with the `--refresh` flag
-- to fully clean layers and & re-import them, run the command with the `--destroy` flag
-
-
-#### Stop & destroy containers (note using `-v` will remove the volumes)
-
-docker-compose -f docker-compose.dev.yml down
-
-#### SSL certificates
-
-SSL certificate are mounted in the nginx container as a volume. The certificate files and the private key should be placed on paths listed on .env file by envars `SSL_CERTIFICATE` and `SSL_KEY`, note that certificate needs to be bundled with the full chain.
+```shell
+    dagger run poetry run python tests/ci/main.py --with-security-scan
+```
