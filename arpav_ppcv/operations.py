@@ -4,7 +4,9 @@ import io
 import logging
 from typing import Optional
 
+import cftime
 import httpx
+import netCDF4
 import pandas as pd
 import pymannkendall as mk
 import pyproj
@@ -27,6 +29,51 @@ from .schemas import (
 from .thredds import ncss
 
 logger = logging.getLogger(__name__)
+
+
+def get_climate_barometer_time_series(
+    settings: ArpavPpcvSettings,
+    coverage: coverages.CoverageInternal,
+    smoothing_strategy: base.CoverageDataSmoothingStrategy,
+    include_uncertainty: bool = False,
+) -> pd.DataFrame:
+    df = _get_climate_barometer_data(settings, coverage)
+    if smoothing_strategy == base.CoverageDataSmoothingStrategy.NO_SMOOTHING:
+        pass
+    if include_uncertainty:
+        ...
+    return df
+
+
+def _get_climate_barometer_data(
+    settings: ArpavPpcvSettings,
+    coverage: coverages.CoverageInternal,
+) -> pd.DataFrame:
+    opendap_url = "/".join((
+        settings.thredds_server.base_url,
+        settings.thredds_server.opendap_service_url_fragment,
+        coverage.configuration.get_thredds_url_fragment(coverage.identifier)
+    ))
+    ds = netCDF4.Dataset(opendap_url)
+    df = pd.DataFrame(
+        pd.Series(
+            cftime.num2date(
+                ds.variables["time"][:],
+                units=ds.variables["time"].units,
+                calendar=ds.variables["time"].calendar,
+                only_use_cftime_datetimes=False,
+                only_use_python_datetimes=True,
+            ),
+            name="time",
+        ),
+        pd.Series(
+            ds.variables[coverage.configuration.netcdf_main_dataset_name][:],
+            name=coverage.configuration.netcdf_main_dataset_name
+        )
+    )
+    ds.close()
+    df.set_index("time", inplace=True)
+    return df
 
 
 def get_observation_time_series(

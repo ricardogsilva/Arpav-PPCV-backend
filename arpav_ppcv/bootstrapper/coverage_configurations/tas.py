@@ -38,6 +38,11 @@
   - [x] tas_30yr_anomaly_seasonal_model_ec_earth_rca4
   - [x] tas_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e
   - [x] tas_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009
+
+- [x] barometro climatico
+  - [x] tas_barometro_climatico
+  - [x] tas_barometro_climatico_lower_uncertainty
+  - [x] tas_barometro_climatico_upper_uncertainty
 """
 from ...schemas.base import ObservationAggregationType
 from ...schemas.coverages import (
@@ -1408,6 +1413,87 @@ def generate_configurations(
                 ),
             ],
         ),
+        CoverageConfigurationCreate(
+            name="tas_barometro_climatico",
+            netcdf_main_dataset_name="tas",
+            wms_main_layer_name="tas",
+            thredds_url_pattern="ensymbc/std/clipped/fldmean/tas_avg_{scenario}_ts19762100_ls_VFVG_fldmean.nc",
+            unit="ºC",
+            palette="default/seq-YlOrRd",
+            color_scale_min=-3,
+            color_scale_max=32,
+            possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp26")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp45")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp85")
+                    ].id
+                ),
+            ],
+        ),
+        CoverageConfigurationCreate(
+            name="tas_barometro_climatico_lower_uncertainty",
+            netcdf_main_dataset_name="tas_stddown",
+            wms_main_layer_name="tas_stddown",
+            thredds_url_pattern="ensymbc/std/clipped/fldmean/tas_stddown_{scenario}_ts19762100_ls_VFVG_fldmean.nc",
+            unit="ºC",
+            palette="default/seq-YlOrRd",
+            color_scale_min=-3,
+            color_scale_max=32,
+            possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp26")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp45")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp85")
+                    ].id
+                ),
+            ],
+        ),
+        CoverageConfigurationCreate(
+            name="tas_barometro_climatico_upper_uncertainty",
+            netcdf_main_dataset_name="tas_stdup",
+            wms_main_layer_name="tas_stdup",
+            thredds_url_pattern="ensymbc/std/clipped/fldmean/tas_stdup_{scenario}_ts19762100_ls_VFVG_fldmean.nc",
+            unit="ºC",
+            palette="default/seq-YlOrRd",
+            color_scale_min=-3,
+            color_scale_max=32,
+            possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp26")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp45")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp85")
+                    ].id
+                ),
+            ],
+        ),
     ]
 
 
@@ -1597,5 +1683,9 @@ def get_uncertainty_map() -> dict[str, tuple[str, str]]:
         "tas_annual_absolute_model_ensemble": (
             "tas_annual_absolute_model_ensemble_lower_uncertainty",
             "tas_annual_absolute_model_ensemble_upper_uncertainty",
+        ),
+        "tas_barometro_climatico": (
+            "tas_barometro_climatico_lower_uncertainty",
+            "tas_barometro_climatico_upper_uncertainty",
         ),
     }

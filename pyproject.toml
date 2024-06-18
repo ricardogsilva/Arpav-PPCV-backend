@@ -58,6 +58,8 @@ alembic-postgresql-enum = "^1.2.0"
 loess = "^2.1.2"
 pymannkendall = "^1.4.3"
 typing-extensions = "^4.12.1"
+netcdf4 = "^1.7.1"
+cftime = "^1.6.4"
 
 
 [tool.poetry.group.dev]
