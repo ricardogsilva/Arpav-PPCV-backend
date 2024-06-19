@@ -408,7 +408,7 @@ def _process_coverage_data(
                 )
             elif strategy == base.CoverageDataSmoothingStrategy.LOESS_SMOOTHING:
                 _, loess_smoothed, _ = loess_1d(
-                    df.index.astype("int64"),
+                    df.index.year.astype("int"),
                     df[base_column_name],
                     degree=0.2,
                     frac=0.75,
