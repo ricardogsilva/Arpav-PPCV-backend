@@ -227,21 +227,30 @@ def get_coverage_time_series(
             )
             if station_data is not None:
                 raw_station_data, station = station_data
-                data_ = _process_seasonal_station_data(
-                    raw_station_data,
-                    observation_smoothing_strategies,
-                    start,
-                    end,
-                    base_name=coverage.configuration.related_observation_variable.name,
-                )
-                station_data_series_key = "_".join(
-                    (
-                        "station",
-                        str(station.id),
-                        coverage.configuration.related_observation_variable.name,
+                handler = {
+                    base.ObservationAggregationType.SEASONAL: _process_seasonal_station_data,
+                    # base.ObservationAggregationType.YEARLY: _process_yearly_station_data,
+                }.get(coverage.configuration.observation_variable_aggregation_type)
+                if handler is not None:
+                    data_ = _process_seasonal_station_data(
+                        raw_station_data,
+                        observation_smoothing_strategies,
+                        start,
+                        end,
+                        base_name=coverage.configuration.related_observation_variable.name,
                     )
-                )
-                measurements[station_data_series_key] = data_
+                    station_data_series_key = "_".join(
+                        (
+                            "station",
+                            str(station.id),
+                            coverage.configuration.related_observation_variable.name,
+                        )
+                    )
+                    measurements[station_data_series_key] = data_
+                else:
+                    raise NotImplementedError(
+                        f"Cannot process {coverage.configuration.observation_variable_aggregation_type} data"
+                    )
             else:
                 logger.info("No station data found, skipping...")
         else:
@@ -333,6 +342,7 @@ def _process_seasonal_station_data(
     base_name: str,
 ) -> pd.DataFrame:
     df = pd.DataFrame([i.model_dump() for i in raw_data])
+    logger.debug(f"{df.info()=}")
     df = df[["value", "season", "year"]]
     df = df.rename(columns={"value": base_name})
 
