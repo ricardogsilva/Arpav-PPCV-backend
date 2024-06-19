@@ -34,26 +34,66 @@ logger = logging.getLogger(__name__)
 def get_climate_barometer_time_series(
     settings: ArpavPpcvSettings,
     coverage: coverages.CoverageInternal,
-    smoothing_strategy: base.CoverageDataSmoothingStrategy,
+    smoothing_strategies: list[base.CoverageDataSmoothingStrategy] = [  # noqa
+        base.CoverageDataSmoothingStrategy.NO_SMOOTHING
+    ],
     include_uncertainty: bool = False,
 ) -> pd.DataFrame:
-    df = _get_climate_barometer_data(settings, coverage)
-    if smoothing_strategy == base.CoverageDataSmoothingStrategy.NO_SMOOTHING:
-        pass
+    df = _get_climate_barometer_data(settings, coverage, smoothing_strategies)
     if include_uncertainty:
-        ...
+        used_possible_values = coverage.configuration.retrieve_used_values(
+            coverage.identifier
+        )
+        used_values = [pv.configuration_parameter_value for pv in used_possible_values]
+        if (
+            lower_conf
+            := coverage.configuration.uncertainty_lower_bounds_coverage_configuration
+        ):
+            lower_cov_identifier = lower_conf.build_coverage_identifier(used_values)
+            lower_uncertainty_df = _get_climate_barometer_data(
+                settings,
+                coverages.CoverageInternal(
+                    configuration=lower_conf, identifier=lower_cov_identifier
+                ),
+                smoothing_strategies,
+            )
+            for column_name in lower_uncertainty_df:
+                if column_name not in df.columns:
+                    df[column_name] = lower_uncertainty_df[column_name]
+        if (
+            upper_conf
+            := coverage.configuration.uncertainty_upper_bounds_coverage_configuration
+        ):
+            upper_cov_identifier = upper_conf.build_coverage_identifier(used_values)
+            upper_uncertainty_df = _get_climate_barometer_data(
+                settings,
+                coverages.CoverageInternal(
+                    configuration=upper_conf, identifier=upper_cov_identifier
+                ),
+                smoothing_strategies,
+            )
+            for column_name in upper_uncertainty_df:
+                if column_name not in df.columns:
+                    df[column_name] = upper_uncertainty_df[column_name]
     return df
 
 
 def _get_climate_barometer_data(
     settings: ArpavPpcvSettings,
     coverage: coverages.CoverageInternal,
+    smoothing_strategies: list[base.CoverageDataSmoothingStrategy],
 ) -> pd.DataFrame:
-    opendap_url = "/".join((
-        settings.thredds_server.base_url,
-        settings.thredds_server.opendap_service_url_fragment,
-        coverage.configuration.get_thredds_url_fragment(coverage.identifier)
-    ))
+    opendap_url = "/".join(
+        (
+            settings.thredds_server.base_url,
+            settings.thredds_server.opendap_service_url_fragment,
+            coverage.configuration.get_thredds_url_fragment(coverage.identifier),
+        )
+    )
+    base_name = coverage.identifier
+    unsmoothed_col_name = "__".join(
+        (base_name, base.ObservationDataSmoothingStrategy.NO_SMOOTHING.value)
+    )
     ds = netCDF4.Dataset(opendap_url)
     df = pd.DataFrame(
         pd.Series(
@@ -68,10 +108,17 @@ def _get_climate_barometer_data(
         ),
         pd.Series(
             ds.variables[coverage.configuration.netcdf_main_dataset_name][:],
-            name=coverage.configuration.netcdf_main_dataset_name
-        )
+            name=unsmoothed_col_name,
+        ),
     )
     ds.close()
+    for smoothing_strategy in smoothing_strategies:
+        col_name = "__".join((base_name, smoothing_strategy.value))
+        if (
+            smoothing_strategy
+            == base.CoverageDataSmoothingStrategy.MOVING_AVERAGE_11_YEARS
+        ):
+            df[col_name] = df[base_name].rolling(window=11, center=True).mean()
     df.set_index("time", inplace=True)
     return df
 
