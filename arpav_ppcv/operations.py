@@ -227,30 +227,24 @@ def get_coverage_time_series(
             )
             if station_data is not None:
                 raw_station_data, station = station_data
-                handler = {
-                    base.ObservationAggregationType.SEASONAL: _process_seasonal_station_data,
-                    # base.ObservationAggregationType.YEARLY: _process_yearly_station_data,
-                }.get(coverage.configuration.observation_variable_aggregation_type)
-                if handler is not None:
-                    data_ = _process_seasonal_station_data(
-                        raw_station_data,
-                        observation_smoothing_strategies,
-                        start,
-                        end,
-                        base_name=coverage.configuration.related_observation_variable.name,
+                data_ = _process_station_data(
+                    raw_station_data,
+                    observation_smoothing_strategies,
+                    start,
+                    end,
+                    base_name=coverage.configuration.related_observation_variable.name,
+                    aggregation_type=(
+                        coverage.configuration.observation_variable_aggregation_type
+                    ),
+                )
+                station_data_series_key = "_".join(
+                    (
+                        "station",
+                        str(station.id),
+                        coverage.configuration.related_observation_variable.name,
                     )
-                    station_data_series_key = "_".join(
-                        (
-                            "station",
-                            str(station.id),
-                            coverage.configuration.related_observation_variable.name,
-                        )
-                    )
-                    measurements[station_data_series_key] = data_
-                else:
-                    raise NotImplementedError(
-                        f"Cannot process {coverage.configuration.observation_variable_aggregation_type} data"
-                    )
+                )
+                measurements[station_data_series_key] = data_
             else:
                 logger.info("No station data found, skipping...")
         else:
@@ -334,33 +328,40 @@ def _get_station_data(
     return result
 
 
-def _process_seasonal_station_data(
+def _process_station_data(
     raw_data: list[observations.SeasonalMeasurement],
     smoothing_strategies: list[base.ObservationDataSmoothingStrategy],
     time_start: Optional[dt.datetime],
     time_end: Optional[dt.datetime],
     base_name: str,
-) -> pd.DataFrame:
+    aggregation_type: base.ObservationAggregationType,
+):
     df = pd.DataFrame([i.model_dump() for i in raw_data])
-    logger.debug(f"{df.info()=}")
-    df = df[["value", "season", "year"]]
+    # df = df[["value", "season", "year"]]
     df = df.rename(columns={"value": base_name})
-
-    df["season_month"] = (
-        df["season"]
-        .astype("string")
-        .replace(
-            {
-                "Season.WINTER": "01",
-                "Season.SPRING": "04",
-                "Season.SUMMER": "07",
-                "Season.AUTUMN": "10",
-            }
+    if aggregation_type == base.ObservationAggregationType.SEASONAL:
+        df["season_month"] = (
+            df["season"]
+            .astype("string")
+            .replace(
+                {
+                    "Season.WINTER": "01",
+                    "Season.SPRING": "04",
+                    "Season.SUMMER": "07",
+                    "Season.AUTUMN": "10",
+                }
+            )
         )
-    )
-    df["time"] = pd.to_datetime(
-        df["year"].astype("string") + "-" + df["season_month"] + "-01", utc=True
-    )
+        df["time"] = pd.to_datetime(
+            df["year"].astype("string") + "-" + df["season_month"] + "-01", utc=True
+        )
+    elif aggregation_type == base.ObservationAggregationType.YEARLY:
+        df["time"] = pd.to_datetime(df["year"].astype("string"), utc=True)
+    else:
+        raise RuntimeError(
+            f"Unable to process station data with aggregation type {aggregation_type}"
+        )
+
     df = df[[base_name, "time"]]
     df.set_index("time", inplace=True)
     if time_start is not None:
