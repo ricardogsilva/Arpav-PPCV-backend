@@ -337,7 +337,6 @@ def _process_station_data(
     aggregation_type: base.ObservationAggregationType,
 ):
     df = pd.DataFrame([i.model_dump() for i in raw_data])
-    # df = df[["value", "season", "year"]]
     df = df.rename(columns={"value": base_name})
     if aggregation_type == base.ObservationAggregationType.SEASONAL:
         df["season_month"] = (
