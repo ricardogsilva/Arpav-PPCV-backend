@@ -7,6 +7,7 @@ from typing import Optional
 import cftime
 import httpx
 import netCDF4
+import numpy as np
 import pandas as pd
 import pymannkendall as mk
 import pyproj
@@ -39,7 +40,9 @@ def get_climate_barometer_time_series(
     ],
     include_uncertainty: bool = False,
 ) -> pd.DataFrame:
-    df = _get_climate_barometer_data(settings, coverage, smoothing_strategies)
+    df = _get_climate_barometer_data(
+        settings, coverage, smoothing_strategies, base_name=coverage.identifier
+    )
     if include_uncertainty:
         used_possible_values = coverage.configuration.retrieve_used_values(
             coverage.identifier
@@ -56,6 +59,7 @@ def get_climate_barometer_time_series(
                     configuration=lower_conf, identifier=lower_cov_identifier
                 ),
                 smoothing_strategies,
+                base_name="__".join((coverage.identifier, "UNCERTAINTY_LOWER_BOUND")),
             )
             for column_name in lower_uncertainty_df:
                 if column_name not in df.columns:
@@ -71,6 +75,7 @@ def get_climate_barometer_time_series(
                     configuration=upper_conf, identifier=upper_cov_identifier
                 ),
                 smoothing_strategies,
+                base_name="__".join((coverage.identifier, "UNCERTAINTY_UPPER_BOUND")),
             )
             for column_name in upper_uncertainty_df:
                 if column_name not in df.columns:
@@ -82,6 +87,7 @@ def _get_climate_barometer_data(
     settings: ArpavPpcvSettings,
     coverage: coverages.CoverageInternal,
     smoothing_strategies: list[base.CoverageDataSmoothingStrategy],
+    base_name: str,
 ) -> pd.DataFrame:
     opendap_url = "/".join(
         (
@@ -90,36 +96,39 @@ def _get_climate_barometer_data(
             coverage.configuration.get_thredds_url_fragment(coverage.identifier),
         )
     )
-    base_name = coverage.identifier
     unsmoothed_col_name = "__".join(
         (base_name, base.ObservationDataSmoothingStrategy.NO_SMOOTHING.value)
     )
     ds = netCDF4.Dataset(opendap_url)
     df = pd.DataFrame(
-        pd.Series(
-            cftime.num2date(
-                ds.variables["time"][:],
-                units=ds.variables["time"].units,
-                calendar=ds.variables["time"].calendar,
-                only_use_cftime_datetimes=False,
-                only_use_python_datetimes=True,
+        {
+            "time": pd.Series(
+                cftime.num2pydate(
+                    ds.variables["time"][:],
+                    units=ds.variables["time"].units,
+                    calendar=ds.variables["time"].calendar,
+                )
             ),
-            name="time",
-        ),
-        pd.Series(
-            ds.variables[coverage.configuration.netcdf_main_dataset_name][:],
-            name=unsmoothed_col_name,
-        ),
+            unsmoothed_col_name: pd.Series(
+                ds.variables[coverage.configuration.netcdf_main_dataset_name][
+                    :
+                ].ravel(),
+            ),
+        }
     )
     ds.close()
+    df.set_index("time", inplace=True)
     for smoothing_strategy in smoothing_strategies:
         col_name = "__".join((base_name, smoothing_strategy.value))
         if (
             smoothing_strategy
             == base.CoverageDataSmoothingStrategy.MOVING_AVERAGE_11_YEARS
         ):
-            df[col_name] = df[base_name].rolling(window=11, center=True).mean()
-    df.set_index("time", inplace=True)
+            df[col_name] = (
+                df[unsmoothed_col_name].rolling(window=11, center=True).mean()
+            )
+        elif smoothing_strategy == base.CoverageDataSmoothingStrategy.LOESS_SMOOTHING:
+            df[col_name] = _apply_loess_smoothing(df, unsmoothed_col_name)
     return df
 
 
@@ -511,15 +520,19 @@ def _process_coverage_data(
                     df[base_column_name].rolling(center=True, window=11).mean()
                 )
             elif strategy == base.CoverageDataSmoothingStrategy.LOESS_SMOOTHING:
-                _, loess_smoothed, _ = loess_1d(
-                    df.index.year.astype("int"),
-                    df[base_column_name],
-                    degree=0.2,
-                    frac=0.75,
-                )
-                df[column_name] = loess_smoothed
+                df[column_name] = _apply_loess_smoothing(df, base_column_name)
         df = df.drop(columns=[base_column_name])
         return df
+
+
+def _apply_loess_smoothing(df: pd.DataFrame, source_column_name: str) -> np.ndarray:
+    _, loess_smoothed, _ = loess_1d(
+        df.index.year.astype("int"),
+        df[source_column_name],
+        degree=0.2,
+        frac=0.75
+    )
+    return loess_smoothed
 
 
 def _get_individual_uncertainty_time_series(

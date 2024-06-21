@@ -346,6 +346,58 @@ def _modify_capabilities_response(
     )
 
 
+@router.get(
+    "/time-series/climate-barometer/{coverage_identifier}",
+    response_model=TimeSeriesList,
+)
+def get_climate_barometer_time_series(
+    db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+    settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
+    coverage_identifier: str,
+    data_smoothing: Annotated[list[CoverageDataSmoothingStrategy], Query()] = [  # noqa
+        ObservationDataSmoothingStrategy.NO_SMOOTHING
+    ],
+    include_uncertainty: bool = False,
+):
+    """Get climate barometer time series."""
+    if (
+        db_cov_conf := db.get_coverage_configuration_by_coverage_identifier(
+            db_session, coverage_identifier
+        )
+    ) is not None:
+        allowed_cov_ids = db.list_allowed_coverage_identifiers(
+            db_session, coverage_configuration_id=db_cov_conf.id
+        )
+        if coverage_identifier in allowed_cov_ids:
+            coverage = CoverageInternal(
+                configuration=db_cov_conf, identifier=coverage_identifier
+            )
+            try:
+                time_series = operations.get_climate_barometer_time_series(
+                    settings,
+                    coverage,
+                    smoothing_strategies=data_smoothing,
+                    include_uncertainty=include_uncertainty,
+                )
+            except exceptions.CoverageDataRetrievalError as err:
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail="Could not retrieve data",
+                ) from err
+            else:
+                series = _serialize_dataframe(
+                    time_series,
+                    CoverageDataSmoothingStrategy.NO_SMOOTHING in data_smoothing,
+                    available_smoothing_strategies=CoverageDataSmoothingStrategy,
+                    extra_info={"coverage_identifier": coverage.identifier},
+                )
+                return TimeSeriesList(series=series)
+        else:
+            raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
+    else:
+        raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
+
+
 @router.get("/time-series/{coverage_identifier}", response_model=TimeSeriesList)
 def get_time_series(
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
