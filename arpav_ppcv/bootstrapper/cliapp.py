@@ -291,6 +291,8 @@ def bootstrap_coverage_configurations(
             update_kwargs["secondary_coverage_configurations_ids"] = [
                 cc.id for cc in secondary_cov_confs
             ]
+        else:
+            update_kwargs["secondary_coverage_configurations_ids"] = []
         if uncertainties is not None:
             lower_uncert_id = [
                 cc.id for name, cc in all_cov_confs.items() if name == uncertainties[0]
