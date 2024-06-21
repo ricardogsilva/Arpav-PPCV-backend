@@ -527,10 +527,7 @@ def _process_coverage_data(
 
 def _apply_loess_smoothing(df: pd.DataFrame, source_column_name: str) -> np.ndarray:
     _, loess_smoothed, _ = loess_1d(
-        df.index.year.astype("int"),
-        df[source_column_name],
-        degree=0.2,
-        frac=0.75
+        df.index.year.astype("int"), df[source_column_name], degree=0.2, frac=0.75
     )
     return loess_smoothed
 
