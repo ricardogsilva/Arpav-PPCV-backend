@@ -209,9 +209,46 @@ services:
         target: /mnt/locust
     command: ["-f", "/mnt/locust/locustfile.py"]
 
+  tolgee-app:
+    image: tolgee/tolgee
+    environment:
+      SERVER_PORT: "8080"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://tolgee-db:5432/tolgee"
+      SPRING_DATASOURCE_USERNAME: "tolgee_user"
+      SPRING_DATASOURCE_PASSWORD: "tolgeepass"
+      TOLGEE_AUTHENTICATION_ENABLED: "false"
+      TOLGEE_AUTHENTICATION_JWT_SECRET: "dxpw5w66th5sa53m2hbgazmxaases92nqwifjigi3j9owznoyuq6frbnppc7bo9tjmgm5e"
+      TOLGEE_FILE_STORAGE_FS_DATA_PATH: "/data"
+      TOLGEE_FRONTEND_URL: "http://localhost:6003"
+      TOLGEE_POSTGRES_AUTOSTART_ENABLED: "false"
+      TOLGEE_TELEMETRY_ENABLED: "false"
+    volumes:
+      - tolgee-app-data:/data
+    depends_on:
+      tolgee-db:
+        condition: service_healthy
+    ports:
+      - target: 8080
+        published: 6003
+
+  tolgee-db:
+    image: "postgis/postgis:16-3.4"
+    environment:
+      POSTGRES_USER: "tolgee_user"
+      POSTGRES_PASSWORD: "tolgeepass"
+      POSTGRES_DB: "tolgee"
+    ports:
+      - target: 5432
+        published: 55435
+    volumes:
+      - tolgee-db-data:/var/lib/postgresql/data
+
+
 volumes:
   db-data:
   test-db-data:
   prefect-server-home:
   prefect-worker-home:
   prefect-db-data:
+  tolgee-app-data:
+  tolgee-db-data:
