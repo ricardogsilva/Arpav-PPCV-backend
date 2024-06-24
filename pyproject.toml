@@ -60,6 +60,7 @@ pymannkendall = "^1.4.3"
 typing-extensions = "^4.12.1"
 netcdf4 = "^1.7.1"
 cftime = "^1.6.4"
+babel = "^2.15.0"
 
 
 [tool.poetry.group.dev]

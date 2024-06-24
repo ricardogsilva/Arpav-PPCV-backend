@@ -2,10 +2,15 @@ import logging
 from pathlib import Path
 from typing import Optional
 
+import babel
+import babel.support
 import pydantic
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
+
+LOCALE_IT = babel.Locale.parse("it")
+LOCALE_EN = babel.Locale.parse("en")
 
 
 class ContactSettings(pydantic.BaseModel):
@@ -126,3 +131,8 @@ class ArpavPpcvSettings(BaseSettings):  # noqa
 
 def get_settings() -> ArpavPpcvSettings:
     return ArpavPpcvSettings()
+
+
+def get_translations(locale: babel.Locale) -> babel.support.NullTranslations:
+    base_dir = Path(__file__).parent / "translations"
+    return babel.support.Translations.load(dirname=base_dir, locales=[locale])
