@@ -121,6 +121,8 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
 
     id: uuid.UUID = sqlmodel.Field(default_factory=uuid.uuid4, primary_key=True)
     name: str = sqlmodel.Field(unique=True, index=True)
+    display_name_english: Optional[str] = None
+    display_name_italian: Optional[str] = None
     netcdf_main_dataset_name: str
     thredds_url_pattern: str
     wms_main_layer_name: Optional[str] = None
@@ -324,6 +326,8 @@ class CoverageConfigurationCreate(sqlmodel.SQLModel):
             ),
         ),
     ]
+    display_name_english: Optional[str] = None
+    display_name_italian: Optional[str] = None
     netcdf_main_dataset_name: str
     wms_main_layer_name: Optional[str] = None
     thredds_url_pattern: str
@@ -353,6 +357,8 @@ class CoverageConfigurationCreate(sqlmodel.SQLModel):
 
 class CoverageConfigurationUpdate(sqlmodel.SQLModel):
     name: Annotated[Optional[str], pydantic.Field(pattern=_NAME_PATTERN)] = None
+    display_name_english: Optional[str] = None
+    display_name_italian: Optional[str] = None
     netcdf_main_dataset_name: Optional[str] = None
     wms_main_layer_name: Optional[str] = None
     thredds_url_pattern: Optional[str] = None

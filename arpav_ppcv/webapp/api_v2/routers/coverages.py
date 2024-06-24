@@ -29,9 +29,14 @@ from .... import (
     exceptions,
     operations,
 )
-from ....config import ArpavPpcvSettings
+from ....config import (
+    ArpavPpcvSettings,
+    LOCALE_EN,
+    LOCALE_IT,
+)
 from ....thredds import utils as thredds_utils
 from ....schemas.base import (
+    Translatable,
     CoverageDataSmoothingStrategy,
     ObservationDataSmoothingStrategy,
     RELATED_TIME_SERIES_PATTERN,
@@ -44,6 +49,7 @@ from ..schemas.base import (
     TimeSeries,
     TimeSeriesItem,
     TimeSeriesList,
+    TimeSeriesTranslations,
 )
 
 
@@ -387,6 +393,7 @@ def get_climate_barometer_time_series(
             else:
                 series = _serialize_dataframe(
                     time_series,
+                    coverage,
                     CoverageDataSmoothingStrategy.NO_SMOOTHING in data_smoothing,
                     available_smoothing_strategies=CoverageDataSmoothingStrategy,
                     extra_info={"coverage_identifier": coverage.identifier},
@@ -485,6 +492,7 @@ def get_time_series(
                     series.extend(
                         _serialize_dataframe(
                             time_series[coverage.identifier],
+                            coverage,
                             CoverageDataSmoothingStrategy.NO_SMOOTHING
                             in coverage_data_smoothing,
                             available_smoothing_strategies=CoverageDataSmoothingStrategy,
@@ -501,6 +509,7 @@ def get_time_series(
                             series.extend(
                                 _serialize_dataframe(
                                     uncert_df,
+                                    coverage,
                                     CoverageDataSmoothingStrategy.NO_SMOOTHING
                                     in coverage_data_smoothing,
                                     available_smoothing_strategies=CoverageDataSmoothingStrategy,
@@ -516,6 +525,7 @@ def get_time_series(
                             series.extend(
                                 _serialize_dataframe(
                                     related_df,
+                                    coverage,
                                     (
                                         CoverageDataSmoothingStrategy.NO_SMOOTHING
                                         in coverage_data_smoothing
@@ -531,6 +541,7 @@ def get_time_series(
                             db_station = db.get_station(db_session, station_id)
                             station_series = _serialize_dataframe(
                                 df,
+                                coverage,
                                 ObservationDataSmoothingStrategy.NO_SMOOTHING
                                 in observation_data_smoothing,
                                 available_smoothing_strategies=ObservationDataSmoothingStrategy,
@@ -551,6 +562,7 @@ def get_time_series(
 
 def _serialize_dataframe(
     data_: pd.DataFrame,
+    coverage: CoverageInternal,
     include_unsmoothed: bool,
     available_smoothing_strategies: Type[
         ObservationDataSmoothingStrategy | CoverageDataSmoothingStrategy
@@ -571,6 +583,7 @@ def _serialize_dataframe(
             for timestamp, value in series_measurements.items():
                 if not math.isnan(value):
                     measurements.append(TimeSeriesItem(value=value, datetime=timestamp))
+            smoothed_with: Translatable
             series.append(
                 TimeSeries(
                     name=series_name,
@@ -579,6 +592,26 @@ def _serialize_dataframe(
                         "smoothing": smoothing_strategy.lower(),
                         **(extra_info or {}),
                     },
+                    translations=TimeSeriesTranslations(
+                        series_name={
+                            LOCALE_EN.language: (
+                                coverage.configuration.display_name_english
+                                or coverage.configuration.name
+                            ),
+                            LOCALE_IT.language: (
+                                coverage.configuration.display_name_italian
+                                or coverage.configuration.name
+                            ),
+                        },
+                        processing_method={
+                            LOCALE_EN.language: smoothed_with.get_display_name(
+                                LOCALE_EN
+                            ),
+                            LOCALE_IT.language: smoothed_with.get_display_name(
+                                LOCALE_IT
+                            ),
+                        },
+                    ),
                 )
             )
     return series

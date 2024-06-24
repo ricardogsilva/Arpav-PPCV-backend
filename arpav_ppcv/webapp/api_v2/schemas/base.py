@@ -51,10 +51,16 @@ class TimeSeriesItem(pydantic.BaseModel):
     datetime: dt.datetime
 
 
+class TimeSeriesTranslations(pydantic.BaseModel):
+    series_name: dict[str, str]
+    processing_method: dict[str, str]
+
+
 class TimeSeries(pydantic.BaseModel):
     name: str
     values: list[TimeSeriesItem]
     info: typing.Optional[dict[str, str | int | float | bool]] = None
+    translations: typing.Optional[TimeSeriesTranslations] = None
 
 
 class TimeSeriesList(pydantic.BaseModel):

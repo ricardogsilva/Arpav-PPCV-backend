@@ -36,6 +36,8 @@ class RelatedCoverageConfigurationRead(sqlmodel.SQLModel):
 class CoverageConfigurationRead(sqlmodel.SQLModel):
     id: uuid.UUID
     name: str
+    display_name_english: Optional[str]
+    display_name_italian: Optional[str]
     netcdf_main_dataset_name: str
     coverage_id_pattern: str
     thredds_url_pattern: str

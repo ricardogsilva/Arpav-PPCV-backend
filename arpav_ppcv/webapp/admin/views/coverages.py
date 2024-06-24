@@ -251,6 +251,8 @@ class CoverageConfigurationView(ModelView):
     fields = (
         fields.UuidField("id"),
         starlette_admin.StringField("name", required=True),
+        starlette_admin.StringField("display_name_english", required=True),
+        starlette_admin.StringField("display_name_italian", required=True),
         starlette_admin.StringField("netcdf_main_dataset_name", required=True),
         starlette_admin.StringField("wms_main_layer_name", required=True),
         starlette_admin.StringField("thredds_url_pattern", required=True),
@@ -303,6 +305,8 @@ class CoverageConfigurationView(ModelView):
 
     exclude_fields_from_list = (
         "id",
+        "display_name_english",
+        "display_name_italian",
         "netcdf_main_dataset_name",
         "wms_main_layer_name",
         "coverage_id_pattern",
@@ -472,6 +476,8 @@ class CoverageConfigurationView(ModelView):
                 related_cov_conf_ids.append(db_related_cov_conf.id)
             cov_conf_create = coverages.CoverageConfigurationCreate(
                 name=data["name"],
+                display_name_english=data["display_name_english"],
+                display_name_italian=data["display_name_italian"],
                 netcdf_main_dataset_name=data["netcdf_main_dataset_name"],
                 thredds_url_pattern=data["thredds_url_pattern"],
                 unit=data["unit"],
@@ -549,6 +555,8 @@ class CoverageConfigurationView(ModelView):
                 related_cov_conf_ids.append(db_related_cov_conf.id)
             cov_conv_update = coverages.CoverageConfigurationUpdate(
                 name=data.get("name"),
+                display_name_english=data.get("display_name_english"),
+                display_name_italian=data.get("display_name_italian"),
                 netcdf_main_dataset_name=data.get("netcdf_main_dataset_name"),
                 thredds_url_pattern=data.get("thredds_url_pattern"),
                 unit=data.get("data"),

@@ -45,6 +45,8 @@ class CoverageConfigurationReadListItem(pydantic.BaseModel):
     url: pydantic.AnyHttpUrl
     id: uuid.UUID
     name: str
+    display_name_english: str
+    display_name_italian: str
     wms_main_layer_name: str | None
     coverage_id_pattern: str
     possible_values: list[ConfigurationParameterPossibleValueRead]
@@ -59,7 +61,14 @@ class CoverageConfigurationReadListItem(pydantic.BaseModel):
             "get_coverage_configuration", **{"coverage_configuration_id": instance.id}
         )
         return cls(
-            **instance.model_dump(),
+            **instance.model_dump(
+                exclude={
+                    "display_name_english",
+                    "display_name_italian",
+                }
+            ),
+            display_name_english=instance.display_name_english or instance.name,
+            display_name_italian=instance.display_name_italian or instance.name,
             url=str(url),
             possible_values=[
                 ConfigurationParameterPossibleValueRead(

@@ -835,11 +835,30 @@ def list_coverage_configurations(
     limit: int = 20,
     offset: int = 0,
     include_total: bool = False,
+    name_filter: Optional[str] = None,
+    english_display_name_filter: Optional[str] = None,
+    italian_display_name_filter: Optional[str] = None,
 ) -> tuple[Sequence[coverages.CoverageConfiguration], Optional[int]]:
     """List existing coverage configurations."""
     statement = sqlmodel.select(coverages.CoverageConfiguration).order_by(
         coverages.CoverageConfiguration.name
     )
+    if name_filter is not None:
+        statement = statement.where(
+            coverages.CoverageConfiguration.name.ilike(name_filter)
+        )
+    if english_display_name_filter is not None:
+        statement = statement.where(
+            coverages.CoverageConfiguration.display_name_english.ilike(
+                english_display_name_filter
+            )
+        )
+    if italian_display_name_filter is not None:
+        statement = statement.where(
+            coverages.CoverageConfiguration.display_name_italian.ilike(
+                italian_display_name_filter
+            )
+        )
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = _get_total_num_records(session, statement) if include_total else None
     return items, num_items
@@ -847,10 +866,25 @@ def list_coverage_configurations(
 
 def collect_all_coverage_configurations(
     session: sqlmodel.Session,
+    name_filter: Optional[str] = None,
+    english_display_name_filter: Optional[str] = None,
+    italian_display_name_filter: Optional[str] = None,
 ) -> Sequence[coverages.CoverageConfiguration]:
-    _, num_total = list_coverage_configurations(session, limit=1, include_total=True)
+    _, num_total = list_coverage_configurations(
+        session,
+        limit=1,
+        include_total=True,
+        name_filter=name_filter,
+        english_display_name_filter=english_display_name_filter,
+        italian_display_name_filter=italian_display_name_filter,
+    )
     result, _ = list_coverage_configurations(
-        session, limit=num_total, include_total=False
+        session,
+        limit=num_total,
+        include_total=False,
+        name_filter=name_filter,
+        english_display_name_filter=english_display_name_filter,
+        italian_display_name_filter=italian_display_name_filter,
     )
     return result
 
@@ -862,6 +896,8 @@ def create_coverage_configuration(
     to_refresh = []
     db_coverage_configuration = coverages.CoverageConfiguration(
         name=coverage_configuration_create.name,
+        display_name_english=coverage_configuration_create.display_name_english,
+        display_name_italian=coverage_configuration_create.display_name_italian,
         netcdf_main_dataset_name=coverage_configuration_create.netcdf_main_dataset_name,
         wms_main_layer_name=coverage_configuration_create.wms_main_layer_name,
         thredds_url_pattern=coverage_configuration_create.thredds_url_pattern,
