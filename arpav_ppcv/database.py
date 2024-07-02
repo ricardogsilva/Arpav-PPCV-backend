@@ -737,13 +737,19 @@ def create_configuration_parameter(
     to_refresh = []
     db_configuration_parameter = coverages.ConfigurationParameter(
         name=configuration_parameter_create.name,
-        description=configuration_parameter_create.description,
+        display_name_english=configuration_parameter_create.display_name_english,
+        display_name_italian=configuration_parameter_create.display_name_italian,
+        description_english=configuration_parameter_create.description_english,
+        description_italian=configuration_parameter_create.description_italian,
     )
     to_refresh.append(db_configuration_parameter)
     for allowed in configuration_parameter_create.allowed_values:
         db_conf_param_value = coverages.ConfigurationParameterValue(
             name=allowed.name,
-            description=allowed.description,
+            display_name_english=allowed.display_name_english,
+            display_name_italian=allowed.display_name_italian,
+            description_english=allowed.description_english,
+            description_italian=allowed.description_italian,
         )
         db_configuration_parameter.allowed_values.append(db_conf_param_value)
         to_refresh.append(db_conf_param_value)
@@ -773,7 +779,10 @@ def update_configuration_parameter(
             # this is a new allowed value, need to create it
             db_allowed_value = coverages.ConfigurationParameterValue(
                 name=av.name,
-                description=av.description,
+                display_name_english=av.display_name_english,
+                display_name_italian=av.display_name_italian,
+                description_english=av.description_english,
+                description_italian=av.description_italian,
             )
             db_configuration_parameter.allowed_values.append(db_allowed_value)
         else:
@@ -898,6 +907,8 @@ def create_coverage_configuration(
         name=coverage_configuration_create.name,
         display_name_english=coverage_configuration_create.display_name_english,
         display_name_italian=coverage_configuration_create.display_name_italian,
+        description_english=coverage_configuration_create.description_english,
+        description_italian=coverage_configuration_create.description_italian,
         netcdf_main_dataset_name=coverage_configuration_create.netcdf_main_dataset_name,
         wms_main_layer_name=coverage_configuration_create.wms_main_layer_name,
         thredds_url_pattern=coverage_configuration_create.thredds_url_pattern,

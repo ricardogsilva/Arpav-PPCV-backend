@@ -10,12 +10,9 @@ from sqlalchemy.exc import IntegrityError
 from .. import database
 from ..schemas import (
     municipalities,
-    observations,
 )
 
 from ..schemas.coverages import (
-    ConfigurationParameterCreate,
-    ConfigurationParameterValueCreateEmbeddedInConfigurationParameter,
     ConfigurationParameterPossibleValueUpdate,
     CoverageConfigurationUpdate,
 )
@@ -32,6 +29,8 @@ from .coverage_configurations import (
     tasmin,
     tr,
 )
+from .variables import generate_variable_configurations
+from .configurationparameters import generate_configuration_parameters
 
 app = typer.Typer()
 
@@ -69,25 +68,7 @@ def bootstrap_observation_variables(
     ctx: typer.Context,
 ):
     """Create initial observation variables."""
-    variables = [
-        observations.VariableCreate(
-            name="TDd", description="Mean temperature", unit="ºC"
-        ),
-        observations.VariableCreate(
-            name="TXd", description="Max temperature", unit="ºC"
-        ),
-        observations.VariableCreate(
-            name="TNd", description="Min temperature", unit="ºC"
-        ),
-        observations.VariableCreate(
-            name="PRCPTOT", description="Total precipitation", unit="mm"
-        ),
-        observations.VariableCreate(
-            name="TR", description="Tropical nights", unit="mm"
-        ),
-        observations.VariableCreate(name="SU30", description="Hot days", unit="mm"),
-        observations.VariableCreate(name="FD", description="Cold days", unit="mm"),
-    ]
+    variables = generate_variable_configurations()
     with sqlmodel.Session(ctx.obj["engine"]) as session:
         for var_create in variables:
             try:
@@ -107,71 +88,7 @@ def bootstrap_coverage_configuration_parameters(
     ctx: typer.Context,
 ):
     """Create initial coverage configuration parameters."""
-    params = [
-        ConfigurationParameterCreate(
-            name="scenario",
-            description=(
-                "Represents the path fragment related to forecast model scenario"
-            ),
-            allowed_values=[
-                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
-                    name="rcp26", description="Represents the RCP2.6 scenario"
-                ),
-                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
-                    name="rcp45", description="Represents the RCP4.5 scenario"
-                ),
-                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
-                    name="rcp85", description="Represents the RCP8.5 scenario"
-                ),
-            ],
-        ),
-        ConfigurationParameterCreate(
-            name="time_window",
-            description=(
-                "Represents the path fragment related to forecast model time window for the anomalies"
-            ),
-            allowed_values=[
-                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
-                    name="tw1",
-                    description=(
-                        "Represents the first anomaly time window, which spans the "
-                        "period 2021-2050, with regard to the 1976-2005 period"
-                    ),
-                ),
-                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
-                    name="tw2",
-                    description=(
-                        "Represents the second anomaly time window, which spans the "
-                        "period 2071-2100, with regard to the 1976-2005 period"
-                    ),
-                ),
-            ],
-        ),
-        ConfigurationParameterCreate(
-            name="year_period",
-            description=(
-                "Represents the yearly temporal aggregation period in file paths"
-            ),
-            allowed_values=[
-                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
-                    name="DJF",
-                    description="Represents the winter season (December, January, February)",
-                ),
-                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
-                    name="MAM",
-                    description="Represents the spring season (March, April, May)",
-                ),
-                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
-                    name="JJA",
-                    description="Represents the summer season (June, July, August)",
-                ),
-                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
-                    name="SON",
-                    description="Represents the autumn season (September, October, November)",
-                ),
-            ],
-        ),
-    ]
+    params = generate_configuration_parameters()
     with sqlmodel.Session(ctx.obj["engine"]) as session:
         for param_create in params:
             try:

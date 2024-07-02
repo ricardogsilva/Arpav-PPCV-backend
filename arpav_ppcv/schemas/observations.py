@@ -145,8 +145,12 @@ class StationUpdate(sqlmodel.SQLModel):
 class VariableBase(sqlmodel.SQLModel):
     id: pydantic.UUID4 = sqlmodel.Field(default_factory=uuid.uuid4, primary_key=True)
     name: str = sqlmodel.Field(unique=True)
-    description: str
-    unit: str = ""
+    display_name_english: Optional[str] = None
+    display_name_italian: Optional[str] = None
+    description_english: Optional[str] = None
+    description_italian: Optional[str] = None
+    unit_english: Optional[str] = None
+    unit_italian: Optional[str] = None
 
 
 class Variable(VariableBase, table=True):
@@ -193,14 +197,22 @@ class Variable(VariableBase, table=True):
 
 class VariableCreate(sqlmodel.SQLModel):
     name: str
-    description: str
-    unit: Optional[str] = ""
+    display_name_english: Optional[str] = None
+    display_name_italian: Optional[str] = None
+    description_english: Optional[str] = None
+    description_italian: Optional[str] = None
+    unit_english: Optional[str] = None
+    unit_italian: Optional[str] = None
 
 
 class VariableUpdate(sqlmodel.SQLModel):
     name: Optional[str] = None
-    description: Optional[str] = None
-    unit: Optional[str] = None
+    display_name_english: Optional[str] = None
+    display_name_italian: Optional[str] = None
+    description_english: Optional[str] = None
+    description_italian: Optional[str] = None
+    unit_english: Optional[str] = None
+    unit_italian: Optional[str] = None
 
 
 class MonthlyMeasurementBase(sqlmodel.SQLModel):

@@ -38,7 +38,10 @@ class ConfigurationParameterValue(sqlmodel.SQLModel, table=True):
     )
     id: uuid.UUID = sqlmodel.Field(default_factory=uuid.uuid4, primary_key=True)
     name: str
-    description: str
+    display_name_english: Optional[str] = None
+    display_name_italian: Optional[str] = None
+    description_english: Optional[str] = None
+    description_italian: Optional[str] = None
     configuration_parameter_id: uuid.UUID
 
     configuration_parameter: "ConfigurationParameter" = sqlmodel.Relationship(
@@ -57,7 +60,10 @@ class ConfigurationParameterValue(sqlmodel.SQLModel, table=True):
 class ConfigurationParameter(sqlmodel.SQLModel, table=True):
     id: uuid.UUID = sqlmodel.Field(default_factory=uuid.uuid4, primary_key=True)
     name: str = sqlmodel.Field(unique=True, index=True)
-    description: str
+    display_name_english: Optional[str] = None
+    display_name_italian: Optional[str] = None
+    description_english: Optional[str] = None
+    description_italian: Optional[str] = None
 
     allowed_values: list[ConfigurationParameterValue] = sqlmodel.Relationship(
         back_populates="configuration_parameter",
@@ -73,7 +79,10 @@ class ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
     sqlmodel.SQLModel
 ):
     name: str
-    description: str
+    display_name_english: Optional[str] = None
+    display_name_italian: Optional[str] = None
+    description_english: Optional[str] = None
+    description_italian: Optional[str] = None
 
 
 class ConfigurationParameterCreate(sqlmodel.SQLModel):
@@ -87,8 +96,10 @@ class ConfigurationParameterCreate(sqlmodel.SQLModel):
             ),
         ),
     ]
-    # name: str
-    description: str
+    display_name_english: Optional[str] = None
+    display_name_italian: Optional[str] = None
+    description_english: Optional[str] = None
+    description_italian: Optional[str] = None
 
     allowed_values: list[
         ConfigurationParameterValueCreateEmbeddedInConfigurationParameter
@@ -100,12 +111,18 @@ class ConfigurationParameterValueUpdateEmbeddedInConfigurationParameterEdit(
 ):
     id: Optional[uuid.UUID] = None
     name: Optional[str] = None
-    description: Optional[str] = None
+    display_name_english: Optional[str] = None
+    display_name_italian: Optional[str] = None
+    description_english: Optional[str] = None
+    description_italian: Optional[str] = None
 
 
 class ConfigurationParameterUpdate(sqlmodel.SQLModel):
     name: Annotated[Optional[str], pydantic.Field(pattern=_NAME_PATTERN)] = None
-    description: Optional[str] = None
+    display_name_english: Optional[str] = None
+    display_name_italian: Optional[str] = None
+    description_english: Optional[str] = None
+    description_italian: Optional[str] = None
 
     allowed_values: list[
         ConfigurationParameterValueUpdateEmbeddedInConfigurationParameterEdit
@@ -123,6 +140,8 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
     name: str = sqlmodel.Field(unique=True, index=True)
     display_name_english: Optional[str] = None
     display_name_italian: Optional[str] = None
+    description_english: Optional[str] = None
+    description_italian: Optional[str] = None
     netcdf_main_dataset_name: str
     thredds_url_pattern: str
     wms_main_layer_name: Optional[str] = None
@@ -328,6 +347,8 @@ class CoverageConfigurationCreate(sqlmodel.SQLModel):
     ]
     display_name_english: Optional[str] = None
     display_name_italian: Optional[str] = None
+    description_english: Optional[str] = None
+    description_italian: Optional[str] = None
     netcdf_main_dataset_name: str
     wms_main_layer_name: Optional[str] = None
     thredds_url_pattern: str
@@ -359,6 +380,8 @@ class CoverageConfigurationUpdate(sqlmodel.SQLModel):
     name: Annotated[Optional[str], pydantic.Field(pattern=_NAME_PATTERN)] = None
     display_name_english: Optional[str] = None
     display_name_italian: Optional[str] = None
+    description_english: Optional[str] = None
+    description_italian: Optional[str] = None
     netcdf_main_dataset_name: Optional[str] = None
     wms_main_layer_name: Optional[str] = None
     thredds_url_pattern: Optional[str] = None

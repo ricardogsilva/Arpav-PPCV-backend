@@ -619,6 +619,8 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="tas_seasonal_absolute_model_ec_earth_racmo22e",
+            display_name_english="TAS seasonal absolute EC-EARTH_RACMO22E",
+            display_name_italian="TAS valore assoluto di stagione EC-EARTH_RACMO22E",
             netcdf_main_dataset_name="tas",
             wms_main_layer_name="tas",
             thredds_url_pattern="EC-EARTH_RACMO22Eymbc/clipped/tas_EC-EARTH_RACMO22E_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",

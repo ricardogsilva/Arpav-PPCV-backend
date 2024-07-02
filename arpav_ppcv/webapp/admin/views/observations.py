@@ -205,14 +205,26 @@ class VariableView(ModelView):
     icon = "fa fa-blog"
     pk_attr = "id"
 
-    exclude_fields_from_list = ("id",)
+    exclude_fields_from_list = (
+        "id",
+        "display_name_english",
+        "display_name_italian",
+        "description_english",
+        "description_italian",
+        "unit_english",
+        "unit_italian",
+    )
     exclude_fields_from_detail = ("id",)
 
     fields = (
         fields.UuidField("id"),
         starlette_admin.StringField("name", required=True),
-        starlette_admin.StringField("description", required=True),
-        starlette_admin.StringField("unit"),
+        starlette_admin.StringField("display_name_english", required=True),
+        starlette_admin.StringField("display_name_italian", required=True),
+        starlette_admin.StringField("description_english"),
+        starlette_admin.StringField("description_italian"),
+        starlette_admin.StringField("unit_english"),
+        starlette_admin.StringField("unit_italian"),
     )
 
     def __init__(self, *args, **kwargs) -> None:
