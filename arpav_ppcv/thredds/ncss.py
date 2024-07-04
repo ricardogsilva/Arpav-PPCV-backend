@@ -53,6 +53,46 @@ def get_dataset_description(
     )
 
 
+async def async_query_dataset(
+    http_client: httpx.AsyncClient,
+    thredds_ncss_url: str,
+    netcdf_variable_name: str,
+    longitude: float,
+    latitude: float,
+    time_start: dt.datetime | None = None,
+    time_end: dt.datetime | None = None,
+):
+    """Query THREDDS for the specified variable."""
+    if time_start is None or time_end is None:
+        temporal_parameters = {
+            "time": "all",
+        }
+    else:
+        temporal_parameters = {
+            "time_start": time_start.isoformat(),
+            "time_end": time_end.isoformat(),
+        }
+    response = await http_client.get(
+        thredds_ncss_url,
+        params={
+            "var": netcdf_variable_name,
+            "latitude": latitude,
+            "longitude": longitude,
+            "accept": "CSV",
+            **temporal_parameters,
+        },
+    )
+    try:
+        response.raise_for_status()
+    except httpx.HTTPError as err:
+        logger.exception(msg="Could not retrieve data")
+        logger.debug(f"upstream NCSS error: {response.content}")
+        raise CoverageDataRetrievalError() from err
+    else:
+        result = response.text
+    return result
+
+
 def query_dataset(
     http_client: httpx.Client,
     thredds_ncss_url: str,

@@ -54,6 +54,8 @@ class TimeSeriesItem(pydantic.BaseModel):
 class TimeSeriesTranslations(pydantic.BaseModel):
     series_name: dict[str, str]
     processing_method: dict[str, str]
+    parameter_names: typing.Optional[dict[str, dict[str, str]]] = None
+    parameter_values: typing.Optional[dict[str, dict[str, str]]] = None
 
 
 class TimeSeries(pydantic.BaseModel):

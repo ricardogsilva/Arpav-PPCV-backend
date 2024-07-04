@@ -495,7 +495,10 @@ class ConfigurationParameterPossibleValueUpdate(sqlmodel.SQLModel):
     configuration_parameter_value_id: uuid.UUID
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class CoverageInternal:
     configuration: CoverageConfiguration
     identifier: str
+
+    def __hash__(self):
+        return hash(self.identifier)
