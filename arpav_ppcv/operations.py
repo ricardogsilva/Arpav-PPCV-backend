@@ -68,7 +68,7 @@ def get_climate_barometer_time_series(
             cov.identifier
         ].squeeze()
         for strategy in additional_smoothing_strategies:
-            df, smoothed_col = _process_coverage_smoothing_strategy(
+            df, smoothed_col = process_coverage_smoothing_strategy(
                 df, cov.identifier, strategy
             )
             result[(cov, strategy)] = df[smoothed_col].squeeze()
@@ -108,7 +108,152 @@ def _get_climate_barometer_data(
     return df
 
 
+def get_station_data(
+    session: sqlmodel.Session,
+    variable: observations.Variable,
+    station: observations.Station,
+    month: int,
+    temporal_range: tuple[dt.datetime | None, dt.datetime | None],
+) -> Optional[pd.DataFrame]:
+    raw_measurements = database.collect_all_monthly_measurements(
+        session=session,
+        station_id_filter=station.id,
+        variable_id_filter=variable.id,
+        month_filter=month,
+    )
+    df = pd.DataFrame(m.model_dump() for m in raw_measurements)
+    if not df.empty:
+        df = df.rename(columns={"value": variable.name})
+        df["time"] = pd.to_datetime(df["date"], utc=True)
+        df = df[["time", variable.name]]
+        df.set_index("time", inplace=True)
+        start, end = temporal_range
+        if start is not None:
+            df = df[start:]
+        if end is not None:
+            df = df[:end]
+        return df
+    else:
+        logger.info(
+            f"Station {station.id!r} has no measurements for month {month!r} and "
+            f"variable {variable.id!r}"
+        )
+
+
+def aggregate_decade_data(
+    variable: observations.Variable, measurements: pd.DataFrame
+) -> pd.DataFrame:
+    # group values by climatological decade, which starts at year 1 and ends at year 10
+    decade_grouper = measurements.groupby(((measurements.index.year - 1) // 10) * 10)
+
+    mean_column_name = variable.name
+    decade_df = decade_grouper.agg(
+        num_values=(variable.name, "size"),
+        **{mean_column_name: (variable.name, "mean")},
+    )
+    # discard decades where there are less than 7 years
+    decade_df = decade_df[decade_df.num_values >= 7]
+    decade_df = decade_df.drop(columns=["num_values"])
+    decade_df["time"] = pd.to_datetime(decade_df.index.astype(str), utc=True)
+    decade_df.set_index("time", inplace=True)
+    return decade_df
+
+
+def generate_mann_kendall_data(
+    variable: observations.Variable,
+    measurements: pd.DataFrame,
+    parameters: base.MannKendallParameters,
+) -> tuple[pd.DataFrame, dict[str, str | int | float]]:
+    mk_col = f"{variable.name}__MANN_KENDALL"
+    mk_start = parameters.start_year or measurements.index[0].year
+    mk_end = parameters.end_year or measurements.index[-1].year
+    if mk_end - mk_start >= 27:
+        mk_df = measurements[str(mk_start) : str(mk_end)].copy()
+        mk_result = mk.original_test(mk_df[variable.name])
+        mk_df[mk_col] = (
+            mk_result.slope * (mk_df.index.year - mk_df.index.year.min())
+            + mk_result.intercept
+        )
+        # mk_df = mk_df[["time", mk_col]].rename(columns={mk_col: variable.name})
+        mk_df = mk_df[[mk_col]].rename(columns={mk_col: variable.name})
+        info = {
+            "trend": mk_result.trend,
+            "h": bool(mk_result.h),
+            "p": mk_result.p,
+            "z": mk_result.z,
+            "tau": mk_result.Tau,
+            "s": mk_result.s,
+            "var_s": mk_result.var_s,
+            "slope": mk_result.slope,
+            "intercept": mk_result.intercept,
+        }
+        return mk_df, info
+    else:
+        raise ValueError("Mann-Kendall start and end year must span at least 27 years")
+
+
 def get_observation_time_series(
+    session: sqlmodel.Session,
+    variable: observations.Variable,
+    station: observations.Station,
+    month: int,
+    temporal_range: str,
+    smoothing_strategies: list[base.ObservationDataSmoothingStrategy] = [  # noqa
+        base.ObservationDataSmoothingStrategy.NO_SMOOTHING
+    ],
+    include_decade_data: bool = False,
+    mann_kendall_parameters: base.MannKendallParameters | None = None,
+) -> dict[
+    tuple[
+        base.ObservationDataSmoothingStrategy, Optional[base.ObservationDerivedSeries]
+    ],
+    tuple[pd.Series, Optional[dict]],
+]:
+    """Get monthly observation measurements."""
+    start, end = _parse_temporal_range(temporal_range)
+    df = get_station_data(session, variable, station, month, (start, end))
+    if df is not None:
+        result = {
+            (base.ObservationDataSmoothingStrategy.NO_SMOOTHING, None): (
+                df[variable.name].squeeze(),
+                None,
+            )
+        }
+        additional_strategies = [
+            ss
+            for ss in smoothing_strategies
+            if ss != base.ObservationDataSmoothingStrategy.NO_SMOOTHING
+        ]
+        for smoothing_strategy in additional_strategies:
+            smoothed_df, smoothed_column_name = process_station_data_smoothing_strategy(
+                df, variable.name, smoothing_strategy
+            )
+            result[(smoothing_strategy, None)] = (
+                smoothed_df[smoothed_column_name].squeeze(),
+                None,
+            )
+        if include_decade_data:
+            decade_df = aggregate_decade_data(variable, df)
+            result[
+                (
+                    base.ObservationDataSmoothingStrategy.NO_SMOOTHING,
+                    base.ObservationDerivedSeries.DECADE_SERIES,
+                )
+            ] = (decade_df[variable.name].squeeze(), None)
+        if mann_kendall_parameters is not None:
+            mk_df, mk_info = generate_mann_kendall_data(
+                variable, df, mann_kendall_parameters
+            )
+            result[
+                (
+                    base.ObservationDataSmoothingStrategy.NO_SMOOTHING,
+                    base.ObservationDerivedSeries.MANN_KENDALL_SERIES,
+                )
+            ] = (mk_df[variable.name].squeeze(), {"mann-kendall": mk_info})
+        return result
+
+
+def old_get_observation_time_series(
     session: sqlmodel.Session,
     variable: observations.Variable,
     station: observations.Station,
@@ -225,7 +370,6 @@ async def async_retrieve_data_via_ncss(
     http_client: httpx.AsyncClient,
     result_gatherer: dict,
 ) -> None:
-    logger.info(f"inside async_retrieve_data_via_ncss for cov {coverage.identifier!r}")
     time_start, time_end = temporal_range
     ncss_url = "/".join(
         (
@@ -244,7 +388,6 @@ async def async_retrieve_data_via_ncss(
         time_end=time_end,
     )
     result_gatherer[coverage] = raw_coverage_data
-    logger.info(f"leaving async_retrieve_data_via_ncss for cov {coverage.identifier!r}")
 
 
 async def retrieve_multiple_ncss_datasets(
@@ -299,7 +442,7 @@ def _parse_ncss_dataset(
         return df
 
 
-def _process_coverage_smoothing_strategy(
+def process_coverage_smoothing_strategy(
     df: pd.DataFrame,
     column_to_smooth: str,
     strategy: base.CoverageDataSmoothingStrategy,
@@ -319,7 +462,7 @@ def _process_coverage_smoothing_strategy(
     return df, smoothed_column_name
 
 
-def _process_station_data_smoothing_strategy(
+def process_station_data_smoothing_strategy(
     df: pd.DataFrame,
     column_to_smooth: str,
     strategy: base.ObservationDataSmoothingStrategy,
@@ -417,7 +560,6 @@ def get_coverage_time_series(
     if include_coverage_related_data:
         related_covs = get_related_coverages(coverage)
         to_retrieve_from_ncss.extend(related_covs)
-    logger.info(f"{[c.identifier for c in to_retrieve_from_ncss]=}")
     with start_blocking_portal() as portal:
         raw_data = portal.call(
             retrieve_multiple_ncss_datasets,
@@ -453,7 +595,7 @@ def get_coverage_time_series(
                 (cov, base.CoverageDataSmoothingStrategy.NO_SMOOTHING)
             ] = df[cov.identifier].squeeze()
             for smoothing_strategy in additional_coverage_smoothing_strategies:
-                df, smoothed_column = _process_coverage_smoothing_strategy(
+                df, smoothed_column = process_coverage_smoothing_strategy(
                     df,
                     cov.identifier,
                     smoothing_strategy,
@@ -494,7 +636,7 @@ def get_coverage_time_series(
         ]
         variable = coverage.configuration.related_observation_variable
         if coverage.configuration.related_observation_variable is not None:
-            station_data = _get_station_data(
+            station_data = extract_nearby_station_data(
                 session,
                 settings,
                 point_geom,
@@ -520,7 +662,7 @@ def get_coverage_time_series(
                     (
                         station_df,
                         smoothed_column,
-                    ) = _process_station_data_smoothing_strategy(
+                    ) = process_station_data_smoothing_strategy(
                         station_df, variable.name, smoothing_strategy
                     )
                     observation_result[(variable, smoothing_strategy)] = station_df[
@@ -536,7 +678,7 @@ def get_coverage_time_series(
     return (coverage_result, observation_result)
 
 
-def _get_station_data(
+def extract_nearby_station_data(
     session: sqlmodel.Session,
     settings: ArpavPpcvSettings,
     point_geom: shapely.Point,
@@ -590,7 +732,6 @@ def _get_station_data(
         )
         # order nearby stations by distance and then iterate through them in order to
         # try to get measurements for the relevant variable and temporal aggregation
-        logger.debug(f"{sorted_stations=}")
         for station in sorted_stations:
             logger.debug(f"Processing station {station.id}...")
             raw_station_data = retriever(station_id_filter=station.id)

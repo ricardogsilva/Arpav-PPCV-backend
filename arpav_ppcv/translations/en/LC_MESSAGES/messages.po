@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-06-24 15:53+0000\n"
+"POT-Creation-Date: 2024-07-05 15:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -19,14 +19,90 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.15.0\n"
 
-#: schemas/base.py:41
+#: schemas/base.py:27
+msgid "winter"
+msgstr ""
+
+#: schemas/base.py:28
+msgid "spring"
+msgstr ""
+
+#: schemas/base.py:29
+msgid "summer"
+msgstr ""
+
+#: schemas/base.py:30
+msgid "autumn"
+msgstr ""
+
+#: schemas/base.py:42 schemas/base.py:75
 msgid "no processing"
 msgstr ""
 
-#: schemas/base.py:42
+#: schemas/base.py:43
+msgid "centered 5-year moving average"
+msgstr ""
+
+#: schemas/base.py:60
+msgid "monthly"
+msgstr ""
+
+#: schemas/base.py:61
+msgid "seasonal"
+msgstr ""
+
+#: schemas/base.py:62
+msgid "yearly"
+msgstr ""
+
+#: schemas/base.py:76
 msgid "LOESS"
 msgstr ""
 
-#: schemas/base.py:43
+#: schemas/base.py:77
 msgid "centered 11-year moving average"
+msgstr ""
+
+#: schemas/base.py:91 schemas/base.py:109
+msgid "series name"
+msgstr ""
+
+#: schemas/base.py:92 schemas/base.py:110
+msgid "processing method"
+msgstr ""
+
+#: schemas/base.py:93
+msgid "coverage identifier"
+msgstr ""
+
+#: schemas/base.py:94
+msgid "coverage configuration"
+msgstr ""
+
+#: schemas/base.py:111
+msgid "variable"
+msgstr ""
+
+#: schemas/base.py:112
+msgid "series elaboration"
+msgstr ""
+
+#: schemas/base.py:113
+msgid "derived series"
+msgstr ""
+
+#: schemas/base.py:125
+msgid "original"
+msgstr ""
+
+#: schemas/base.py:126
+msgid "derived"
+msgstr ""
+
+#: schemas/base.py:138
+msgid "decade series"
+msgstr ""
+
+#: schemas/base.py:139
+msgid "Mann-Kendall series"
 msgstr ""

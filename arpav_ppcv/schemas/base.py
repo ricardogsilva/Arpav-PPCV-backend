@@ -78,6 +78,68 @@ class CoverageDataSmoothingStrategy(enum.Enum):
         }[self.name]
 
 
+class StaticCoverageSeriesParameter(enum.Enum):
+    SERIES_NAME = "SERIES_NAME"
+    PROCESSING_METHOD = "PROCESSING_METHOD"
+    COVERAGE_IDENTIFIER = "COVERAGE_IDENTIFIER"
+    COVERAGE_CONFIGURATION = "COVERAGE_CONFIGURATION"
+
+    def get_display_name(self, locale: babel.Locale) -> str:
+        translations = get_translations(locale)
+        _ = translations.gettext
+        return {
+            self.SERIES_NAME.name: _("series name"),
+            self.PROCESSING_METHOD.name: _("processing method"),
+            self.COVERAGE_IDENTIFIER.name: _("coverage identifier"),
+            self.COVERAGE_CONFIGURATION.name: _("coverage configuration"),
+        }[self.name]
+
+
+class StaticObservationSeriesParameter(enum.Enum):
+    SERIES_NAME = "SERIES_NAME"
+    PROCESSING_METHOD = "PROCESSING_METHOD"
+    VARIABLE = "VARIABLE"
+    SERIES_ELABORATION = "SERIES_ELABORATION"
+    DERIVED_SERIES = "DERIVED_SERIES"
+
+    def get_display_name(self, locale: babel.Locale) -> str:
+        translations = get_translations(locale)
+        _ = translations.gettext
+        return {
+            self.SERIES_NAME.name: _("series name"),
+            self.PROCESSING_METHOD.name: _("processing method"),
+            self.VARIABLE.name: _("variable"),
+            self.SERIES_ELABORATION.name: _("series elaboration"),
+            self.DERIVED_SERIES.name: _("derived series"),
+        }[self.name]
+
+
+class TimeSeriesElaboration(enum.Enum):
+    ORIGINAL = "ORIGINAL"
+    DERIVED = "DERIVED"
+
+    def get_display_name(self, locale: babel.Locale) -> str:
+        translations = get_translations(locale)
+        _ = translations.gettext
+        return {
+            self.ORIGINAL.name: _("original"),
+            self.DERIVED.name: _("derived"),
+        }[self.name]
+
+
+class ObservationDerivedSeries(enum.Enum):
+    DECADE_SERIES = "DECADE_SERIES"
+    MANN_KENDALL_SERIES = "MANN_KENDALL_SERIES"
+
+    def get_display_name(self, locale: babel.Locale) -> str:
+        translations = get_translations(locale)
+        _ = translations.gettext
+        return {
+            self.DECADE_SERIES.name: _("decade series"),
+            self.MANN_KENDALL_SERIES.name: _("Mann-Kendall series"),
+        }[self.name]
+
+
 class MannKendallParameters(pydantic.BaseModel):
     start_year: int | None = None
     end_year: int | None = None

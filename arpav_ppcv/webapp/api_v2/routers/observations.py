@@ -9,7 +9,6 @@ from typing import (
 import fastapi
 import pandas as pd
 import pydantic
-from arpav_ppcv.schemas.base import ObservationDataSmoothingStrategy
 from fastapi import (
     APIRouter,
     Depends,
@@ -389,8 +388,8 @@ def get_time_series(
             else:
                 mann_kendall = None
             try:
-                obs_df, decade_df, mk_df, info = operations.get_observation_time_series(
-                    db_session,
+                observation_series = operations.get_observation_time_series(
+                    session=db_session,
                     variable=db_variable,
                     station=db_station,
                     month=month,
@@ -403,27 +402,17 @@ def get_time_series(
                 raise HTTPException(status_code=400, detail=str(err))
             else:
                 series = []
-                if include_decade_data and decade_df is not None:
-                    series.extend(_serialize_dataframe(decade_df))
-
-                if include_mann_kendall_trend and mk_df is not None:
-                    series.extend(
-                        _serialize_dataframe(
-                            mk_df, info=(info or {}).get("mann_kendall")
-                        )
+                for obs_series_info, pd_series_stuff in observation_series.items():
+                    smoothing_strategy, derived_series = obs_series_info
+                    pd_series, pd_series_info = pd_series_stuff
+                    processed_series = TimeSeries.from_observation_series(
+                        series=pd_series,
+                        variable=db_variable,
+                        smoothing_strategy=smoothing_strategy,
+                        extra_info=pd_series_info,
+                        derived_series=derived_series,
                     )
-
-                exclude_pattern = (
-                    ObservationDataSmoothingStrategy.NO_SMOOTHING.value
-                    if ObservationDataSmoothingStrategy.NO_SMOOTHING not in smoothing
-                    else None
-                )
-                series.extend(
-                    _serialize_dataframe(
-                        obs_df,
-                        exclude_series_name_pattern=exclude_pattern,
-                    )
-                )
+                    series.append(processed_series)
                 return TimeSeriesList(series=series)
         else:
             raise HTTPException(status_code=400, detail="Invalid variable identifier")

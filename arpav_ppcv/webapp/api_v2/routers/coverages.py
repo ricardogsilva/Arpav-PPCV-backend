@@ -1,5 +1,4 @@
 import logging
-import math
 import urllib.parse
 from xml.etree import ElementTree as et
 from typing import (
@@ -8,7 +7,6 @@ from typing import (
 )
 
 import httpx
-import pandas as pd
 import pydantic
 import shapely.io
 from fastapi import (
@@ -27,25 +25,18 @@ from .... import (
     exceptions,
     operations,
 )
-from ....config import (
-    ArpavPpcvSettings,
-    LOCALE_EN,
-    LOCALE_IT,
-)
+from ....config import ArpavPpcvSettings
 from ....thredds import utils as thredds_utils
 from ....schemas.base import (
     CoverageDataSmoothingStrategy,
     ObservationDataSmoothingStrategy,
 )
 from ....schemas.coverages import CoverageInternal
-from ....schemas.observations import Variable
 from ... import dependencies
 from ..schemas import coverages as coverage_schemas
 from ..schemas.base import (
     TimeSeries,
-    TimeSeriesItem,
     TimeSeriesList,
-    TimeSeriesTranslations,
 )
 
 
@@ -390,10 +381,11 @@ def get_climate_barometer_time_series(
                 series = []
                 for coverage_info, pd_series in time_series.items():
                     cov, smoothing_strategy = coverage_info
-                    serialized = serialize_coverage_series(
-                        pd_series, cov, smoothing_strategy
+                    series.append(
+                        TimeSeries.from_coverage_series(
+                            pd_series, cov, smoothing_strategy
+                        )
                     )
-                    series.append(serialized)
                 return TimeSeriesList(series=series)
         else:
             raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
@@ -487,110 +479,21 @@ def get_time_series(
                 series = []
                 for coverage_info, pd_series in coverage_series.items():
                     cov, smoothing_strategy = coverage_info
-                    serialized = serialize_coverage_series(
-                        pd_series, cov, smoothing_strategy
+                    series.append(
+                        TimeSeries.from_coverage_series(
+                            pd_series, cov, smoothing_strategy
+                        )
                     )
-                    series.append(serialized)
                 if observations_series is not None:
                     for observation_info, pd_series in observations_series.items():
                         variable, smoothing_strategy = observation_info
-                        serialized = serialize_variable_series(
-                            pd_series, variable, smoothing_strategy
+                        series.append(
+                            TimeSeries.from_observation_series(
+                                pd_series, variable, smoothing_strategy
+                            )
                         )
-                        series.append(serialized)
                 return TimeSeriesList(series=series)
         else:
             raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
     else:
         raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
-
-
-def serialize_coverage_series(
-    series: pd.Series,
-    coverage: CoverageInternal,
-    smoothing_strategy: CoverageDataSmoothingStrategy,
-) -> TimeSeries:
-    info = {}
-    param_names_translations = {}
-    param_values_translations = {}
-    for pv in coverage.configuration.retrieve_used_values(coverage.identifier):
-        conf_param = pv.configuration_parameter_value.configuration_parameter
-        info[conf_param.name] = pv.configuration_parameter_value.name
-        param_names_translations[conf_param.name] = {
-            LOCALE_EN.language: (conf_param.display_name_english or conf_param.name),
-            LOCALE_IT.language: (conf_param.display_name_italian or conf_param.name),
-        }
-        param_values_translations[conf_param.name] = {
-            LOCALE_EN.language: (
-                pv.configuration_parameter_value.display_name_english
-                or pv.configuration_parameter_value.name
-            ),
-            LOCALE_IT.language: (
-                pv.configuration_parameter_value.display_name_italian
-                or pv.configuration_parameter_value.name
-            ),
-        }
-    logger.info(f"serializing {coverage.identifier=} {smoothing_strategy=}...")
-    return TimeSeries(
-        name=str(series.name),
-        values=[
-            TimeSeriesItem(datetime=timestamp, value=value)
-            for timestamp, value in series.to_dict().items()
-            if not math.isnan(value)
-        ],
-        info={
-            "processing_method": smoothing_strategy.value,
-            "coverage_identifier": coverage.identifier,
-            "coverage_configuration": coverage.configuration.name,
-            **info,
-        },
-        translations=TimeSeriesTranslations(
-            series_name={
-                LOCALE_EN.language: (
-                    coverage.configuration.display_name_english
-                    or coverage.configuration.name
-                ),
-                LOCALE_IT.language: (
-                    coverage.configuration.display_name_italian
-                    or coverage.configuration.name
-                ),
-            },
-            processing_method={
-                LOCALE_EN.language: smoothing_strategy.get_display_name(LOCALE_EN),
-                LOCALE_IT.language: smoothing_strategy.get_display_name(LOCALE_IT),
-            },
-            parameter_names=param_names_translations,
-            parameter_values=param_values_translations,
-        ),
-    )
-
-
-def serialize_variable_series(
-    series: pd.Series,
-    variable: Variable,
-    smoothing_strategy: ObservationDataSmoothingStrategy,
-    extra_info: Optional[dict[str, str]] = None,
-) -> TimeSeries:
-    return TimeSeries(
-        name=str(series.name),
-        values=[
-            TimeSeriesItem(datetime=timestamp, value=value)
-            for timestamp, value in series.to_dict().items()
-            if not math.isnan(value)
-        ],
-        info={
-            "processing_method": smoothing_strategy.value(),
-            "variable": variable.name,
-            **extra_info,
-        },
-        translations=TimeSeriesTranslations(
-            series_name={
-                LOCALE_EN.language: variable.display_name_english,
-                LOCALE_IT.language: variable.display_name_italian,
-            },
-            processing_method={
-                LOCALE_EN.language: smoothing_strategy.get_display_name(LOCALE_EN),
-                LOCALE_IT.language: smoothing_strategy.get_display_name(LOCALE_IT),
-            },
-        ),
-    )

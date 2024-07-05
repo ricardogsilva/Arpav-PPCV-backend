@@ -308,7 +308,7 @@ def init_translations(
 
 @translations_app.command(name="update")
 def update_translations(
-    template_catalog_path: Path = (Path(__file__).parents[2] / "messages.pot"),
+    template_catalog_path: Path = (Path(__file__).parents[1] / "messages.pot"),
     translations_dir: Path = (Path(__file__).parent / "translations"),
 ):
     """Update existing translation catalogues."""
