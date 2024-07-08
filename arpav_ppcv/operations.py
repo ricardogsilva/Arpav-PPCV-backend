@@ -2,6 +2,7 @@ import datetime as dt
 import functools
 import io
 import logging
+import time
 import warnings
 from concurrent import futures
 from typing import Optional
@@ -392,11 +393,11 @@ async def async_retrieve_data_via_ncss(
 
 async def retrieve_multiple_ncss_datasets(
     settings: ArpavPpcvSettings,
+    client: httpx.AsyncClient,
     datasets_to_retrieve: list[coverages.CoverageInternal],
     point_geom: shapely.Point,
     temporal_range: tuple[dt.datetime | None, dt.datetime | None],
 ):
-    client = httpx.AsyncClient()
     raw_data = {}
     async with anyio.create_task_group() as tg:
         for to_retrieve in datasets_to_retrieve:
@@ -447,18 +448,27 @@ def process_coverage_smoothing_strategy(
     column_to_smooth: str,
     strategy: base.CoverageDataSmoothingStrategy,
     ignore_warnings: bool = True,
-) -> tuple[pd.DataFrame, str]:
-    smoothed_column_name = "__".join((column_to_smooth, strategy.value))
-    if strategy == base.CoverageDataSmoothingStrategy.LOESS_SMOOTHING:
-        df[smoothed_column_name] = _apply_loess_smoothing(
-            df, column_to_smooth, ignore_warnings=ignore_warnings
-        )
-    elif strategy == base.CoverageDataSmoothingStrategy.MOVING_AVERAGE_11_YEARS:
-        df[smoothed_column_name] = (
-            df[column_to_smooth].rolling(center=True, window=11).mean()
-        )
+) -> tuple[pd.DataFrame, Optional[str]]:
+    start = time.time()
+    logger.info(f"processing {column_to_smooth} {strategy}...")
+    if strategy == base.CoverageDataSmoothingStrategy.NO_SMOOTHING:
+        smoothed_column_name = None
     else:
-        raise NotImplementedError(f"smoothing strategy {strategy!r} is not implemented")
+        smoothed_column_name = "__".join((column_to_smooth, strategy.value))
+        if strategy == base.CoverageDataSmoothingStrategy.LOESS_SMOOTHING:
+            df[smoothed_column_name] = _apply_loess_smoothing(
+                df, column_to_smooth, ignore_warnings=ignore_warnings
+            )
+        elif strategy == base.CoverageDataSmoothingStrategy.MOVING_AVERAGE_11_YEARS:
+            df[smoothed_column_name] = (
+                df[column_to_smooth].rolling(center=True, window=11).mean()
+            )
+        else:
+            raise NotImplementedError(
+                f"smoothing strategy {strategy!r} is not implemented"
+            )
+    end = time.time()
+    logger.info(f"processed {column_to_smooth} {strategy} - took {end - start}s")
     return df, smoothed_column_name
 
 
@@ -529,6 +539,7 @@ def get_related_coverages(
 def get_coverage_time_series(
     settings: ArpavPpcvSettings,
     session: sqlmodel.Session,
+    client: httpx.AsyncClient,
     coverage: coverages.CoverageInternal,
     point_geom: shapely.Point,
     temporal_range: str,
@@ -549,7 +560,10 @@ def get_coverage_time_series(
         ]
     ],
 ]:
+    parse_temporal_start = time.perf_counter()
     start, end = _parse_temporal_range(temporal_range)
+    parse_temporal_end = time.perf_counter()
+    logger.info(f"parsing temporal range: {parse_temporal_end - parse_temporal_start}s")
     to_retrieve_from_ncss = [coverage]
     if include_coverage_uncertainty:
         lower_cov, upper_cov = get_related_uncertainty_coverage_configurations(coverage)
@@ -560,10 +574,12 @@ def get_coverage_time_series(
     if include_coverage_related_data:
         related_covs = get_related_coverages(coverage)
         to_retrieve_from_ncss.extend(related_covs)
+    fetching_start = time.perf_counter()
     with start_blocking_portal() as portal:
         raw_data = portal.call(
             retrieve_multiple_ncss_datasets,
             settings,
+            client,
             to_retrieve_from_ncss,
             point_geom,
             (start, end),
@@ -574,7 +590,10 @@ def get_coverage_time_series(
         for ss in coverage_smoothing_strategies
         if ss != base.CoverageDataSmoothingStrategy.NO_SMOOTHING
     ]
+    fetching_end = time.perf_counter()
+    logger.info(f"fetching from THREDDS: {fetching_end - fetching_start}s")
 
+    parsing_data_start = time.perf_counter()
     with futures.ProcessPoolExecutor() as executor:
         to_do_map = {}
         for cov, data_ in raw_data.items():
@@ -586,24 +605,38 @@ def get_coverage_time_series(
                 end,
                 cov.identifier,
             )
-            to_do_map[future_result] = (cov, data_)
+            to_do_map[future_result] = cov
         done_iter = futures.as_completed(to_do_map)
+    parsing_data_end = time.perf_counter()
+    logger.info(f"parsing raw data: {parsing_data_end - parsing_data_start}s")
+    smoothing_start = time.perf_counter()
+    with futures.ProcessPoolExecutor() as smoothing_executor:
+        smoothing_to_do_map = {}
         for future_ in done_iter:
             df = future_.result()
-            cov, data_ = to_do_map[future_]
-            coverage_result[
-                (cov, base.CoverageDataSmoothingStrategy.NO_SMOOTHING)
-            ] = df[cov.identifier].squeeze()
-            for smoothing_strategy in additional_coverage_smoothing_strategies:
-                df, smoothed_column = process_coverage_smoothing_strategy(
+            cov = to_do_map[future_]
+            # coverage_result[
+            #     (cov, base.CoverageDataSmoothingStrategy.NO_SMOOTHING)
+            # ] = df[cov.identifier].squeeze()
+            for smoothing_strategy in coverage_smoothing_strategies:
+                # for smoothing_strategy in additional_coverage_smoothing_strategies:
+                smoothing_future_result = smoothing_executor.submit(
+                    process_coverage_smoothing_strategy,
                     df,
                     cov.identifier,
                     smoothing_strategy,
-                    ignore_warnings=(not settings.debug),
                 )
-                coverage_result[(cov, smoothing_strategy)] = df[
-                    smoothed_column
-                ].squeeze()
+                smoothing_to_do_map[smoothing_future_result] = (cov, smoothing_strategy)
+        smoothing_done_iter = futures.as_completed(smoothing_to_do_map)
+    smoothing_end = time.perf_counter()
+    logger.info(f"smoothing:  {smoothing_end - smoothing_start}s")
+    for smoothing_future in smoothing_done_iter:
+        df, smoothed_column = smoothing_future.result()
+        cov, smoothing_strategy = smoothing_to_do_map[smoothing_future]
+        if smoothing_strategy == base.CoverageDataSmoothingStrategy.NO_SMOOTHING:
+            coverage_result[(cov, smoothing_strategy)] = df[cov.identifier].squeeze()
+        else:
+            coverage_result[(cov, smoothing_strategy)] = df[smoothed_column].squeeze()
 
     # for cov, data_ in raw_data.items():
     #     df = _parse_ncss_dataset(
@@ -675,7 +708,7 @@ def get_coverage_time_series(
                 "Cannot include observation data - no observation variable is related "
                 "to this coverage configuration"
             )
-    return (coverage_result, observation_result)
+    return coverage_result, observation_result
 
 
 def extract_nearby_station_data(

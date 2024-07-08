@@ -1,4 +1,5 @@
 import logging
+import time
 import urllib.parse
 from xml.etree import ElementTree as et
 from typing import (
@@ -397,6 +398,7 @@ def get_climate_barometer_time_series(
 def get_time_series(
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
+    client: Annotated[httpx.AsyncClient, Depends(dependencies.get_http_client)],
     coverage_identifier: str,
     coords: str,
     datetime: Optional[str] = "../..",
@@ -460,6 +462,7 @@ def get_time_series(
                 ) = operations.get_coverage_time_series(
                     settings,
                     db_session,
+                    client,
                     coverage,
                     point_geom,
                     datetime,
@@ -476,6 +479,7 @@ def get_time_series(
                     detail="Could not retrieve data",
                 ) from err
             else:
+                serialization_start = time.perf_counter()
                 series = []
                 for coverage_info, pd_series in coverage_series.items():
                     cov, smoothing_strategy = coverage_info
@@ -492,7 +496,12 @@ def get_time_series(
                                 pd_series, variable, smoothing_strategy
                             )
                         )
-                return TimeSeriesList(series=series)
+                result = TimeSeriesList(series=series)
+                serialization_end = time.perf_counter()
+                logger.info(
+                    f"serialization time: {serialization_end - serialization_start}s"
+                )
+                return result
         else:
             raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
     else:
