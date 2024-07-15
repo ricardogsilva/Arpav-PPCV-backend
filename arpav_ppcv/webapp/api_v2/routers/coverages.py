@@ -397,6 +397,7 @@ def get_climate_barometer_time_series(
 def get_time_series(
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
+    http_client: Annotated[httpx.AsyncClient, Depends(dependencies.get_http_client)],
     coverage_identifier: str,
     coords: str,
     datetime: Optional[str] = "../..",
@@ -460,6 +461,7 @@ def get_time_series(
                 ) = operations.get_coverage_time_series(
                     settings,
                     db_session,
+                    http_client,
                     coverage,
                     point_geom,
                     datetime,

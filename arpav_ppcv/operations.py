@@ -12,6 +12,7 @@ import httpx
 import netCDF4
 import numpy as np
 import pandas as pd
+import pyloess
 import pymannkendall as mk
 import pyproj
 import shapely
@@ -20,7 +21,6 @@ import sqlmodel
 from anyio.from_thread import start_blocking_portal
 from dateutil.parser import isoparse
 from geoalchemy2.shape import to_shape
-from loess.loess_1d import loess_1d
 from pyproj.enums import TransformDirection
 from shapely.ops import transform
 
@@ -392,11 +392,11 @@ async def async_retrieve_data_via_ncss(
 
 async def retrieve_multiple_ncss_datasets(
     settings: ArpavPpcvSettings,
+    client: httpx.AsyncClient,
     datasets_to_retrieve: list[coverages.CoverageInternal],
     point_geom: shapely.Point,
     temporal_range: tuple[dt.datetime | None, dt.datetime | None],
 ):
-    client = httpx.AsyncClient()
     raw_data = {}
     async with anyio.create_task_group() as tg:
         for to_retrieve in datasets_to_retrieve:
@@ -529,6 +529,7 @@ def get_related_coverages(
 def get_coverage_time_series(
     settings: ArpavPpcvSettings,
     session: sqlmodel.Session,
+    http_client: httpx.AsyncClient,
     coverage: coverages.CoverageInternal,
     point_geom: shapely.Point,
     temporal_range: str,
@@ -564,6 +565,7 @@ def get_coverage_time_series(
         raw_data = portal.call(
             retrieve_multiple_ncss_datasets,
             settings,
+            http_client,
             to_retrieve_from_ncss,
             point_geom,
             (start, end),
@@ -797,10 +799,13 @@ def _apply_loess_smoothing(
     with warnings.catch_warnings():
         if ignore_warnings:
             warnings.simplefilter("ignore")
-        _, loess_smoothed, _ = loess_1d(
-            df.index.year.astype("int"), df[source_column_name], degree=0.2, frac=0.75
+        loess_smoothed = pyloess.loess(
+            df.index.year.astype("int").values,
+            df[source_column_name],
+            span=0.75,
+            degree=2,
         )
-    return loess_smoothed
+    return loess_smoothed[:, 1]
 
 
 def _parse_temporal_range(

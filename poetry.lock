@@ -802,7 +802,7 @@ files = [
 name = "contourpy"
 version = "1.2.1"
 description = "Python library for calculating contours of 2D quadrilateral grids"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.9"
 files = [
@@ -989,7 +989,7 @@ test-randomorder = ["pytest-randomly"]
 name = "cycler"
 version = "0.12.1"
 description = "Composable style cycles"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
@@ -1415,7 +1415,7 @@ typing = ["typing-extensions (>=4.8)"]
 name = "fonttools"
 version = "4.52.4"
 description = "Tools to manipulate font files"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
@@ -2315,7 +2315,7 @@ files = [
 name = "kiwisolver"
 version = "1.4.5"
 description = "A fast implementation of the Cassowary constraint solver"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -2455,23 +2455,6 @@ sqlalchemy = ["sqlalchemy"]
 sqs = ["boto3 (>=1.4.4)", "pycurl (==7.43.0.2)"]
 yaml = ["PyYAML (>=3.10)"]
 zookeeper = ["kazoo (>=1.3.1)"]
-
-[[package]]
-name = "loess"
-version = "2.1.2"
-description = "LOESS: smoothing via robust locally-weighted regression in one or two dimensions"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "loess-2.1.2-py3-none-any.whl", hash = "sha256:105f12daa0fdff5185855ae57c2d3f25420fb30b475ae3f4078843a5c61699b9"},
-    {file = "loess-2.1.2.tar.gz", hash = "sha256:f0c1e83e70c5f9b95da635495c0ec555cf7c225186f7e6d978ed7c20d2f3828a"},
-]
-
-[package.dependencies]
-matplotlib = "*"
-numpy = "*"
-plotbin = "*"
 
 [[package]]
 name = "lxml"
@@ -2751,7 +2734,7 @@ files = [
 name = "matplotlib"
 version = "3.9.0"
 description = "Python plotting package"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.9"
 files = [
@@ -3286,7 +3269,7 @@ ptyprocess = ">=0.5"
 name = "pillow"
 version = "10.3.0"
 description = "Python Imaging Library (Fork)"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
@@ -3385,23 +3368,6 @@ files = [
 docs = ["furo (>=2023.9.10)", "proselint (>=0.13)", "sphinx (>=7.2.6)", "sphinx-autodoc-typehints (>=1.25.2)"]
 test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4.3)", "pytest-cov (>=4.1)", "pytest-mock (>=3.12)"]
 type = ["mypy (>=1.8)"]
-
-[[package]]
-name = "plotbin"
-version = "3.1.5"
-description = "PlotBin: Plotting Binned Maps and Other Utilities"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "plotbin-3.1.5-py3-none-any.whl", hash = "sha256:99b42dcff5fcc1930c0a24230113379eb913fa1702c2e377b169b793d9113b6f"},
-    {file = "plotbin-3.1.5.tar.gz", hash = "sha256:9fb2d86bd887eaaad9612dea306f57fed5bcb4252a54d8ff040beb9bb1645410"},
-]
-
-[package.dependencies]
-matplotlib = "*"
-numpy = "*"
-scipy = "*"
 
 [[package]]
 name = "pluggy"
@@ -3782,6 +3748,18 @@ files = [
 windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
+name = "pyloess"
+version = "0.1.0"
+description = "A fast implementation of the LOESS algorithm in Python"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pyloess-0.1.0-py3-none-any.whl", hash = "sha256:4c4a5378dd07c0d6ce3cfbeb0ee47880d8a48f10821536532d5f7c1f28945fbb"},
+    {file = "pyloess-0.1.0.tar.gz", hash = "sha256:344a76ea03930c3acc846efbef274e7c83ce48030f3a6a87975410f3dab3d214"},
+]
+
+[[package]]
 name = "pymannkendall"
 version = "1.4.3"
 description = "A python package for non-parametric Mann-Kendall family of trend tests."
@@ -3820,7 +3798,7 @@ test = ["pretend", "pytest (>=3.0.1)", "pytest-rerunfailures"]
 name = "pyparsing"
 version = "3.1.2"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6.8"
 files = [
@@ -5667,4 +5645,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "bb8bb83eb53ab063ced06b29ec74111852141f401850220d2c4fcb8bf37fa7f7"
+content-hash = "9daf9540f4c4bd5af48041eef82ba597ca213a7756d83897e63d9619d663f43e"
