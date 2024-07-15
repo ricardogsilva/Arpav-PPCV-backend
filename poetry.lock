@@ -3782,6 +3782,18 @@ files = [
 windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
+name = "pyloess"
+version = "0.1.0"
+description = "A fast implementation of the LOESS algorithm in Python"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pyloess-0.1.0-py3-none-any.whl", hash = "sha256:4c4a5378dd07c0d6ce3cfbeb0ee47880d8a48f10821536532d5f7c1f28945fbb"},
+    {file = "pyloess-0.1.0.tar.gz", hash = "sha256:344a76ea03930c3acc846efbef274e7c83ce48030f3a6a87975410f3dab3d214"},
+]
+
+[[package]]
 name = "pymannkendall"
 version = "1.4.3"
 description = "A python package for non-parametric Mann-Kendall family of trend tests."
@@ -5667,4 +5679,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "bb8bb83eb53ab063ced06b29ec74111852141f401850220d2c4fcb8bf37fa7f7"
+content-hash = "b4d4958ae503c388d21beb7d9d81122ac6950c58bddfbd49222d76bf0ca90e99"
