@@ -120,11 +120,16 @@ def list_variables(
     limit: int = 20,
     offset: int = 0,
     include_total: bool = False,
+    name_filter: Optional[str] = None,
 ) -> tuple[Sequence[observations.Variable], Optional[int]]:
     """List existing variables."""
     statement = sqlmodel.select(observations.Variable).order_by(
         observations.Variable.name
     )
+    if name_filter is not None:
+        statement = _add_substring_filter(
+            statement, name_filter, observations.Variable.name
+        )
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = _get_total_num_records(session, statement) if include_total else None
     return items, num_items
@@ -236,6 +241,7 @@ def list_stations(
     limit: int = 20,
     offset: int = 0,
     include_total: bool = False,
+    name_filter: Optional[str] = None,
     polygon_intersection_filter: shapely.Polygon = None,
     variable_id_filter: Optional[uuid.UUID] = None,
     variable_aggregation_type: Optional[
@@ -250,6 +256,10 @@ def list_stations(
     statement = sqlmodel.select(observations.Station).order_by(
         observations.Station.code
     )
+    if name_filter is not None:
+        statement = _add_substring_filter(
+            statement, name_filter, observations.Station.name
+        )
     if polygon_intersection_filter is not None:
         statement = statement.where(
             func.ST_Intersects(
