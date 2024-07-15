@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 class VariableReadEmbeddedInStationRead(pydantic.BaseModel):
     id: uuid.UUID
     name: str
+    display_name_english: str
+    display_name_italian: str
 
 
 class StationReadListItem(observations.StationBase):
@@ -32,15 +34,33 @@ class StationReadListItem(observations.StationBase):
         return cls(
             **instance.model_dump(),
             monthly_variables=[
-                VariableReadEmbeddedInStationRead(**v.model_dump())
+                VariableReadEmbeddedInStationRead(
+                    **v.model_dump(
+                        exclude={"display_name_english", "display_name_italian"}
+                    ),
+                    display_name_english=v.display_name_english or v.name,
+                    display_name_italian=v.display_name_italian or v.name,
+                )
                 for v in instance.monthly_variables
             ],
             seasonal_variables=[
-                VariableReadEmbeddedInStationRead(**v.model_dump())
+                VariableReadEmbeddedInStationRead(
+                    **v.model_dump(
+                        exclude={"display_name_english", "display_name_italian"}
+                    ),
+                    display_name_english=v.display_name_english or v.name,
+                    display_name_italian=v.display_name_italian or v.name,
+                )
                 for v in instance.seasonal_variables
             ],
             yearly_variables=[
-                VariableReadEmbeddedInStationRead(**v.model_dump())
+                VariableReadEmbeddedInStationRead(
+                    **v.model_dump(
+                        exclude={"display_name_english", "display_name_italian"}
+                    ),
+                    display_name_english=v.display_name_english or v.name,
+                    display_name_italian=v.display_name_italian or v.name,
+                )
                 for v in instance.yearly_variables
             ],
             url=str(url),
@@ -57,7 +77,16 @@ class VariableReadListItem(observations.VariableBase):
         request: Request,
     ) -> "VariableReadListItem":
         return cls(
-            **instance.model_dump(),
+            **instance.model_dump(
+                exclude={
+                    "display_name_english",
+                    "display_name_italian",
+                    "unit_italian",
+                }
+            ),
+            display_name_english=instance.display_name_english or instance.name,
+            display_name_italian=instance.display_name_italian or instance.name,
+            unit_italian=instance.unit_italian or instance.unit_english,
             url=str(request.url_for("get_variable", variable_id=instance.id)),
         )
 

@@ -57,6 +57,8 @@ def generate_configurations(
     return [
         CoverageConfigurationCreate(
             name="tas_seasonal_anomaly_model_ensemble",
+            display_name_english="TAS seasonal anomaly model ensemble",
+            display_name_italian="TAS anomalie stagionali media ensemble",
             netcdf_main_dataset_name="tas",
             wms_main_layer_name="tas",
             thredds_url_pattern="ens5ym/clipped/tas_anom_pp_ts_{scenario}_{year_period}_VFVGTAA.nc",
@@ -104,6 +106,8 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="tas_seasonal_anomaly_model_ec_earth_cclm4_8_17",
+            display_name_english="TAS seasonal anomaly EC-EARTH_CCLM4-8-17",
+            display_name_italian="TAS anomalie stagionali EC-EARTH_CCLM4-8-17",
             netcdf_main_dataset_name="tas",
             wms_main_layer_name="tas",
             thredds_url_pattern="EC-EARTH_CCLM4-8-17ym/clipped/tas_EC-EARTH_CCLM4-8-17_{scenario}_{year_period}_anomaly_pp_VFVGTAA.nc",
@@ -151,6 +155,8 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="tas_seasonal_anomaly_model_ec_earth_racmo22e",
+            display_name_english="TAS seasonal anomaly EC-EARTH_RACM022E",
+            display_name_italian="TAS anomalie stagionali EC-EARTH_RACM022E",
             netcdf_main_dataset_name="tas",
             wms_main_layer_name="tas",
             thredds_url_pattern="EC-EARTH_RACMO22Eym/clipped/tas_EC-EARTH_RACMO22E_{scenario}_{year_period}_anomaly_pp_VFVGTAA.nc",
@@ -198,6 +204,8 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="tas_seasonal_anomaly_model_ec_earth_rca4",
+            display_name_english="TAS seasonal anomaly EC-EARTH_RCA4",
+            display_name_italian="TAS anomalie stagionali EC-EARTH_RCA4",
             netcdf_main_dataset_name="tas",
             wms_main_layer_name="tas",
             thredds_url_pattern="EC-EARTH_RCA4ym/clipped/tas_EC-EARTH_RCA4_{scenario}_{year_period}_anomaly_pp_VFVGTAA.nc",
@@ -245,6 +253,8 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="tas_seasonal_anomaly_model_hadgem2_es_racmo22e",
+            display_name_english="TAS seasonal anomaly HadGEM2-ES_RACM022E",
+            display_name_italian="TAS anomalie stagionali HadGEM2-ES_RACM022E",
             netcdf_main_dataset_name="tas",
             wms_main_layer_name="tas",
             thredds_url_pattern="HadGEM2-ES_RACMO22Eym/clipped/tas_HadGEM2-ES_RACMO22E_{scenario}_{year_period}_anomaly_pp_VFVGTAA.nc",
@@ -292,6 +302,8 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="tas_seasonal_anomaly_model_mpi_esm_lr_remo2009",
+            display_name_english="TAS seasonal anomaly MPI-ESM-LR_REMO2009",
+            display_name_italian="TAS anomalie stagionali MPI-ESM-LR_REMO2009",
             netcdf_main_dataset_name="tas",
             wms_main_layer_name="tas",
             thredds_url_pattern="MPI-ESM-LR_REMO2009ym/clipped/tas_MPI-ESM-LR_REMO2009_{scenario}_{year_period}_anomaly_pp_VFVGTAA.nc",
@@ -339,6 +351,8 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="tas_seasonal_anomaly_model_ensemble_upper_uncertainty",
+            display_name_english="TAS seasonal anomaly upper uncertainty bounds",
+            display_name_italian="TAS anomalie stagionali limiti superiori di incertezza",
             netcdf_main_dataset_name="tas_stdup",
             wms_main_layer_name="tas_stdup",
             thredds_url_pattern="ens5ym/std/clipped/tas_anom_stdup_pp_ts_{scenario}_{year_period}_VFVGTAA.nc",
@@ -386,6 +400,8 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="tas_seasonal_anomaly_model_ensemble_lower_uncertainty",
+            display_name_english="TAS seasonal anomaly lower uncertainty bounds",
+            display_name_italian="TAS anomalie stagionali limiti inferiori di incertezza",
             netcdf_main_dataset_name="tas_stddown",
             wms_main_layer_name="tas_stddown",
             thredds_url_pattern="ens5ym/std/clipped/tas_anom_stddown_pp_ts_{scenario}_{year_period}_VFVGTAA.nc",
@@ -433,6 +449,8 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="tas_seasonal_absolute_model_ensemble",
+            display_name_english="TAS seasonal absolute model ensemble",
+            display_name_italian="TAS valore assoluto di stagione media ensemble",
             netcdf_main_dataset_name="tas",
             wms_main_layer_name="tas",
             thredds_url_pattern="ensymbc/clipped/tas_avg_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
@@ -484,6 +502,8 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="tas_annual_absolute_model_ensemble",
+            display_name_english="TAS annual absolute model ensemble",
+            display_name_italian="TAS valore assoluto annuale media ensemble",
             netcdf_main_dataset_name="tas",
             wms_main_layer_name="tas",
             thredds_url_pattern="ensymbc/clipped/tas_avg_{scenario}_ts19762100_ls_VFVG.nc",
@@ -515,6 +535,8 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="tas_seasonal_absolute_model_ec_earth_cclm4_8_17",
+            display_name_english="TAS seasonal absolute EC-EARTH_CCLM4-8-17",
+            display_name_italian="TAS valore assoluto di stagione EC-EARTH_CCLM4-8-17",
             netcdf_main_dataset_name="tas",
             wms_main_layer_name="tas",
             thredds_url_pattern="EC-EARTH_CCLM4-8-17ymbc/clipped/tas_EC-EARTH_CCLM4-8-17_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
@@ -597,6 +619,8 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="tas_seasonal_absolute_model_ec_earth_racmo22e",
+            display_name_english="TAS seasonal absolute EC-EARTH_RACMO22E",
+            display_name_italian="TAS valore assoluto di stagione EC-EARTH_RACMO22E",
             netcdf_main_dataset_name="tas",
             wms_main_layer_name="tas",
             thredds_url_pattern="EC-EARTH_RACMO22Eymbc/clipped/tas_EC-EARTH_RACMO22E_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",

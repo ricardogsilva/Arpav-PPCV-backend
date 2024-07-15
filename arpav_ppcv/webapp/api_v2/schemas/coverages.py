@@ -11,12 +11,18 @@ from .base import WebResourceList
 
 class ConfigurationParameterValueEmbeddedInConfigurationParameter(pydantic.BaseModel):
     name: str
-    description: str
+    display_name_english: str
+    display_name_italian: str
+    description_english: str | None
+    description_italian: str | None
 
 
 class ConfigurationParameterReadListItem(pydantic.BaseModel):
     name: str
-    description: str
+    display_name_english: str
+    display_name_italian: str
+    description_english: str | None
+    description_italian: str | None
     allowed_values: list[ConfigurationParameterValueEmbeddedInConfigurationParameter]
 
     @classmethod
@@ -26,10 +32,24 @@ class ConfigurationParameterReadListItem(pydantic.BaseModel):
         request: Request,
     ):
         return cls(
-            **instance.model_dump(),
+            **instance.model_dump(
+                exclude={
+                    "display_name_english",
+                    "display_name_italian",
+                }
+            ),
+            display_name_english=instance.display_name_english or instance.name,
+            display_name_italian=instance.display_name_italian or instance.name,
             allowed_values=[
                 ConfigurationParameterValueEmbeddedInConfigurationParameter(
-                    **pv.model_dump()
+                    **pv.model_dump(
+                        exclude={
+                            "display_name_english",
+                            "display_name_italian",
+                        }
+                    ),
+                    display_name_english=pv.display_name_english or pv.name,
+                    display_name_italian=pv.display_name_italian or pv.name,
                 )
                 for pv in instance.allowed_values
             ],
@@ -38,6 +58,8 @@ class ConfigurationParameterReadListItem(pydantic.BaseModel):
 
 class ConfigurationParameterPossibleValueRead(pydantic.BaseModel):
     configuration_parameter_name: str
+    configuration_parameter_display_name_english: str
+    configuration_parameter_display_name_italian: str
     configuration_parameter_value: str
 
 
@@ -45,6 +67,8 @@ class CoverageConfigurationReadListItem(pydantic.BaseModel):
     url: pydantic.AnyHttpUrl
     id: uuid.UUID
     name: str
+    display_name_english: str
+    display_name_italian: str
     wms_main_layer_name: str | None
     coverage_id_pattern: str
     possible_values: list[ConfigurationParameterPossibleValueRead]
@@ -59,11 +83,26 @@ class CoverageConfigurationReadListItem(pydantic.BaseModel):
             "get_coverage_configuration", **{"coverage_configuration_id": instance.id}
         )
         return cls(
-            **instance.model_dump(),
+            **instance.model_dump(
+                exclude={
+                    "display_name_english",
+                    "display_name_italian",
+                }
+            ),
+            display_name_english=instance.display_name_english or instance.name,
+            display_name_italian=instance.display_name_italian or instance.name,
             url=str(url),
             possible_values=[
                 ConfigurationParameterPossibleValueRead(
                     configuration_parameter_name=pv.configuration_parameter_value.configuration_parameter.name,
+                    configuration_parameter_display_name_english=(
+                        pv.configuration_parameter_value.configuration_parameter.display_name_english
+                        or pv.configuration_parameter_value.configuration_parameter.name
+                    ),
+                    configuration_parameter_display_name_italian=(
+                        pv.configuration_parameter_value.configuration_parameter.display_name_italian
+                        or pv.configuration_parameter_value.configuration_parameter.name
+                    ),
                     configuration_parameter_value=pv.configuration_parameter_value.name,
                 )
                 for pv in instance.possible_values
@@ -78,6 +117,8 @@ class CoverageConfigurationReadDetail(CoverageConfigurationReadListItem):
     color_scale_min: float
     color_scale_max: float
     allowed_coverage_identifiers: list[str]
+    description_english: str | None
+    description_italian: str | None
 
     @classmethod
     def from_db_instance(
@@ -95,6 +136,12 @@ class CoverageConfigurationReadDetail(CoverageConfigurationReadListItem):
             possible_values=[
                 ConfigurationParameterPossibleValueRead(
                     configuration_parameter_name=pv.configuration_parameter_value.configuration_parameter.name,
+                    configuration_parameter_display_name_english=(
+                        pv.configuration_parameter_value.configuration_parameter.display_name_english
+                    ),
+                    configuration_parameter_display_name_italian=(
+                        pv.configuration_parameter_value.configuration_parameter.display_name_italian
+                    ),
                     configuration_parameter_value=pv.configuration_parameter_value.name,
                 )
                 for pv in instance.possible_values

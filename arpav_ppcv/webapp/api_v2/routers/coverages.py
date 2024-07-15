@@ -1,16 +1,12 @@
 import logging
-import math
 import urllib.parse
-import uuid
 from xml.etree import ElementTree as et
 from typing import (
     Annotated,
     Optional,
-    Type,
 )
 
 import httpx
-import pandas as pd
 import pydantic
 import shapely.io
 from fastapi import (
@@ -34,15 +30,12 @@ from ....thredds import utils as thredds_utils
 from ....schemas.base import (
     CoverageDataSmoothingStrategy,
     ObservationDataSmoothingStrategy,
-    RELATED_TIME_SERIES_PATTERN,
-    UNCERTAINTY_TIME_SERIES_PATTERN,
 )
 from ....schemas.coverages import CoverageInternal
 from ... import dependencies
 from ..schemas import coverages as coverage_schemas
 from ..schemas.base import (
     TimeSeries,
-    TimeSeriesItem,
     TimeSeriesList,
 )
 
@@ -385,12 +378,14 @@ def get_climate_barometer_time_series(
                     detail="Could not retrieve data",
                 ) from err
             else:
-                series = _serialize_dataframe(
-                    time_series,
-                    CoverageDataSmoothingStrategy.NO_SMOOTHING in data_smoothing,
-                    available_smoothing_strategies=CoverageDataSmoothingStrategy,
-                    extra_info={"coverage_identifier": coverage.identifier},
-                )
+                series = []
+                for coverage_info, pd_series in time_series.items():
+                    cov, smoothing_strategy = coverage_info
+                    series.append(
+                        TimeSeries.from_coverage_series(
+                            pd_series, cov, smoothing_strategy
+                        )
+                    )
                 return TimeSeriesList(series=series)
         else:
             raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
@@ -402,7 +397,6 @@ def get_climate_barometer_time_series(
 def get_time_series(
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
-    http_client: Annotated[httpx.Client, Depends(dependencies.get_sync_http_client)],
     coverage_identifier: str,
     coords: str,
     datetime: Optional[str] = "../..",
@@ -460,10 +454,12 @@ def get_time_series(
                 )
                 point_geom = geom.centroid
             try:
-                time_series = operations.get_coverage_time_series(
+                (
+                    coverage_series,
+                    observations_series,
+                ) = operations.get_coverage_time_series(
                     settings,
                     db_session,
-                    http_client,
                     coverage,
                     point_geom,
                     datetime,
@@ -481,104 +477,23 @@ def get_time_series(
                 ) from err
             else:
                 series = []
-                if include_coverage_data:
-                    series.extend(
-                        _serialize_dataframe(
-                            time_series[coverage.identifier],
-                            CoverageDataSmoothingStrategy.NO_SMOOTHING
-                            in coverage_data_smoothing,
-                            available_smoothing_strategies=CoverageDataSmoothingStrategy,
-                            extra_info={"coverage_identifier": coverage.identifier},
+                for coverage_info, pd_series in coverage_series.items():
+                    cov, smoothing_strategy = coverage_info
+                    series.append(
+                        TimeSeries.from_coverage_series(
+                            pd_series, cov, smoothing_strategy
                         )
                     )
-                    if include_coverage_uncertainty:
-                        uncertainty_time_series = {
-                            k: v
-                            for k, v in time_series.items()
-                            if UNCERTAINTY_TIME_SERIES_PATTERN in k
-                        }
-                        for uncert_name, uncert_df in uncertainty_time_series.items():
-                            series.extend(
-                                _serialize_dataframe(
-                                    uncert_df,
-                                    CoverageDataSmoothingStrategy.NO_SMOOTHING
-                                    in coverage_data_smoothing,
-                                    available_smoothing_strategies=CoverageDataSmoothingStrategy,
-                                )
+                if observations_series is not None:
+                    for observation_info, pd_series in observations_series.items():
+                        variable, smoothing_strategy = observation_info
+                        series.append(
+                            TimeSeries.from_observation_series(
+                                pd_series, variable, smoothing_strategy
                             )
-                    if include_coverage_related_data:
-                        related_time_series = {
-                            k: v
-                            for k, v in time_series.items()
-                            if RELATED_TIME_SERIES_PATTERN in k
-                        }
-                        for related_name, related_df in related_time_series.items():
-                            series.extend(
-                                _serialize_dataframe(
-                                    related_df,
-                                    (
-                                        CoverageDataSmoothingStrategy.NO_SMOOTHING
-                                        in coverage_data_smoothing
-                                    ),
-                                    available_smoothing_strategies=CoverageDataSmoothingStrategy,
-                                )
-                            )
-                if include_observation_data:
-                    variable = coverage.configuration.related_observation_variable
-                    for df_name, df in time_series.items():
-                        if df_name.startswith("station_"):
-                            station_id = uuid.UUID(df_name.split("_")[1])
-                            db_station = db.get_station(db_session, station_id)
-                            station_series = _serialize_dataframe(
-                                df,
-                                ObservationDataSmoothingStrategy.NO_SMOOTHING
-                                in observation_data_smoothing,
-                                available_smoothing_strategies=ObservationDataSmoothingStrategy,
-                                extra_info={
-                                    "station_id": str(db_station.id),
-                                    "station_name": db_station.name,
-                                    "variable_name": variable.name,
-                                    "variable_description": variable.description,
-                                },
-                            )
-                            series.extend(station_series)
+                        )
                 return TimeSeriesList(series=series)
         else:
             raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
     else:
         raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
-
-
-def _serialize_dataframe(
-    data_: pd.DataFrame,
-    include_unsmoothed: bool,
-    available_smoothing_strategies: Type[
-        ObservationDataSmoothingStrategy | CoverageDataSmoothingStrategy
-    ],
-    extra_info: Optional[dict[str, str]] = None,
-) -> list[TimeSeries]:
-    series = []
-    for series_name, series_measurements in data_.to_dict().items():
-        name_prefix, smoothing_strategy = series_name.rpartition("__")[::2]
-        smoothed_with = available_smoothing_strategies(smoothing_strategy)
-        if (
-            smoothed_with == available_smoothing_strategies.NO_SMOOTHING
-            and not include_unsmoothed
-        ):
-            continue  # client did not ask for the NO_SMOOTHING strategy
-        else:
-            measurements = []
-            for timestamp, value in series_measurements.items():
-                if not math.isnan(value):
-                    measurements.append(TimeSeriesItem(value=value, datetime=timestamp))
-            series.append(
-                TimeSeries(
-                    name=series_name,
-                    values=measurements,
-                    info={
-                        "smoothing": smoothing_strategy.lower(),
-                        **(extra_info or {}),
-                    },
-                )
-            )
-    return series

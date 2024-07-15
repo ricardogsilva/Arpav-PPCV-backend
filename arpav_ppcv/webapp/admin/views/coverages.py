@@ -78,7 +78,13 @@ class ConfigurationParameterView(ModelView):
     icon = "fa fa-blog"
     pk_attr = "id"
 
-    exclude_fields_from_list = ("id",)
+    exclude_fields_from_list = (
+        "id",
+        "display_name_english",
+        "display_name_italian",
+        "description_english",
+        "description_italian",
+    )
     exclude_fields_from_detail = ("id",)
 
     fields = (
@@ -92,7 +98,10 @@ class ConfigurationParameterView(ModelView):
                 "perform database queries."
             ),
         ),
-        starlette_admin.StringField("description"),
+        starlette_admin.StringField("display_name_english", required=True),
+        starlette_admin.StringField("display_name_italian", required=True),
+        starlette_admin.StringField("description_english"),
+        starlette_admin.StringField("description_italian"),
         starlette_admin.ListField(
             field=starlette_admin.CollectionField(
                 "allowed_values",
@@ -106,11 +115,11 @@ class ConfigurationParameterView(ModelView):
                         exclude_from_create=True,
                         exclude_from_edit=False,
                     ),
-                    starlette_admin.StringField("name"),
-                    starlette_admin.StringField(
-                        "description",
-                        exclude_from_list=True,
-                    ),
+                    starlette_admin.StringField("name", required=True),
+                    starlette_admin.StringField("display_name_english", required=True),
+                    starlette_admin.StringField("display_name_italian", required=True),
+                    starlette_admin.StringField("description_english"),
+                    starlette_admin.StringField("description_italian"),
                 ),
             )
         ),
@@ -134,10 +143,17 @@ class ConfigurationParameterView(ModelView):
             await self.validate(request, data)
             config_param_create = coverages.ConfigurationParameterCreate(
                 name=data["name"],
-                description=data["description"],
+                display_name_english=data["display_name_english"],
+                display_name_italian=data["display_name_italian"],
+                description_english=data.get("description_english"),
+                description_italian=data.get("description_italian"),
                 allowed_values=[
                     coverages.ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
-                        name=av["name"], description=av["description"]
+                        name=av["name"],
+                        display_name_english=av["display_name_english"],
+                        display_name_italian=av["display_name_italian"],
+                        description_english=av.get("description_english"),
+                        description_italian=av.get("description_italian"),
                     )
                     for av in data["allowed_values"]
                 ],
@@ -166,12 +182,18 @@ class ConfigurationParameterView(ModelView):
             await self.validate(request, data)
             config_param_update = coverages.ConfigurationParameterUpdate(
                 name=data.get("name"),
-                description=data.get("description"),
+                display_name_english=data["display_name_english"],
+                display_name_italian=data["display_name_italian"],
+                description_english=data.get("description_english"),
+                description_italian=data.get("description_italian"),
                 allowed_values=[
                     coverages.ConfigurationParameterValueUpdateEmbeddedInConfigurationParameterEdit(
                         id=av["id"] or None,
                         name=av.get("name"),
-                        description=av.get("description"),
+                        display_name_english=av["display_name_english"],
+                        display_name_italian=av["display_name_italian"],
+                        description_english=av.get("description_english"),
+                        description_italian=av.get("description_italian"),
                     )
                     for av in data["allowed_values"]
                 ],
@@ -251,6 +273,10 @@ class CoverageConfigurationView(ModelView):
     fields = (
         fields.UuidField("id"),
         starlette_admin.StringField("name", required=True),
+        starlette_admin.StringField("display_name_english", required=True),
+        starlette_admin.StringField("display_name_italian", required=True),
+        starlette_admin.StringField("description_english"),
+        starlette_admin.StringField("description_italian"),
         starlette_admin.StringField("netcdf_main_dataset_name", required=True),
         starlette_admin.StringField("wms_main_layer_name", required=True),
         starlette_admin.StringField("thredds_url_pattern", required=True),
@@ -303,6 +329,10 @@ class CoverageConfigurationView(ModelView):
 
     exclude_fields_from_list = (
         "id",
+        "display_name_english",
+        "display_name_italian",
+        "description_english",
+        "description_italian",
         "netcdf_main_dataset_name",
         "wms_main_layer_name",
         "coverage_id_pattern",
@@ -472,6 +502,10 @@ class CoverageConfigurationView(ModelView):
                 related_cov_conf_ids.append(db_related_cov_conf.id)
             cov_conf_create = coverages.CoverageConfigurationCreate(
                 name=data["name"],
+                display_name_english=data["display_name_english"],
+                display_name_italian=data["display_name_italian"],
+                description_english=data.get("display_name_english"),
+                description_italian=data.get("display_name_italian"),
                 netcdf_main_dataset_name=data["netcdf_main_dataset_name"],
                 thredds_url_pattern=data["thredds_url_pattern"],
                 unit=data["unit"],
@@ -549,6 +583,10 @@ class CoverageConfigurationView(ModelView):
                 related_cov_conf_ids.append(db_related_cov_conf.id)
             cov_conv_update = coverages.CoverageConfigurationUpdate(
                 name=data.get("name"),
+                display_name_english=data.get("display_name_english"),
+                display_name_italian=data.get("display_name_italian"),
+                description_english=data.get("display_name_english"),
+                description_italian=data.get("display_name_italian"),
                 netcdf_main_dataset_name=data.get("netcdf_main_dataset_name"),
                 thredds_url_pattern=data.get("thredds_url_pattern"),
                 unit=data.get("data"),

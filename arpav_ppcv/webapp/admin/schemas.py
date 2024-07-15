@@ -13,13 +13,19 @@ from ...schemas.base import (
 class ConfigurationParameterValueRead(sqlmodel.SQLModel):
     id: uuid.UUID
     name: str
-    description: str
+    display_name_english: Optional[str]
+    display_name_italian: Optional[str]
+    description_english: Optional[str]
+    description_italian: Optional[str]
 
 
 class ConfigurationParameterRead(sqlmodel.SQLModel):
     id: uuid.UUID
     name: str
-    description: str
+    display_name_english: Optional[str]
+    display_name_italian: Optional[str]
+    description_english: Optional[str]
+    description_italian: Optional[str]
     allowed_values: list[ConfigurationParameterValueRead]
 
 
@@ -36,6 +42,10 @@ class RelatedCoverageConfigurationRead(sqlmodel.SQLModel):
 class CoverageConfigurationRead(sqlmodel.SQLModel):
     id: uuid.UUID
     name: str
+    display_name_english: Optional[str]
+    display_name_italian: Optional[str]
+    description_english: Optional[str]
+    description_italian: Optional[str]
     netcdf_main_dataset_name: str
     coverage_id_pattern: str
     thredds_url_pattern: str
@@ -68,8 +78,12 @@ class CoverageConfigurationReadListItem(sqlmodel.SQLModel):
 class VariableRead(sqlmodel.SQLModel):
     id: uuid.UUID
     name: str
-    description: str
-    unit: Optional[str]
+    display_name_english: Optional[str]
+    display_name_italian: Optional[str]
+    description_english: Optional[str]
+    description_italian: Optional[str]
+    unit_english: Optional[str]
+    unit_italian: Optional[str]
 
 
 class StationRead(sqlmodel.SQLModel):
