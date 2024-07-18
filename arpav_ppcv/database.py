@@ -918,6 +918,56 @@ def list_coverage_configurations(
             italian_display_name_filter,
             coverages.CoverageConfiguration.display_name_italian,
         )
+    if len(conf_params := configuration_parameter_value_filter or []) > 0:
+        possible_values_cte = (
+            sqlmodel.select(
+                coverages.CoverageConfiguration.id,
+                func.jsonb_agg(
+                    func.json_build_object(
+                        coverages.ConfigurationParameter.name,
+                        coverages.ConfigurationParameterValue.name,
+                    )
+                ).label("possible_values"),
+            )
+            .join(
+                coverages.ConfigurationParameterPossibleValue,
+                coverages.CoverageConfiguration.id
+                == coverages.ConfigurationParameterPossibleValue.coverage_configuration_id,
+            )
+            .join(
+                coverages.ConfigurationParameterValue,
+                coverages.ConfigurationParameterValue.id
+                == coverages.ConfigurationParameterPossibleValue.configuration_parameter_value_id,
+            )
+            .join(
+                coverages.ConfigurationParameter,
+                coverages.ConfigurationParameter.id
+                == coverages.ConfigurationParameterValue.configuration_parameter_id,
+            )
+            .group_by(coverages.CoverageConfiguration.id)
+        ).cte("cov_conf_possible_values")
+        statement = statement.join(
+            possible_values_cte,
+            possible_values_cte.c.id == coverages.CoverageConfiguration.id,
+        )
+        for conf_param_value in conf_params:
+            param_name = conf_param_value.configuration_parameter.name
+            param_value = conf_param_value.name
+            statement = statement.where(
+                func.jsonb_path_exists(
+                    possible_values_cte,
+                    # the below expression is a a fragment of SQL/JSON Path
+                    # language, which represents postgresql's way of filtering a
+                    # JSON array. More detail at:
+                    #
+                    # https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-SQLJSON-PATH
+                    #
+                    # in this case it reads like:
+                    # return True if the current element of the array, which is an object, has a key named
+                    # `param_name` with a corresponding value of `param_value`
+                    f'$[*] ? (@.{param_name} == "{param_value}")',
+                )
+            )
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = _get_total_num_records(session, statement) if include_total else None
     return items, num_items
