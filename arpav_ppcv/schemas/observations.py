@@ -194,6 +194,9 @@ class Variable(VariableBase, table=True):
         },
     )
 
+    def __hash__(self):
+        return hash(self.id)
+
 
 class VariableCreate(sqlmodel.SQLModel):
     name: str

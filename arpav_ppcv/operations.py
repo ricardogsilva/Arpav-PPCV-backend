@@ -607,23 +607,6 @@ def get_coverage_time_series(
                     smoothed_column
                 ].squeeze()
 
-    # for cov, data_ in raw_data.items():
-    #     df = _parse_ncss_dataset(
-    #         data_,
-    #         cov.configuration.netcdf_main_dataset_name,
-    #         start,
-    #         end,
-    #         cov.identifier
-    #     )
-    #     coverage_result[
-    #         (cov, base.CoverageDataSmoothingStrategy.NO_SMOOTHING)
-    #     ] = df[cov.identifier].squeeze()
-    #     for smoothing_strategy in additional_coverage_smoothing_strategies:
-    #         df, smoothed_column = _process_coverage_smoothing_strategy(
-    #             df, cov.identifier, smoothing_strategy,
-    #             ignore_warnings=(not settings.debug)
-    #         )
-    #         coverage_result[(cov, smoothing_strategy)] = df[smoothed_column].squeeze()
     if not include_coverage_data:
         del coverage_result[(coverage, base.CoverageDataSmoothingStrategy.NO_SMOOTHING)]
         for smoothing_strategy in additional_coverage_smoothing_strategies:
