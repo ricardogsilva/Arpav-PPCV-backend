@@ -665,17 +665,42 @@ def get_configuration_parameter_value(
     )
 
 
+def get_configuration_parameter_value_by_names(
+    session: sqlmodel.Session,
+    parameter_name: str,
+    value_name: str,
+) -> Optional[coverages.ConfigurationParameterValue]:
+    """Get configuration parameter value by name of parameter and name of value."""
+    return session.exec(
+        sqlmodel.select(coverages.ConfigurationParameterValue)
+        .join(coverages.ConfigurationParameter)
+        .where(
+            coverages.ConfigurationParameter.name == parameter_name,
+            coverages.ConfigurationParameterValue.name == value_name,
+        )
+    ).first()
+
+
 def list_configuration_parameter_values(
     session: sqlmodel.Session,
     *,
     limit: int = 20,
     offset: int = 0,
     include_total: bool = False,
+    used_by_coverage_configuration: coverages.CoverageConfiguration | None = None,
 ) -> tuple[Sequence[coverages.ConfigurationParameterValue], Optional[int]]:
     """List existing configuration parameters."""
     statement = sqlmodel.select(coverages.ConfigurationParameterValue).order_by(
         coverages.ConfigurationParameterValue.name
     )
+    if used_by_coverage_configuration is not None:
+        statement = (
+            statement.join(coverages.ConfigurationParameterPossibleValue)
+            .join(coverages.CoverageConfiguration)
+            .where(
+                coverages.CoverageConfiguration.id == used_by_coverage_configuration.id
+            )
+        )
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = _get_total_num_records(session, statement) if include_total else None
     return items, num_items
@@ -683,12 +708,19 @@ def list_configuration_parameter_values(
 
 def collect_all_configuration_parameter_values(
     session: sqlmodel.Session,
+    used_by_coverage_configuration: coverages.CoverageConfiguration | None = None,
 ) -> Sequence[coverages.ConfigurationParameterValue]:
     _, num_total = list_configuration_parameter_values(
-        session, limit=1, include_total=True
+        session,
+        limit=1,
+        include_total=True,
+        used_by_coverage_configuration=used_by_coverage_configuration,
     )
     result, _ = list_configuration_parameter_values(
-        session, limit=num_total, include_total=False
+        session,
+        limit=num_total,
+        include_total=False,
+        used_by_coverage_configuration=used_by_coverage_configuration,
     )
     return result
 
@@ -862,6 +894,9 @@ def list_coverage_configurations(
     name_filter: Optional[str] = None,
     english_display_name_filter: Optional[str] = None,
     italian_display_name_filter: Optional[str] = None,
+    configuration_parameter_value_filter: Optional[
+        list[coverages.ConfigurationParameterValue]
+    ] = None,
 ) -> tuple[Sequence[coverages.CoverageConfiguration], Optional[int]]:
     """List existing coverage configurations."""
     statement = sqlmodel.select(coverages.CoverageConfiguration).order_by(
@@ -893,6 +928,9 @@ def collect_all_coverage_configurations(
     name_filter: Optional[str] = None,
     english_display_name_filter: Optional[str] = None,
     italian_display_name_filter: Optional[str] = None,
+    configuration_parameter_value_filter: Optional[
+        list[coverages.ConfigurationParameterValue]
+    ] = None,
 ) -> Sequence[coverages.CoverageConfiguration]:
     _, num_total = list_coverage_configurations(
         session,
@@ -1055,9 +1093,11 @@ def list_allowed_coverage_identifiers(
     session: sqlmodel.Session,
     *,
     coverage_configuration_id: uuid.UUID,
+    matching_configuration_parameters: list[coverages.ConfigurationParameterValue]
+    | None = None,
 ) -> list[str]:
     """Build list of legal coverage identifiers."""
-    result = []
+    allowed_identifiers = []
     db_cov_conf = get_coverage_configuration(session, coverage_configuration_id)
     if db_cov_conf is not None:
         pattern_parts = re.findall(
@@ -1083,7 +1123,21 @@ def list_allowed_coverage_identifiers(
                 values_to_combine[index] = [pattern_parts[index]]
         for combination in itertools.product(*values_to_combine):
             dataset_id = "-".join((db_cov_conf.name, *combination))
-            result.append(dataset_id)
+            allowed_identifiers.append(dataset_id)
+
+    result = []
+    if len(matching_configuration_parameters or []) > 0:
+        for id_ in allowed_identifiers:
+            parsed_parts = id_.split("-")[1:]
+            for idx, param_name in enumerate(pattern_parts):
+                param_value = parsed_parts[idx]
+                pv = get_configuration_parameter_value_by_names(
+                    session, param_name, param_value
+                )
+                if pv in matching_configuration_parameters:
+                    result.append(id_)
+    else:
+        result = allowed_identifiers
     return result
 
 
@@ -1165,6 +1219,10 @@ def create_many_municipalities(
         return db_records
 
 
+def get_relevant_coverage_configurations():
+    ...
+
+
 def list_coverage_identifiers(
     session: sqlmodel.Session,
     *,
@@ -1172,8 +1230,12 @@ def list_coverage_identifiers(
     offset: int = 0,
     include_total: bool = False,
     name_filter: list[str] | None = None,
+    matching_configuration_parameters: list[coverages.ConfigurationParameterValue]
+    | None = None,
 ) -> tuple[list[coverages.CoverageInternal], Optional[int]]:
-    all_cov_ids = collect_all_coverage_identifiers(session)
+    all_cov_ids = collect_all_coverage_identifiers(
+        session, matching_configuration_parameters
+    )
     if name_filter is not None:
         for fragment in name_filter:
             all_cov_ids = [
@@ -1187,13 +1249,18 @@ def list_coverage_identifiers(
 
 def collect_all_coverage_identifiers(
     session: sqlmodel.Session,
+    matching_configuration_parameters: list[coverages.ConfigurationParameterValue]
+    | None = None,
 ) -> list[coverages.CoverageInternal]:
     cov_confs = collect_all_coverage_configurations(session)
     cov_ids = []
     for cov_conf in cov_confs:
-        for cov_id in list_allowed_coverage_identifiers(
-            session, coverage_configuration_id=cov_conf.id
-        ):
+        allowed_identifiers = list_allowed_coverage_identifiers(
+            session,
+            coverage_configuration_id=cov_conf.id,
+            matching_configuration_parameters=matching_configuration_parameters,
+        )
+        for cov_id in allowed_identifiers:
             cov_ids.append(
                 coverages.CoverageInternal(configuration=cov_conf, identifier=cov_id)
             )

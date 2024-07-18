@@ -158,6 +158,9 @@ def get_coverage_configuration(
     )
 
 
+# PossibleValue: pydantic.StringConstraints(pattern="^[\w-_]+:[\w-_]+$")
+
+
 @router.get(
     "/coverage-identifiers",
     response_model=coverage_schemas.CoverageIdentifierList,
@@ -168,7 +171,17 @@ def list_coverage_identifiers(
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
     name_contains: Annotated[list[str], Query()] = None,
+    possible_value: Annotated[
+        list[
+            Annotated[
+                str,
+                pydantic.StringConstraints(pattern=r"^[0-9a-zA-Z_]+:[0-9a-zA-Z_]+$"),
+            ]
+        ],
+        Query(),
+    ] = None,
 ):
+    logger.debug(f"{possible_value=}")
     cov_internals, filtered_total = db.list_coverage_identifiers(
         db_session,
         limit=list_params.limit,
