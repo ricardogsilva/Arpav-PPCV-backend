@@ -83,6 +83,15 @@ async def list_coverage_configurations(
     request: Request,
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
+    possible_value: Annotated[
+        list[
+            Annotated[
+                str,
+                pydantic.StringConstraints(pattern=r"^[0-9a-zA-Z_]+:[0-9a-zA-Z_]+$"),
+            ]
+        ],
+        Query(),
+    ] = None,
 ):
     """### List coverage configurations.
 
@@ -119,11 +128,24 @@ async def list_coverage_configurations(
     endpoint.
 
     """
+    conf_param_values_filter = []
+    for possible in possible_value or []:
+        param_name, param_value = possible.partition(":")[::2]
+        db_parameter_value = db.get_configuration_parameter_value_by_names(
+            db_session, param_name, param_value
+        )
+        if db_parameter_value is not None:
+            conf_param_values_filter.append(db_parameter_value)
+        else:
+            logger.debug(
+                f"ignoring unknown parameter/value pair {param_name}:{param_value}"
+            )
     coverage_configurations, filtered_total = db.list_coverage_configurations(
         db_session,
         limit=list_params.limit,
         offset=list_params.offset,
         include_total=True,
+        configuration_parameter_values_filter=conf_param_values_filter or None,
     )
     _, unfiltered_total = db.list_coverage_configurations(
         db_session, limit=1, offset=0, include_total=True
@@ -181,13 +203,25 @@ def list_coverage_identifiers(
         Query(),
     ] = None,
 ):
-    logger.debug(f"{possible_value=}")
+    conf_param_values_filter = []
+    for possible in possible_value or []:
+        param_name, param_value = possible.partition(":")[::2]
+        db_parameter_value = db.get_configuration_parameter_value_by_names(
+            db_session, param_name, param_value
+        )
+        if db_parameter_value is not None:
+            conf_param_values_filter.append(db_parameter_value)
+        else:
+            logger.debug(
+                f"ignoring unknown parameter/value pair {param_name}:{param_value}"
+            )
     cov_internals, filtered_total = db.list_coverage_identifiers(
         db_session,
         limit=list_params.limit,
         offset=list_params.offset,
         include_total=True,
         name_filter=name_contains,
+        configuration_parameter_values_filter=conf_param_values_filter or None,
     )
     _, unfiltered_total = db.list_coverage_identifiers(
         db_session, limit=1, offset=0, include_total=True

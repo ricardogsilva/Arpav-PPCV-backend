@@ -218,6 +218,41 @@ def sample_configuration_parameters(arpav_db_session):
     return db_conf_params
 
 
+@pytest.fixture()
+def sample_coverage_configurations(
+    arpav_db_session, sample_configuration_parameters
+) -> list[coverages.CoverageConfiguration]:
+    db_cov_confs = []
+    for i in range(10):
+        params_to_use = random.choices(sample_configuration_parameters, k=2)
+        param_values_to_use = []
+        for param in params_to_use:
+            possible_value = coverages.ConfigurationParameterPossibleValue(
+                configuration_parameter_value=random.choice(param.allowed_values)
+            )
+            param_values_to_use.append(possible_value)
+        db_cov_confs.append(
+            coverages.CoverageConfiguration(
+                name=f"coverage_configuration{i}",
+                netcdf_main_dataset_name="some-dataset-name",
+                thredds_url_pattern=(
+                    f"the_thredds-param_"
+                    f"{{"
+                    f"{random.choice(param_values_to_use).configuration_parameter_value.configuration_parameter.name}"
+                    f"}}"
+                ),
+                palette="fake",
+                possible_values=param_values_to_use,
+            )
+        )
+    for db_cov_conf in db_cov_confs:
+        arpav_db_session.add(db_cov_conf)
+    arpav_db_session.commit()
+    for db_cov_conf in db_cov_confs:
+        arpav_db_session.refresh(db_cov_conf)
+    return db_cov_confs
+
+
 def _override_get_settings():
     standard_settings = config.get_settings()
     return standard_settings

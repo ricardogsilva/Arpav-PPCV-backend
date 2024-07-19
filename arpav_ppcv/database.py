@@ -894,7 +894,7 @@ def list_coverage_configurations(
     name_filter: Optional[str] = None,
     english_display_name_filter: Optional[str] = None,
     italian_display_name_filter: Optional[str] = None,
-    configuration_parameter_value_filter: Optional[
+    configuration_parameter_values_filter: Optional[
         list[coverages.ConfigurationParameterValue]
     ] = None,
 ) -> tuple[Sequence[coverages.CoverageConfiguration], Optional[int]]:
@@ -918,7 +918,7 @@ def list_coverage_configurations(
             italian_display_name_filter,
             coverages.CoverageConfiguration.display_name_italian,
         )
-    if len(conf_params := configuration_parameter_value_filter or []) > 0:
+    if len(conf_params := configuration_parameter_values_filter or []) > 0:
         possible_values_cte = (
             sqlmodel.select(
                 coverages.CoverageConfiguration.id,
@@ -955,8 +955,8 @@ def list_coverage_configurations(
             param_value = conf_param_value.name
             statement = statement.where(
                 func.jsonb_path_exists(
-                    possible_values_cte,
-                    # the below expression is a a fragment of SQL/JSON Path
+                    possible_values_cte.c.possible_values,
+                    # the below expression is a fragment of SQL/JSON Path
                     # language, which represents postgresql's way of filtering a
                     # JSON array. More detail at:
                     #
@@ -978,7 +978,7 @@ def collect_all_coverage_configurations(
     name_filter: Optional[str] = None,
     english_display_name_filter: Optional[str] = None,
     italian_display_name_filter: Optional[str] = None,
-    configuration_parameter_value_filter: Optional[
+    configuration_parameter_values_filter: Optional[
         list[coverages.ConfigurationParameterValue]
     ] = None,
 ) -> Sequence[coverages.CoverageConfiguration]:
@@ -989,6 +989,7 @@ def collect_all_coverage_configurations(
         name_filter=name_filter,
         english_display_name_filter=english_display_name_filter,
         italian_display_name_filter=italian_display_name_filter,
+        configuration_parameter_values_filter=configuration_parameter_values_filter,
     )
     result, _ = list_coverage_configurations(
         session,
@@ -997,6 +998,7 @@ def collect_all_coverage_configurations(
         name_filter=name_filter,
         english_display_name_filter=english_display_name_filter,
         italian_display_name_filter=italian_display_name_filter,
+        configuration_parameter_values_filter=configuration_parameter_values_filter,
     )
     return result
 
@@ -1139,56 +1141,45 @@ def update_coverage_configuration(
     return db_coverage_configuration
 
 
-def list_allowed_coverage_identifiers(
-    session: sqlmodel.Session,
-    *,
-    coverage_configuration_id: uuid.UUID,
-    matching_configuration_parameters: list[coverages.ConfigurationParameterValue]
-    | None = None,
+def generate_coverage_identifiers(
+    coverage_configuration: coverages.CoverageConfiguration,
+    configuration_parameter_values_filter: Optional[
+        list[coverages.ConfigurationParameterValue]
+    ] = None,
 ) -> list[str]:
-    """Build list of legal coverage identifiers."""
-    allowed_identifiers = []
-    db_cov_conf = get_coverage_configuration(session, coverage_configuration_id)
-    if db_cov_conf is not None:
-        pattern_parts = re.findall(
-            r"\{(\w+)\}", db_cov_conf.coverage_id_pattern.partition("-")[-1]
-        )
-        values_to_combine = []
-        for part in pattern_parts:
-            part_values = []
-            for possible_value in db_cov_conf.possible_values:
-                param_name_matches = (
-                    possible_value.configuration_parameter_value.configuration_parameter.name
-                    == part
-                )
-                if param_name_matches:
-                    part_values.append(
-                        possible_value.configuration_parameter_value.name
-                    )
-            values_to_combine.append(part_values)
-        # account for the possibility that there is an error in the
-        # coverage_id_pattern, where some of the parts are not actually configured
-        for index, container in enumerate(values_to_combine):
-            if len(container) == 0:
-                values_to_combine[index] = [pattern_parts[index]]
-        for combination in itertools.product(*values_to_combine):
-            dataset_id = "-".join((db_cov_conf.name, *combination))
-            allowed_identifiers.append(dataset_id)
+    """Build list of legal coverage identifiers for a coverage configuration."""
 
-    result = []
-    if len(matching_configuration_parameters or []) > 0:
-        for id_ in allowed_identifiers:
-            parsed_parts = id_.split("-")[1:]
-            for idx, param_name in enumerate(pattern_parts):
-                param_value = parsed_parts[idx]
-                pv = get_configuration_parameter_value_by_names(
-                    session, param_name, param_value
-                )
-                if pv in matching_configuration_parameters:
-                    result.append(id_)
-    else:
-        result = allowed_identifiers
-    return result
+    params_to_filter = {}
+    for cpv in configuration_parameter_values_filter or []:
+        values = params_to_filter.setdefault(cpv.configuration_parameter.name, [])
+        values.append(cpv.name)
+    pattern_parts = re.findall(
+        r"\{(\w+)\}", coverage_configuration.coverage_id_pattern.partition("-")[-1]
+    )
+    values_to_combine = []
+    for part in pattern_parts:
+        part_values = []
+        for possible_value in coverage_configuration.possible_values:
+            this_param_name = possible_value.configuration_parameter_value.configuration_parameter.name
+            if this_param_name == part:
+                # check if this param's value is to be filtered out or not
+                this_value = possible_value.configuration_parameter_value.name
+                if this_param_name in params_to_filter:
+                    if this_value in params_to_filter.get(this_param_name, []):
+                        part_values.append(this_value)
+                else:
+                    part_values.append(this_value)
+        values_to_combine.append(part_values)
+    # account for the possibility that there is an error in the
+    # coverage_id_pattern, where some of the parts are not actually configured
+    allowed_identifiers = []
+    for index, container in enumerate(values_to_combine):
+        if len(container) == 0:
+            values_to_combine[index] = [pattern_parts[index]]
+    for combination in itertools.product(*values_to_combine):
+        dataset_id = "-".join((coverage_configuration.name, *combination))
+        allowed_identifiers.append(dataset_id)
+    return allowed_identifiers
 
 
 def list_municipalities(
@@ -1269,10 +1260,6 @@ def create_many_municipalities(
         return db_records
 
 
-def get_relevant_coverage_configurations():
-    ...
-
-
 def list_coverage_identifiers(
     session: sqlmodel.Session,
     *,
@@ -1280,11 +1267,12 @@ def list_coverage_identifiers(
     offset: int = 0,
     include_total: bool = False,
     name_filter: list[str] | None = None,
-    matching_configuration_parameters: list[coverages.ConfigurationParameterValue]
-    | None = None,
+    configuration_parameter_values_filter: Optional[
+        list[coverages.ConfigurationParameterValue]
+    ] = None,
 ) -> tuple[list[coverages.CoverageInternal], Optional[int]]:
     all_cov_ids = collect_all_coverage_identifiers(
-        session, matching_configuration_parameters
+        session, configuration_parameter_values_filter
     )
     if name_filter is not None:
         for fragment in name_filter:
@@ -1299,16 +1287,18 @@ def list_coverage_identifiers(
 
 def collect_all_coverage_identifiers(
     session: sqlmodel.Session,
-    matching_configuration_parameters: list[coverages.ConfigurationParameterValue]
-    | None = None,
+    configuration_parameter_values_filter: Optional[
+        list[coverages.ConfigurationParameterValue]
+    ] = None,
 ) -> list[coverages.CoverageInternal]:
-    cov_confs = collect_all_coverage_configurations(session)
+    cov_confs = collect_all_coverage_configurations(
+        session,
+        configuration_parameter_values_filter=configuration_parameter_values_filter,
+    )
     cov_ids = []
     for cov_conf in cov_confs:
-        allowed_identifiers = list_allowed_coverage_identifiers(
-            session,
-            coverage_configuration_id=cov_conf.id,
-            matching_configuration_parameters=matching_configuration_parameters,
+        allowed_identifiers = generate_coverage_identifiers(
+            cov_conf, configuration_parameter_values_filter
         )
         for cov_id in allowed_identifiers:
             cov_ids.append(
