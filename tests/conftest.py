@@ -224,7 +224,7 @@ def sample_coverage_configurations(
 ) -> list[coverages.CoverageConfiguration]:
     db_cov_confs = []
     for i in range(10):
-        params_to_use = random.choices(sample_configuration_parameters, k=2)
+        params_to_use = random.sample(sample_configuration_parameters, k=2)
         param_values_to_use = []
         for param in params_to_use:
             possible_value = coverages.ConfigurationParameterPossibleValue(
