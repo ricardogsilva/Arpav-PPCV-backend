@@ -1,26 +1,13 @@
-"""
-- [x] su30_annual_absolute_model_ensemble
-- [x] su30_annual_absolute_model_ensemble_upper_uncertainty
-- [x] su30_annual_absolute_model_ensemble_lower_uncertainty
-- [x] su30_annual_absolute_model_ec_earth_cclm4_8_17
-- [x] su30_annual_absolute_model_ec_earth_racmo22e
-- [x] su30_annual_absolute_model_ec_earth_rca4
-- [x] su30_annual_absolute_model_hadgem2_es_racmo22e
-- [x] su30_annual_absolute_model_mpi_esm_lr_remo2009
-
-- [x] 30year anomaly
-  - [x] su30_30yr_anomaly_annual_agree_model_ensemble
-  - [x] su30_30yr_anomaly_annual_model_ec_earth_cclm4_8_17
-  - [x] su30_30yr_anomaly_annual_model_ec_earth_racmo22e
-  - [x] su30_30yr_anomaly_annual_model_ec_earth_rca4
-  - [x] su30_30yr_anomaly_annual_model_hadgem2_es_racmo22e
-  - [x] su30_30yr_anomaly_annual_model_mpi_esm_lr_remo2009
-"""
 from ...schemas.base import ObservationAggregationType
 from ...schemas.coverages import (
     CoverageConfigurationCreate,
     ConfigurationParameterPossibleValueCreate,
 )
+
+_DISPLAY_NAME_ENGLISH = "Hot days"
+_DISPLAY_NAME_ITALIAN = "Giorni caldi"
+_DESCRIPTION_ENGLISH = "Number of days with maximum temperature greater than 30 °C"
+_DESCRIPTION_ITALIAN = "Numero di giorni con temperatura massima superiore a 30 °C"
 
 
 def generate_configurations(
@@ -29,6 +16,10 @@ def generate_configurations(
     return [
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_ensemble",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="su30",
             wms_main_layer_name="su30",
             thredds_url_pattern="ensymbc/clipped/ecasu_30_avg_{scenario}_ts19762100_ls_VFVG.nc",
@@ -39,6 +30,26 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "su30")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "annual")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "absolute")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "model_ensemble")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("scenario", "rcp26")
                     ].id
                 ),
@@ -50,6 +61,11 @@ def generate_configurations(
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("scenario", "rcp85")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -60,6 +76,10 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_ec_earth_cclm4_8_17",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="su30",
             wms_main_layer_name="su30",
             thredds_url_pattern="EC-EARTH_CCLM4-8-17ymbc/clipped/ecasu_30_EC-EARTH_CCLM4-8-17_{scenario}_ts19762100_ls_VFVG.nc",
@@ -70,6 +90,26 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "su30")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "annual")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "absolute")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "ec_earth_cclm_4_8_17")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("scenario", "rcp26")
                     ].id
                 ),
@@ -81,6 +121,11 @@ def generate_configurations(
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("scenario", "rcp85")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -91,6 +136,10 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_ec_earth_racmo22e",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="su30",
             wms_main_layer_name="su30",
             thredds_url_pattern="EC-EARTH_RACMO22Eymbc/clipped/ecasu_30_EC-EARTH_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
@@ -101,6 +150,26 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "su30")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "annual")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "absolute")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "ec_earth_racmo22e")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("scenario", "rcp26")
                     ].id
                 ),
@@ -112,6 +181,11 @@ def generate_configurations(
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("scenario", "rcp85")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -122,6 +196,10 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_ec_earth_rca4",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="su30",
             wms_main_layer_name="su30",
             thredds_url_pattern="EC-EARTH_RCA4ymbc/clipped/ecasu_30_EC-EARTH_RCA4_{scenario}_ts19762100_ls_VFVG.nc",
@@ -132,6 +210,26 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "su30")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "annual")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "absolute")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "ec_earth_rca4")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("scenario", "rcp26")
                     ].id
                 ),
@@ -143,6 +241,11 @@ def generate_configurations(
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("scenario", "rcp85")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -153,6 +256,10 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_hadgem2_es_racmo22e",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="su30",
             wms_main_layer_name="su30",
             thredds_url_pattern="HadGEM2-ES_RACMO22Eymbc/clipped/ecasu_30_HadGEM2-ES_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
@@ -163,6 +270,26 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "su30")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "annual")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "absolute")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "hadgem2_racmo22e")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("scenario", "rcp26")
                     ].id
                 ),
@@ -174,6 +301,11 @@ def generate_configurations(
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("scenario", "rcp85")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -184,6 +316,10 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_mpi_esm_lr_remo2009",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="su30",
             wms_main_layer_name="su30",
             thredds_url_pattern="MPI-ESM-LR_REMO2009ymbc/clipped/ecasu_30_MPI-ESM-LR_REMO2009_{scenario}_ts19762100_ls_VFVG.nc",
@@ -194,6 +330,26 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "su30")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "annual")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "absolute")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "mpi_esm_lr_remo2009")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("scenario", "rcp26")
                     ].id
                 ),
@@ -205,6 +361,11 @@ def generate_configurations(
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("scenario", "rcp85")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -215,6 +376,10 @@ def generate_configurations(
         ),
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_ensemble_upper_uncertainty",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="su30_stdup",
             wms_main_layer_name="su30_stdup",
             thredds_url_pattern="ensymbc/std/clipped/ecasu_30_stdup_{scenario}_ts19762100_ls_VFVG.nc",
@@ -225,6 +390,31 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "su30")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "annual")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "absolute")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "model_ensemble")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("uncertainty_type", "upper_bound")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("scenario", "rcp26")
                     ].id
                 ),
@@ -238,10 +428,19 @@ def generate_configurations(
                         ("scenario", "rcp85")
                     ].id
                 ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "year")
+                    ].id
+                ),
             ],
         ),
         CoverageConfigurationCreate(
             name="su30_annual_absolute_model_ensemble_lower_uncertainty",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="su30_stddown",
             wms_main_layer_name="su30_stddown",
             thredds_url_pattern="ensymbc/std/clipped/ecasu_30_stddown_{scenario}_ts19762100_ls_VFVG.nc",
@@ -252,6 +451,31 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "su30")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "annual")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "absolute")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "model_ensemble")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("uncertainty_type", "lower_bound")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("scenario", "rcp26")
                     ].id
                 ),
@@ -265,10 +489,19 @@ def generate_configurations(
                         ("scenario", "rcp85")
                     ].id
                 ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "year")
+                    ].id
+                ),
             ],
         ),
         CoverageConfigurationCreate(
             name="su30_30yr_anomaly_annual_agree_model_ensemble",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="su30",
             wms_main_layer_name="su30-uncertainty_group",
             thredds_url_pattern="ensembletwbc/std/clipped/ecasuan_30_avgagree_{time_window}_{scenario}_ls_VFVG.nc",
@@ -279,6 +512,26 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "su30")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "30yr")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "anomaly")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "model_ensemble")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("time_window", "tw1")
                     ].id
                 ),
@@ -302,10 +555,19 @@ def generate_configurations(
                         ("scenario", "rcp85")
                     ].id
                 ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "year")
+                    ].id
+                ),
             ],
         ),
         CoverageConfigurationCreate(
             name="su30_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="su30",
             wms_main_layer_name="su30",
             thredds_url_pattern="indici5rcm/clipped/ecasuan_30_EC-EARTH_CCLM4-8-17_{scenario}_{time_window}_ls_VFVG.nc",
@@ -316,6 +578,26 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "su30")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "30yr")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "anomaly")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "ec_earth_cclm_4_8_17")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("time_window", "tw1")
                     ].id
                 ),
@@ -339,10 +621,19 @@ def generate_configurations(
                         ("scenario", "rcp85")
                     ].id
                 ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "year")
+                    ].id
+                ),
             ],
         ),
         CoverageConfigurationCreate(
             name="su30_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="su30",
             wms_main_layer_name="su30",
             thredds_url_pattern="indici5rcm/clipped/ecasuan_30_EC-EARTH_RACMO22E_{scenario}_{time_window}_ls_VFVG.nc",
@@ -353,6 +644,26 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "su30")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "30yr")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "anomaly")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "ec_earth_racmo22e")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("time_window", "tw1")
                     ].id
                 ),
@@ -376,10 +687,19 @@ def generate_configurations(
                         ("scenario", "rcp85")
                     ].id
                 ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "year")
+                    ].id
+                ),
             ],
         ),
         CoverageConfigurationCreate(
             name="su30_30yr_anomaly_annual_model_ec_earth_rca4",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="su30",
             wms_main_layer_name="su30",
             thredds_url_pattern="indici5rcm/clipped/ecasuan_30_EC-EARTH_RCA4_{scenario}_{time_window}_ls_VFVG.nc",
@@ -390,6 +710,26 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "su30")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "30yr")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "anomaly")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "ec_earth_rca4")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("time_window", "tw1")
                     ].id
                 ),
@@ -413,10 +753,19 @@ def generate_configurations(
                         ("scenario", "rcp85")
                     ].id
                 ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "year")
+                    ].id
+                ),
             ],
         ),
         CoverageConfigurationCreate(
             name="su30_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="su30",
             wms_main_layer_name="su30",
             thredds_url_pattern="indici5rcm/clipped/ecasuan_30_HadGEM2-ES_RACMO22E_{scenario}_{time_window}_ls_VFVG.nc",
@@ -427,6 +776,26 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "su30")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "30yr")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "anomaly")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "hadgem2_racmo22e")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("time_window", "tw1")
                     ].id
                 ),
@@ -450,10 +819,19 @@ def generate_configurations(
                         ("scenario", "rcp85")
                     ].id
                 ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "year")
+                    ].id
+                ),
             ],
         ),
         CoverageConfigurationCreate(
             name="su30_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="su30",
             wms_main_layer_name="su30",
             thredds_url_pattern="indici5rcm/clipped/ecasuan_30_MPI-ESM-LR_REMO2009_{scenario}_{time_window}_ls_VFVG.nc",
@@ -464,6 +842,26 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "su30")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "30yr")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "anomaly")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "mpi_esm_lr_remo2009")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("time_window", "tw1")
                     ].id
                 ),
@@ -485,6 +883,11 @@ def generate_configurations(
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("scenario", "rcp85")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "year")
                     ].id
                 ),
             ],

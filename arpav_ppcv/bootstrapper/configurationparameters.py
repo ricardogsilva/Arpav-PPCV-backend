@@ -7,6 +7,85 @@ from ..schemas.coverages import (
 def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
     return [
         ConfigurationParameterCreate(
+            name="climatological_variable",
+            display_name_english="Variable",
+            display_name_italian="Variabile",
+            description_english="Climatological variable",
+            description_italian="Variabile climatologica",
+            allowed_values=[
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="cdd",
+                    display_name_english="CDD",
+                    display_name_italian="CDD",
+                    description_english="Consecutive Cold Days",
+                    description_italian="Giorni secchi",
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="fd",
+                    display_name_english="FD",
+                    display_name_italian="FD",
+                    description_english="Frozen Days",
+                    description_italian="Giorni di gelo",
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="pr",
+                    display_name_english="PR",
+                    display_name_italian="PR",
+                    description_english="Rainfall",
+                    description_italian="Precipitazione",
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="r95ptot",
+                    display_name_english="R95pTOT",
+                    display_name_italian="R95pTOT",
+                    description_english="Extreme rainfall",
+                    description_italian="Precipitazione estrema",
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="snwdays",
+                    display_name_english="SNWDAYS",
+                    display_name_italian="SNWDAYS",
+                    description_english="Days with new snow",
+                    description_italian="Giorni con neve nuova",
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="su30",
+                    display_name_english="SU30",
+                    display_name_italian="SU30",
+                    description_english="Hot days",
+                    description_italian="Giorni caldi",
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="tas",
+                    display_name_english="TAS",
+                    display_name_italian="TAS",
+                    description_english="Mean temperature",
+                    description_italian="Temperatura media",
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="tasmax",
+                    display_name_english="TASMAX",
+                    display_name_italian="TASMAX",
+                    description_english="Maximum temperature",
+                    description_italian="Temperatura massima",
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="tasmin",
+                    display_name_english="TASMIN",
+                    display_name_italian="TASMIN",
+                    description_english="Minimum temperature",
+                    description_italian="Temperatura minima",
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="tr",
+                    display_name_english="TR",
+                    display_name_italian="TR",
+                    description_english="Tropical nights",
+                    description_italian="Notti tropicali",
+                ),
+            ],
+        ),
+        ConfigurationParameterCreate(
             name="scenario",
             display_name_english="Scenario",
             display_name_italian="Scenario",
@@ -140,6 +219,13 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                         "Stagione climatologica autunnale (settembre, ottobre, novembre)"
                     ),
                 ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="year",
+                    display_name_english="Year",
+                    display_name_italian="Anno",
+                    description_english="Whole year",
+                    description_italian="L'intero anno",
+                ),
             ],
         ),
         ConfigurationParameterCreate(
@@ -234,6 +320,13 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="MPI-ESM-LR-REMO2009",
                     description_english="MPI-ESM-LR-REMO2009 model",
                     description_italian="Modello MPI-ESM-LR-REMO2009",
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="barometro_climatico",
+                    display_name_english="Climate barometer",
+                    display_name_italian="Barometro climatico",
+                    description_english="Regional overview",
+                    description_italian="Panoramica regionale",
                 ),
             ],
         ),
