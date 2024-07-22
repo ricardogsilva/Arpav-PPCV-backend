@@ -161,6 +161,7 @@ class CoverageIdentifierReadListItem(pydantic.BaseModel):
     related_coverage_configuration_url: str
     wms_base_url: str
     wms_main_layer_name: str | None = None
+    possible_values: list[ConfigurationParameterPossibleValueRead]
 
     @classmethod
     def from_db_instance(
@@ -179,7 +180,6 @@ class CoverageIdentifierReadListItem(pydantic.BaseModel):
                 thredds_url_fragment,
             )
         )
-
         return cls(
             identifier=instance.identifier,
             wms_base_url=wms_base_url,
@@ -190,6 +190,21 @@ class CoverageIdentifierReadListItem(pydantic.BaseModel):
                     coverage_configuration_id=instance.configuration.id,
                 )
             ),
+            possible_values=[
+                ConfigurationParameterPossibleValueRead(
+                    configuration_parameter_name=pv.configuration_parameter_value.configuration_parameter.name,
+                    configuration_parameter_display_name_english=(
+                        pv.configuration_parameter_value.configuration_parameter.display_name_english
+                    ),
+                    configuration_parameter_display_name_italian=(
+                        pv.configuration_parameter_value.configuration_parameter.display_name_italian
+                    ),
+                    configuration_parameter_value=pv.configuration_parameter_value.name,
+                )
+                for pv in instance.configuration.retrieve_used_values(
+                    instance.identifier
+                )
+            ],
         )
 
 
