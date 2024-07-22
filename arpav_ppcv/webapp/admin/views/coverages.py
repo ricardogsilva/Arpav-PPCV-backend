@@ -245,6 +245,7 @@ class ConfigurationParameterView(ModelView):
             database.list_configuration_parameters,
             limit=limit,
             offset=skip,
+            name_filter=str(where) if where not in (None, "") else None,
             include_total=False,
         )
         db_conf_params, _ = await anyio.to_thread.run_sync(
@@ -439,6 +440,7 @@ class CoverageConfigurationView(ModelView):
             database.list_coverage_configurations,
             limit=limit,
             offset=skip,
+            name_filter=str(where) if where not in (None, "") else None,
             include_total=False,
         )
         db_cov_confs, _ = await anyio.to_thread.run_sync(

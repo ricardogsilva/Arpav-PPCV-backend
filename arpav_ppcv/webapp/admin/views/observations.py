@@ -297,6 +297,7 @@ class VariableView(ModelView):
             db.list_variables,
             limit=limit,
             offset=skip,
+            name_filter=str(where) if where not in (None, "") else None,
             include_total=False,
         )
         db_vars, _ = await anyio.to_thread.run_sync(
@@ -319,7 +320,7 @@ class StationView(ModelView):
         fields.UuidField("id"),
         starlette_admin.StringField("name", required=True),
         starlette_admin.StringField("code", required=True),
-        starlette_admin.StringField("type", required=True),
+        starlette_admin.StringField("type_", required=True),
         starlette_admin.FloatField("longitude", required=True),
         starlette_admin.FloatField("latitude", required=True),
         starlette_admin.DateField("active_since"),
@@ -448,6 +449,7 @@ class StationView(ModelView):
             limit=limit,
             offset=skip,
             include_total=False,
+            name_filter=str(where) if where not in (None, "") else None,
         )
         db_stations, _ = await anyio.to_thread.run_sync(
             list_stations, request.state.session

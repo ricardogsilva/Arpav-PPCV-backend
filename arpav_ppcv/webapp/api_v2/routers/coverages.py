@@ -52,6 +52,7 @@ async def list_configuration_parameters(
     request: Request,
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
+    name_contains: str | None = None,
 ):
     """List configuration parameters."""
     config_params, filtered_total = db.list_configuration_parameters(
@@ -59,6 +60,7 @@ async def list_configuration_parameters(
         limit=list_params.limit,
         offset=list_params.offset,
         include_total=True,
+        name_filter=name_contains,
     )
     _, unfiltered_total = db.list_configuration_parameters(
         db_session, limit=1, offset=0, include_total=True
@@ -81,6 +83,15 @@ async def list_coverage_configurations(
     request: Request,
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
+    possible_value: Annotated[
+        list[
+            Annotated[
+                str,
+                pydantic.StringConstraints(pattern=r"^[0-9a-zA-Z_]+:[0-9a-zA-Z_]+$"),
+            ]
+        ],
+        Query(),
+    ] = None,
 ):
     """### List coverage configurations.
 
@@ -117,11 +128,24 @@ async def list_coverage_configurations(
     endpoint.
 
     """
+    conf_param_values_filter = []
+    for possible in possible_value or []:
+        param_name, param_value = possible.partition(":")[::2]
+        db_parameter_value = db.get_configuration_parameter_value_by_names(
+            db_session, param_name, param_value
+        )
+        if db_parameter_value is not None:
+            conf_param_values_filter.append(db_parameter_value)
+        else:
+            logger.debug(
+                f"ignoring unknown parameter/value pair {param_name}:{param_value}"
+            )
     coverage_configurations, filtered_total = db.list_coverage_configurations(
         db_session,
         limit=list_params.limit,
         offset=list_params.offset,
         include_total=True,
+        configuration_parameter_values_filter=conf_param_values_filter or None,
     )
     _, unfiltered_total = db.list_coverage_configurations(
         db_session, limit=1, offset=0, include_total=True
@@ -156,6 +180,9 @@ def get_coverage_configuration(
     )
 
 
+# PossibleValue: pydantic.StringConstraints(pattern="^[\w-_]+:[\w-_]+$")
+
+
 @router.get(
     "/coverage-identifiers",
     response_model=coverage_schemas.CoverageIdentifierList,
@@ -166,13 +193,35 @@ def list_coverage_identifiers(
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
     name_contains: Annotated[list[str], Query()] = None,
+    possible_value: Annotated[
+        list[
+            Annotated[
+                str,
+                pydantic.StringConstraints(pattern=r"^[0-9a-zA-Z_]+:[0-9a-zA-Z_]+$"),
+            ]
+        ],
+        Query(),
+    ] = None,
 ):
+    conf_param_values_filter = []
+    for possible in possible_value or []:
+        param_name, param_value = possible.partition(":")[::2]
+        db_parameter_value = db.get_configuration_parameter_value_by_names(
+            db_session, param_name, param_value
+        )
+        if db_parameter_value is not None:
+            conf_param_values_filter.append(db_parameter_value)
+        else:
+            logger.debug(
+                f"ignoring unknown parameter/value pair {param_name}:{param_value}"
+            )
     cov_internals, filtered_total = db.list_coverage_identifiers(
         db_session,
         limit=list_params.limit,
         offset=list_params.offset,
         include_total=True,
         name_filter=name_contains,
+        configuration_parameter_values_filter=conf_param_values_filter or None,
     )
     _, unfiltered_total = db.list_coverage_identifiers(
         db_session, limit=1, offset=0, include_total=True

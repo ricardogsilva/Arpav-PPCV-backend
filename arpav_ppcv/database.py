@@ -120,11 +120,16 @@ def list_variables(
     limit: int = 20,
     offset: int = 0,
     include_total: bool = False,
+    name_filter: Optional[str] = None,
 ) -> tuple[Sequence[observations.Variable], Optional[int]]:
     """List existing variables."""
     statement = sqlmodel.select(observations.Variable).order_by(
         observations.Variable.name
     )
+    if name_filter is not None:
+        statement = _add_substring_filter(
+            statement, name_filter, observations.Variable.name
+        )
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = _get_total_num_records(session, statement) if include_total else None
     return items, num_items
@@ -236,6 +241,7 @@ def list_stations(
     limit: int = 20,
     offset: int = 0,
     include_total: bool = False,
+    name_filter: Optional[str] = None,
     polygon_intersection_filter: shapely.Polygon = None,
     variable_id_filter: Optional[uuid.UUID] = None,
     variable_aggregation_type: Optional[
@@ -250,6 +256,10 @@ def list_stations(
     statement = sqlmodel.select(observations.Station).order_by(
         observations.Station.code
     )
+    if name_filter is not None:
+        statement = _add_substring_filter(
+            statement, name_filter, observations.Station.name
+        )
     if polygon_intersection_filter is not None:
         statement = statement.where(
             func.ST_Intersects(
@@ -655,17 +665,42 @@ def get_configuration_parameter_value(
     )
 
 
+def get_configuration_parameter_value_by_names(
+    session: sqlmodel.Session,
+    parameter_name: str,
+    value_name: str,
+) -> Optional[coverages.ConfigurationParameterValue]:
+    """Get configuration parameter value by name of parameter and name of value."""
+    return session.exec(
+        sqlmodel.select(coverages.ConfigurationParameterValue)
+        .join(coverages.ConfigurationParameter)
+        .where(
+            coverages.ConfigurationParameter.name == parameter_name,
+            coverages.ConfigurationParameterValue.name == value_name,
+        )
+    ).first()
+
+
 def list_configuration_parameter_values(
     session: sqlmodel.Session,
     *,
     limit: int = 20,
     offset: int = 0,
     include_total: bool = False,
+    used_by_coverage_configuration: coverages.CoverageConfiguration | None = None,
 ) -> tuple[Sequence[coverages.ConfigurationParameterValue], Optional[int]]:
     """List existing configuration parameters."""
     statement = sqlmodel.select(coverages.ConfigurationParameterValue).order_by(
         coverages.ConfigurationParameterValue.name
     )
+    if used_by_coverage_configuration is not None:
+        statement = (
+            statement.join(coverages.ConfigurationParameterPossibleValue)
+            .join(coverages.CoverageConfiguration)
+            .where(
+                coverages.CoverageConfiguration.id == used_by_coverage_configuration.id
+            )
+        )
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = _get_total_num_records(session, statement) if include_total else None
     return items, num_items
@@ -673,12 +708,19 @@ def list_configuration_parameter_values(
 
 def collect_all_configuration_parameter_values(
     session: sqlmodel.Session,
+    used_by_coverage_configuration: coverages.CoverageConfiguration | None = None,
 ) -> Sequence[coverages.ConfigurationParameterValue]:
     _, num_total = list_configuration_parameter_values(
-        session, limit=1, include_total=True
+        session,
+        limit=1,
+        include_total=True,
+        used_by_coverage_configuration=used_by_coverage_configuration,
     )
     result, _ = list_configuration_parameter_values(
-        session, limit=num_total, include_total=False
+        session,
+        limit=num_total,
+        include_total=False,
+        used_by_coverage_configuration=used_by_coverage_configuration,
     )
     return result
 
@@ -710,11 +752,16 @@ def list_configuration_parameters(
     limit: int = 20,
     offset: int = 0,
     include_total: bool = False,
+    name_filter: str | None = None,
 ) -> tuple[Sequence[coverages.ConfigurationParameter], Optional[int]]:
     """List existing configuration parameters."""
     statement = sqlmodel.select(coverages.ConfigurationParameter).order_by(
         coverages.ConfigurationParameter.name
     )
+    if name_filter is not None:
+        statement = _add_substring_filter(
+            statement, name_filter, coverages.ConfigurationParameter.name
+        )
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = _get_total_num_records(session, statement) if include_total else None
     return items, num_items
@@ -847,27 +894,80 @@ def list_coverage_configurations(
     name_filter: Optional[str] = None,
     english_display_name_filter: Optional[str] = None,
     italian_display_name_filter: Optional[str] = None,
+    configuration_parameter_values_filter: Optional[
+        list[coverages.ConfigurationParameterValue]
+    ] = None,
 ) -> tuple[Sequence[coverages.CoverageConfiguration], Optional[int]]:
     """List existing coverage configurations."""
     statement = sqlmodel.select(coverages.CoverageConfiguration).order_by(
         coverages.CoverageConfiguration.name
     )
     if name_filter is not None:
-        statement = statement.where(
-            coverages.CoverageConfiguration.name.ilike(name_filter)
+        statement = _add_substring_filter(
+            statement, name_filter, coverages.CoverageConfiguration.name
         )
     if english_display_name_filter is not None:
-        statement = statement.where(
-            coverages.CoverageConfiguration.display_name_english.ilike(
-                english_display_name_filter
-            )
+        statement = _add_substring_filter(
+            statement,
+            english_display_name_filter,
+            coverages.CoverageConfiguration.display_name_english,
         )
     if italian_display_name_filter is not None:
-        statement = statement.where(
-            coverages.CoverageConfiguration.display_name_italian.ilike(
-                italian_display_name_filter
-            )
+        statement = _add_substring_filter(
+            statement,
+            italian_display_name_filter,
+            coverages.CoverageConfiguration.display_name_italian,
         )
+    if len(conf_params := configuration_parameter_values_filter or []) > 0:
+        possible_values_cte = (
+            sqlmodel.select(
+                coverages.CoverageConfiguration.id,
+                func.jsonb_agg(
+                    func.json_build_object(
+                        coverages.ConfigurationParameter.name,
+                        coverages.ConfigurationParameterValue.name,
+                    )
+                ).label("possible_values"),
+            )
+            .join(
+                coverages.ConfigurationParameterPossibleValue,
+                coverages.CoverageConfiguration.id
+                == coverages.ConfigurationParameterPossibleValue.coverage_configuration_id,
+            )
+            .join(
+                coverages.ConfigurationParameterValue,
+                coverages.ConfigurationParameterValue.id
+                == coverages.ConfigurationParameterPossibleValue.configuration_parameter_value_id,
+            )
+            .join(
+                coverages.ConfigurationParameter,
+                coverages.ConfigurationParameter.id
+                == coverages.ConfigurationParameterValue.configuration_parameter_id,
+            )
+            .group_by(coverages.CoverageConfiguration.id)
+        ).cte("cov_conf_possible_values")
+        statement = statement.join(
+            possible_values_cte,
+            possible_values_cte.c.id == coverages.CoverageConfiguration.id,
+        )
+        for conf_param_value in conf_params:
+            param_name = conf_param_value.configuration_parameter.name
+            param_value = conf_param_value.name
+            statement = statement.where(
+                func.jsonb_path_exists(
+                    possible_values_cte.c.possible_values,
+                    # the below expression is a fragment of SQL/JSON Path
+                    # language, which represents postgresql's way of filtering a
+                    # JSON array. More detail at:
+                    #
+                    # https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-SQLJSON-PATH
+                    #
+                    # in this case it reads like:
+                    # return True if the current element of the array, which is an object, has a key named
+                    # `param_name` with a corresponding value of `param_value`
+                    f'$[*] ? (@.{param_name} == "{param_value}")',
+                )
+            )
     items = session.exec(statement.offset(offset).limit(limit)).all()
     num_items = _get_total_num_records(session, statement) if include_total else None
     return items, num_items
@@ -878,6 +978,9 @@ def collect_all_coverage_configurations(
     name_filter: Optional[str] = None,
     english_display_name_filter: Optional[str] = None,
     italian_display_name_filter: Optional[str] = None,
+    configuration_parameter_values_filter: Optional[
+        list[coverages.ConfigurationParameterValue]
+    ] = None,
 ) -> Sequence[coverages.CoverageConfiguration]:
     _, num_total = list_coverage_configurations(
         session,
@@ -886,6 +989,7 @@ def collect_all_coverage_configurations(
         name_filter=name_filter,
         english_display_name_filter=english_display_name_filter,
         italian_display_name_filter=italian_display_name_filter,
+        configuration_parameter_values_filter=configuration_parameter_values_filter,
     )
     result, _ = list_coverage_configurations(
         session,
@@ -894,6 +998,7 @@ def collect_all_coverage_configurations(
         name_filter=name_filter,
         english_display_name_filter=english_display_name_filter,
         italian_display_name_filter=italian_display_name_filter,
+        configuration_parameter_values_filter=configuration_parameter_values_filter,
     )
     return result
 
@@ -1036,40 +1141,45 @@ def update_coverage_configuration(
     return db_coverage_configuration
 
 
-def list_allowed_coverage_identifiers(
-    session: sqlmodel.Session,
-    *,
-    coverage_configuration_id: uuid.UUID,
+def generate_coverage_identifiers(
+    coverage_configuration: coverages.CoverageConfiguration,
+    configuration_parameter_values_filter: Optional[
+        list[coverages.ConfigurationParameterValue]
+    ] = None,
 ) -> list[str]:
-    """Build list of legal coverage identifiers."""
-    result = []
-    db_cov_conf = get_coverage_configuration(session, coverage_configuration_id)
-    if db_cov_conf is not None:
-        pattern_parts = re.findall(
-            r"\{(\w+)\}", db_cov_conf.coverage_id_pattern.partition("-")[-1]
-        )
-        values_to_combine = []
-        for part in pattern_parts:
-            part_values = []
-            for possible_value in db_cov_conf.possible_values:
-                param_name_matches = (
-                    possible_value.configuration_parameter_value.configuration_parameter.name
-                    == part
-                )
-                if param_name_matches:
-                    part_values.append(
-                        possible_value.configuration_parameter_value.name
-                    )
-            values_to_combine.append(part_values)
-        # account for the possibility that there is an error in the
-        # coverage_id_pattern, where some of the parts are not actually configured
-        for index, container in enumerate(values_to_combine):
-            if len(container) == 0:
-                values_to_combine[index] = [pattern_parts[index]]
-        for combination in itertools.product(*values_to_combine):
-            dataset_id = "-".join((db_cov_conf.name, *combination))
-            result.append(dataset_id)
-    return result
+    """Build list of legal coverage identifiers for a coverage configuration."""
+
+    params_to_filter = {}
+    for cpv in configuration_parameter_values_filter or []:
+        values = params_to_filter.setdefault(cpv.configuration_parameter.name, [])
+        values.append(cpv.name)
+    pattern_parts = re.findall(
+        r"\{(\w+)\}", coverage_configuration.coverage_id_pattern.partition("-")[-1]
+    )
+    values_to_combine = []
+    for part in pattern_parts:
+        part_values = []
+        for possible_value in coverage_configuration.possible_values:
+            this_param_name = possible_value.configuration_parameter_value.configuration_parameter.name
+            if this_param_name == part:
+                # check if this param's value is to be filtered out or not
+                this_value = possible_value.configuration_parameter_value.name
+                if this_param_name in params_to_filter:
+                    if this_value in params_to_filter.get(this_param_name, []):
+                        part_values.append(this_value)
+                else:
+                    part_values.append(this_value)
+        values_to_combine.append(part_values)
+    # account for the possibility that there is an error in the
+    # coverage_id_pattern, where some of the parts are not actually configured
+    allowed_identifiers = []
+    for index, container in enumerate(values_to_combine):
+        if len(container) == 0:
+            values_to_combine[index] = [pattern_parts[index]]
+    for combination in itertools.product(*values_to_combine):
+        dataset_id = "-".join((coverage_configuration.name, *combination))
+        allowed_identifiers.append(dataset_id)
+    return allowed_identifiers
 
 
 def list_municipalities(
@@ -1093,14 +1203,16 @@ def list_municipalities(
         municipalities.Municipality.name
     )
     if name_filter is not None:
-        statement = statement.where(municipalities.Municipality.name.ilike(name_filter))
+        statement = _add_substring_filter(
+            statement, name_filter, municipalities.Municipality.name
+        )
     if province_name_filter is not None:
-        statement = statement.where(
-            municipalities.Municipality.province_name.ilike(province_name_filter)
+        statement = _add_substring_filter(
+            statement, province_name_filter, municipalities.Municipality.province_name
         )
     if region_name_filter is not None:
-        statement = statement.where(
-            municipalities.Municipality.region_name.ilike(region_name_filter)
+        statement = _add_substring_filter(
+            statement, region_name_filter, municipalities.Municipality.region_name
         )
     if polygon_intersection_filter is not None:
         statement = statement.where(
@@ -1155,8 +1267,13 @@ def list_coverage_identifiers(
     offset: int = 0,
     include_total: bool = False,
     name_filter: list[str] | None = None,
+    configuration_parameter_values_filter: Optional[
+        list[coverages.ConfigurationParameterValue]
+    ] = None,
 ) -> tuple[list[coverages.CoverageInternal], Optional[int]]:
-    all_cov_ids = collect_all_coverage_identifiers(session)
+    all_cov_ids = collect_all_coverage_identifiers(
+        session, configuration_parameter_values_filter
+    )
     if name_filter is not None:
         for fragment in name_filter:
             all_cov_ids = [
@@ -1170,13 +1287,20 @@ def list_coverage_identifiers(
 
 def collect_all_coverage_identifiers(
     session: sqlmodel.Session,
+    configuration_parameter_values_filter: Optional[
+        list[coverages.ConfigurationParameterValue]
+    ] = None,
 ) -> list[coverages.CoverageInternal]:
-    cov_confs = collect_all_coverage_configurations(session)
+    cov_confs = collect_all_coverage_configurations(
+        session,
+        configuration_parameter_values_filter=configuration_parameter_values_filter,
+    )
     cov_ids = []
     for cov_conf in cov_confs:
-        for cov_id in list_allowed_coverage_identifiers(
-            session, coverage_configuration_id=cov_conf.id
-        ):
+        allowed_identifiers = generate_coverage_identifiers(
+            cov_conf, configuration_parameter_values_filter
+        )
+        for cov_id in allowed_identifiers:
             cov_ids.append(
                 coverages.CoverageInternal(configuration=cov_conf, identifier=cov_id)
             )
@@ -1187,3 +1311,15 @@ def _get_total_num_records(session: sqlmodel.Session, statement):
     return session.exec(
         sqlmodel.select(sqlmodel.func.count()).select_from(statement)
     ).first()
+
+
+def _add_substring_filter(statement, value: str, *columns):
+    filter_ = value.replace("%", "")
+    filter_ = f"%{filter_}%"
+    if len(columns) == 1:
+        result = statement.where(columns[0].ilike(filter_))  # type: ignore[attr-defined]
+    elif len(columns) > 1:
+        result = statement.where(sqlalchemy.or_(*[c.ilike(filter_) for c in columns]))
+    else:
+        raise RuntimeError("Invalid columns argument")
+    return result

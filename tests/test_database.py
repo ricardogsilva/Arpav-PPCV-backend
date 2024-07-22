@@ -34,6 +34,88 @@ def test_list_stations(arpav_db_session, sample_stations, limit, offset, include
     "limit, offset, include_total",
     [
         pytest.param(10, 0, False),
+    ],
+)
+def test_list_coverage_configurations(
+    arpav_db_session, sample_coverage_configurations, limit, offset, include_total
+):
+    db_cov_confs, total = database.list_coverage_configurations(
+        arpav_db_session, limit=limit, offset=offset, include_total=include_total
+    )
+    ordered_cov_confs = sorted(
+        sample_coverage_configurations, key=lambda cov_conf: cov_conf.name
+    )
+    if include_total:
+        assert total == len(sample_coverage_configurations)
+    else:
+        assert total is None
+    for index, db_cov_conf in enumerate(db_cov_confs):
+        assert db_cov_conf.name == ordered_cov_confs[index].name
+
+
+@pytest.mark.parametrize(
+    "params_to_generate, params_to_use, expected_identifiers",
+    [
+        pytest.param(
+            {"vvv": ["v1", "v2", "v3"], "sss": ["s1", "s2", "s3"]},
+            ["vvv-v1", "vvv-v2", "sss-s1"],
+            ["cc-s1-v1", "cc-s1-v2"],
+        ),
+        pytest.param(
+            {"vvv": ["v1", "v2", "v3"], "sss": ["s1", "s2", "s3"]},
+            ["vvv-v1", "vvv-v2", "sss-s1", "sss-s2"],
+            ["cc-s1-v1", "cc-s1-v2", "cc-s2-v1", "cc-s2-v2"],
+        ),
+    ],
+)
+def test_generate_coverage_identifiers(
+    arpav_db_session,
+    params_to_generate: dict[str, list[str]],
+    params_to_use: list[str],
+    expected_identifiers: list[str],
+):
+    params = {}
+    for p, values in params_to_generate.items():
+        params[p] = coverages.ConfigurationParameter(
+            name=p,
+            allowed_values=[
+                coverages.ConfigurationParameterValue(name=v) for v in values
+            ],
+        )
+    for param_to_create in params.values():
+        arpav_db_session.add(param_to_create)
+    arpav_db_session.commit()
+    for param_created in params.values():
+        arpav_db_session.refresh(param_created)
+
+    to_use = []
+    for spec_to_use in params_to_use:
+        param_name, param_value = spec_to_use.partition("-")[::2]
+        param = params[param_name]
+        for allowed_value in param.allowed_values:
+            if allowed_value.name == param_value:
+                to_use.append(
+                    coverages.ConfigurationParameterPossibleValue(
+                        configuration_parameter_value=allowed_value
+                    )
+                )
+
+    cov_conf = coverages.CoverageConfiguration(
+        name="cc",
+        netcdf_main_dataset_name="some-dataset-name",
+        thredds_url_pattern="the_thredds-param_{vvv}",
+        palette="fake",
+        possible_values=to_use,
+    )
+    arpav_db_session.add(cov_conf)
+    arpav_db_session.commit()
+    arpav_db_session.refresh(cov_conf)
+
+
+@pytest.mark.parametrize(
+    "limit, offset, include_total",
+    [
+        pytest.param(10, 0, False),
         pytest.param(10, 0, True),
         pytest.param(5, 2, True),
     ],

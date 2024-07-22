@@ -235,10 +235,13 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
     @pydantic.computed_field()
     @property
     def coverage_id_pattern(self) -> str:
-        id_parts = ["{name}"]
-        for match_obj in re.finditer(r"(\{\w+\})", self.thredds_url_pattern):
-            id_parts.append(match_obj.group(1))
-        return "-".join(id_parts)
+        other_parts = set()
+        for pv in self.possible_values:
+            other_parts.add(
+                pv.configuration_parameter_value.configuration_parameter.name
+            )
+        all_parts = ["name"] + sorted(list(other_parts))
+        return "-".join(f"{{{part}}}" for part in all_parts)
 
     def get_thredds_url_fragment(self, coverage_identifier: str) -> str:
         try:
@@ -269,7 +272,9 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
                         id_parts.append(conf_param_value.name)
                         break
                 else:
-                    raise ValueError(f"Invalid param_name {param_name!r}")
+                    raise ValueError(
+                        f"Could not find suitable value for {param_name!r}"
+                    )
             else:
                 continue
         return "-".join(id_parts)
@@ -293,15 +298,17 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
                 raise ValueError(f"Invalid parameter/value pair: {(param_name, value)}")
         return result
 
-    def retrieve_configuration_parameters(self, coverage_identifier) -> dict[str, str]:
+    def retrieve_configuration_parameters(
+        self, coverage_identifier: str
+    ) -> dict[str, str]:
         pattern_parts = re.finditer(
             r"\{(\w+)\}", self.coverage_id_pattern.partition("-")[-1]
         )
         id_parts = coverage_identifier.split("-")[1:]
         result = {}
         for index, pattern_match_obj in enumerate(pattern_parts):
-            id_part = id_parts[index]
             configuration_parameter_name = pattern_match_obj.group(1)
+            id_part = id_parts[index]
             result[configuration_parameter_name] = id_part
         return result
 
