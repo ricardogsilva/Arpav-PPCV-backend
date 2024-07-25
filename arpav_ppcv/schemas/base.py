@@ -28,7 +28,7 @@ class Season(enum.Enum):
             self.SPRING.name: _("spring"),
             self.SUMMER.name: _("summer"),
             self.AUTUMN.name: _("autumn"),
-        }[self.name]
+        }[self.name] or self.name
 
 
 class ObservationDataSmoothingStrategy(enum.Enum):
@@ -41,7 +41,7 @@ class ObservationDataSmoothingStrategy(enum.Enum):
         return {
             self.NO_SMOOTHING.name: _("no processing"),
             self.MOVING_AVERAGE_5_YEARS.name: _("centered 5-year moving average"),
-        }[self.name]
+        }[self.name] or self.name
 
 
 UNCERTAINTY_TIME_SERIES_PATTERN = "**UNCERTAINTY**"
@@ -60,7 +60,7 @@ class ObservationAggregationType(str, enum.Enum):
             self.MONTHLY.name: _("monthly"),
             self.SEASONAL.name: _("seasonal"),
             self.YEARLY.name: _("yearly"),
-        }[self.name]
+        }[self.name] or self.name
 
 
 class CoverageDataSmoothingStrategy(enum.Enum):
@@ -75,7 +75,7 @@ class CoverageDataSmoothingStrategy(enum.Enum):
             self.NO_SMOOTHING.name: _("no processing"),
             self.LOESS_SMOOTHING.name: _("LOESS"),
             self.MOVING_AVERAGE_11_YEARS.name: _("centered 11-year moving average"),
-        }[self.name]
+        }[self.name] or self.name
 
 
 class StaticCoverageSeriesParameter(enum.Enum):
@@ -92,7 +92,7 @@ class StaticCoverageSeriesParameter(enum.Enum):
             self.PROCESSING_METHOD.name: _("processing method"),
             self.COVERAGE_IDENTIFIER.name: _("coverage identifier"),
             self.COVERAGE_CONFIGURATION.name: _("coverage configuration"),
-        }[self.name]
+        }[self.name] or self.name
 
 
 class StaticObservationSeriesParameter(enum.Enum):
@@ -111,7 +111,7 @@ class StaticObservationSeriesParameter(enum.Enum):
             self.VARIABLE.name: _("variable"),
             self.SERIES_ELABORATION.name: _("series elaboration"),
             self.DERIVED_SERIES.name: _("derived series"),
-        }[self.name]
+        }[self.name] or self.name
 
 
 class TimeSeriesElaboration(enum.Enum):
@@ -124,7 +124,7 @@ class TimeSeriesElaboration(enum.Enum):
         return {
             self.ORIGINAL.name: _("original"),
             self.DERIVED.name: _("derived"),
-        }[self.name]
+        }[self.name] or self.name
 
 
 class ObservationDerivedSeries(enum.Enum):
@@ -137,7 +137,7 @@ class ObservationDerivedSeries(enum.Enum):
         return {
             self.DECADE_SERIES.name: _("decade series"),
             self.MANN_KENDALL_SERIES.name: _("Mann-Kendall series"),
-        }[self.name]
+        }[self.name] or self.name
 
 
 class MannKendallParameters(pydantic.BaseModel):
