@@ -57,6 +57,15 @@ class ConfigurationParameterValue(sqlmodel.SQLModel, table=True):
     )
 
 
+class ConfigurationParameterValueCreate(sqlmodel.SQLModel):
+    name: str
+    configuration_parameter_id: uuid.UUID
+    display_name_english: Optional[str] = None
+    display_name_italian: Optional[str] = None
+    description_english: Optional[str] = None
+    description_italian: Optional[str] = None
+
+
 class ConfigurationParameter(sqlmodel.SQLModel, table=True):
     id: uuid.UUID = sqlmodel.Field(default_factory=uuid.uuid4, primary_key=True)
     name: str = sqlmodel.Field(unique=True, index=True)

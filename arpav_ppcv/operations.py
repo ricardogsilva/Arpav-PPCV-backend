@@ -38,6 +38,7 @@ logger = logging.getLogger(__name__)
 
 def get_climate_barometer_time_series(
     settings: ArpavPpcvSettings,
+    session: sqlmodel.Session,
     coverage: coverages.CoverageInternal,
     smoothing_strategies: list[base.CoverageDataSmoothingStrategy] = [  # noqa
         base.CoverageDataSmoothingStrategy.NO_SMOOTHING
@@ -50,7 +51,9 @@ def get_climate_barometer_time_series(
     df = _get_climate_barometer_data(settings, coverage)
     dfs.append((coverage, df))
     if include_uncertainty:
-        lower_cov, upper_cov = get_related_uncertainty_coverage_configurations(coverage)
+        lower_cov, upper_cov = get_related_uncertainty_coverage_configurations(
+            session, coverage
+        )
         if lower_cov is not None:
             lower_df = _get_climate_barometer_data(settings, lower_cov)
             dfs.append((lower_cov, lower_df))
@@ -478,16 +481,21 @@ def process_station_data_smoothing_strategy(
 
 
 def get_related_uncertainty_coverage_configurations(
+    session: sqlmodel.Session,
     coverage: coverages.CoverageInternal,
 ) -> tuple[coverages.CoverageInternal | None, coverages.CoverageInternal | None]:
-    used_values = coverage.configuration.retrieve_used_values(coverage.identifier)
+    used_values = [
+        pv.configuration_parameter_value
+        for pv in coverage.configuration.retrieve_used_values(coverage.identifier)
+    ]
+    lower_, upper_ = database.ensure_uncertainty_type_configuration_parameters_exist(
+        session
+    )
     if (
         lower_cov_conf
         := coverage.configuration.uncertainty_lower_bounds_coverage_configuration
     ):
-        lower_cov_id = lower_cov_conf.build_coverage_identifier(
-            [pv.configuration_parameter_value for pv in used_values]
-        )
+        lower_cov_id = lower_cov_conf.build_coverage_identifier(used_values + [lower_])
         lower_cov = coverages.CoverageInternal(
             configuration=lower_cov_conf, identifier=lower_cov_id
         )
@@ -497,9 +505,7 @@ def get_related_uncertainty_coverage_configurations(
         upper_cov_conf
         := coverage.configuration.uncertainty_upper_bounds_coverage_configuration
     ):
-        upper_cov_id = upper_cov_conf.build_coverage_identifier(
-            [pv.configuration_parameter_value for pv in used_values]
-        )
+        upper_cov_id = upper_cov_conf.build_coverage_identifier(used_values + [upper_])
         upper_cov = coverages.CoverageInternal(
             configuration=upper_cov_conf, identifier=upper_cov_id
         )
@@ -515,9 +521,27 @@ def get_related_coverages(
     used_values = coverage.configuration.retrieve_used_values(coverage.identifier)
     for related_ in coverage.configuration.secondary_coverage_configurations:
         related_cov_conf = related_.secondary_coverage_configuration
-        related_id = related_cov_conf.build_coverage_identifier(
-            [pv.configuration_parameter_value for pv in used_values]
-        )
+        possible_used = [
+            pv.configuration_parameter_value for pv in related_cov_conf.possible_values
+        ]
+        values_to_use = []
+        for used_value in used_values:
+            if used_value in possible_used:
+                values_to_use.append(used_value)
+            else:
+                used_param_id = (
+                    used_value.configuration_parameter_value.configuration_parameter_id
+                )
+                try:
+                    possible = [
+                        cp
+                        for cp in possible_used
+                        if cp.configuration_parameter_id == used_param_id
+                    ][0]
+                    values_to_use.append(possible)
+                except IndexError:
+                    logger.warning(f"Could not find a usable value for {used_value}")
+        related_id = related_cov_conf.build_coverage_identifier(values_to_use)
         related_covs.append(
             coverages.CoverageInternal(
                 configuration=related_cov_conf, identifier=related_id
@@ -553,7 +577,9 @@ def get_coverage_time_series(
     start, end = _parse_temporal_range(temporal_range)
     to_retrieve_from_ncss = [coverage]
     if include_coverage_uncertainty:
-        lower_cov, upper_cov = get_related_uncertainty_coverage_configurations(coverage)
+        lower_cov, upper_cov = get_related_uncertainty_coverage_configurations(
+            session, coverage
+        )
         if lower_cov is not None:
             to_retrieve_from_ncss.append(lower_cov)
         if upper_cov is not None:
