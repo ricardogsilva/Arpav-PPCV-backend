@@ -777,6 +777,19 @@ def collect_all_configuration_parameters(
     return result
 
 
+def create_configuration_parameter_value(
+    session: sqlmodel.Session,
+    parameter_value: coverages.ConfigurationParameterValueCreate,
+) -> coverages.ConfigurationParameterValue:
+    db_param_value = coverages.ConfigurationParameterValue(
+        **parameter_value.model_dump()
+    )
+    session.add(db_param_value)
+    session.commit()
+    session.refresh(db_param_value)
+    return db_param_value
+
+
 def create_configuration_parameter(
     session: sqlmodel.Session,
     configuration_parameter_create: coverages.ConfigurationParameterCreate,
@@ -1305,6 +1318,68 @@ def collect_all_coverage_identifiers(
                 coverages.CoverageInternal(configuration=cov_conf, identifier=cov_id)
             )
     return cov_ids
+
+
+def ensure_uncertainty_type_configuration_parameters_exist(
+    session: sqlmodel.Session,
+) -> tuple[
+    coverages.ConfigurationParameterValue, coverages.ConfigurationParameterValue
+]:
+    """Ensure that the `uncertainty_type` configuration parameter exists.
+
+    Because internally we make use of the `uncertainty_type` configuration parameter,
+    we must ensure it and its respective values exist. This can happen if an admin
+    user deletes them by accident.
+    """
+    param_name = "uncertainty_type"
+    lower_bound_name = "lower_bound"
+    upper_bound_name = "upper_bound"
+    param = get_configuration_parameter_by_name(session, param_name)
+    if param is None:
+        create_configuration_parameter(
+            session,
+            coverages.ConfigurationParameterCreate(
+                name=param_name,
+                allowed_values=[
+                    coverages.ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                        name=lower_bound_name,
+                    ),
+                    coverages.ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                        name=upper_bound_name,
+                    ),
+                ],
+            ),
+        )
+        lower_bound_value = get_configuration_parameter_value_by_names(
+            session, param_name, lower_bound_name
+        )
+        upper_bound_value = get_configuration_parameter_value_by_names(
+            session, param_name, upper_bound_name
+        )
+    else:
+        lower_bound_value = get_configuration_parameter_value_by_names(
+            session, param_name, lower_bound_name
+        )
+        upper_bound_value = get_configuration_parameter_value_by_names(
+            session, param_name, upper_bound_name
+        )
+        if lower_bound_value is None:
+            lower_bound_value = create_configuration_parameter_value(
+                session,
+                parameter_value=coverages.ConfigurationParameterValueCreate(
+                    name="lower_bound",
+                    configuration_parameter_id=param.id,
+                ),
+            )
+        if upper_bound_value is None:
+            upper_bound_value = create_configuration_parameter_value(
+                session,
+                parameter_value=coverages.ConfigurationParameterValueCreate(
+                    name="upper_bound",
+                    configuration_parameter_id=param.id,
+                ),
+            )
+    return lower_bound_value, upper_bound_value
 
 
 def _get_total_num_records(session: sqlmodel.Session, statement):

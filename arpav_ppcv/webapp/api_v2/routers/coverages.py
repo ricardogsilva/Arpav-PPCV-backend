@@ -417,6 +417,7 @@ def get_climate_barometer_time_series(
             try:
                 time_series = operations.get_climate_barometer_time_series(
                     settings,
+                    db_session,
                     coverage,
                     smoothing_strategies=data_smoothing,
                     include_uncertainty=include_uncertainty,

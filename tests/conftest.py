@@ -254,7 +254,7 @@ def sample_coverage_configurations(
 
 
 @pytest.fixture()
-def sample_csv_data():
+def sample_tas_csv_data():
     return """
     time,station,latitude[unit="degrees_north"],longitude[unit="degrees_east"],tas[unit="degC"]
     1976-02-15T12:00:00Z,GridPointRequestedAt[44.952N_11.547E],44.953,11.547,2.640222
