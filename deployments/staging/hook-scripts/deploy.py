@@ -173,6 +173,22 @@ class _StartCompose:
 
 
 @dataclasses.dataclass
+class _CompileTranslations:
+    webapp_service_name: str
+    name: str = "compile static translations"
+
+    def handle(self) -> None:
+        print("Compiling translations...")
+        run(
+            shlex.split(
+                f"docker exec {self.webapp_service_name} poetry run "
+                f"arpav-ppcv translations compile"
+            ),
+            check=True,
+        )
+
+
+@dataclasses.dataclass
 class _RunMigrations:
     webapp_service_name: str
     name: str = "run DB migrations"
@@ -263,6 +279,7 @@ def perform_deployment(
             compose_files_fragment=compose_files,
         ),
         _RunMigrations(webapp_service_name=webapp_service_name),
+        _CompileTranslations(webapp_service_name=webapp_service_name),
         _RunLegacyMigrations(webapp_service_name=webapp_service_name),
         _CollectLegacyStaticFiles(webapp_service_name=webapp_service_name),
     ]
