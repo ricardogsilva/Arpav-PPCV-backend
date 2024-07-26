@@ -26,6 +26,15 @@ from arpav_ppcv.webapp import dependencies
 from arpav_ppcv.webapp.app import create_app_from_settings
 from arpav_ppcv.webapp.legacy.django_settings import get_custom_django_settings
 from arpav_ppcv.webapp.api_v2.app import create_app as create_v2_app
+from arpav_ppcv.bootstrapper.configurationparameters import (
+    generate_configuration_parameters as bootstrappable_configuration_parameters,
+)
+from arpav_ppcv.bootstrapper.coverage_configurations import (
+    tas as tas_bootstrappable_configurations,
+)
+from arpav_ppcv.bootstrapper.variables import (
+    generate_variable_configurations as bootstrappable_variables,
+)
 
 
 @pytest.hookimpl
@@ -161,6 +170,14 @@ def sample_variables(arpav_db_session) -> list[observations.Variable]:
 
 
 @pytest.fixture()
+def sample_real_variables(arpav_db_session) -> list[observations.Variable]:
+    created = []
+    for var_to_create in bootstrappable_variables():
+        created.append(database.create_variable(arpav_db_session, var_to_create))
+    return created
+
+
+@pytest.fixture()
 def sample_monthly_measurements(
     arpav_db_session, sample_variables, sample_stations
 ) -> list[observations.MonthlyMeasurement]:
@@ -189,6 +206,18 @@ def sample_monthly_measurements(
     for db_station in db_monthly_measurements:
         arpav_db_session.refresh(db_station)
     return db_monthly_measurements
+
+
+@pytest.fixture()
+def sample_real_configuration_parameters(arpav_db_session):
+    params_to_create = bootstrappable_configuration_parameters()
+    created_params = []
+    for param_to_create in params_to_create:
+        created_param = database.create_configuration_parameter(
+            arpav_db_session, param_to_create
+        )
+        created_params.append(created_param)
+    return created_params
 
 
 @pytest.fixture()
@@ -251,6 +280,96 @@ def sample_coverage_configurations(
     for db_cov_conf in db_cov_confs:
         arpav_db_session.refresh(db_cov_conf)
     return db_cov_confs
+
+
+@pytest.fixture()
+def sample_real_coverage_configurations(
+    arpav_db_session,
+    sample_real_configuration_parameters,
+    sample_real_variables,
+):
+    all_vars = database.collect_all_variables(arpav_db_session)
+    all_conf_param_values = database.collect_all_configuration_parameter_values(
+        arpav_db_session
+    )
+    cov_confs_to_create = tas_bootstrappable_configurations.generate_configurations(
+        conf_param_values={
+            (pv.configuration_parameter.name, pv.name): pv
+            for pv in all_conf_param_values
+        },
+        variables={v.name: v for v in all_vars},
+    )
+    created_cov_confs = {}
+    for cov_conf_to_create in cov_confs_to_create:
+        cov_conf = database.create_coverage_configuration(
+            arpav_db_session, cov_conf_to_create
+        )
+        created_cov_confs[cov_conf.name] = cov_conf
+
+    to_update = {}
+    for name, related_names in {
+        **tas_bootstrappable_configurations.get_related_map(),
+    }.items():
+        to_update[name] = {
+            "related": related_names,
+        }
+
+    for name, uncertainties in {
+        **tas_bootstrappable_configurations.get_uncertainty_map(),
+    }.items():
+        info = to_update.setdefault(name, {})
+        info["uncertainties"] = uncertainties
+    for name, info in to_update.items():
+        main_cov_conf = created_cov_confs[name]
+        secondaries = info.get("related")
+        uncertainties = info.get("uncertainties")
+        update_kwargs = {}
+        if secondaries is not None:
+            secondary_cov_confs = [
+                cc for name, cc in created_cov_confs.items() if name in secondaries
+            ]
+            update_kwargs["secondary_coverage_configurations_ids"] = [
+                cc.id for cc in secondary_cov_confs
+            ]
+        else:
+            update_kwargs["secondary_coverage_configurations_ids"] = []
+        if uncertainties is not None:
+            lower_uncert_id = [
+                cc.id
+                for name, cc in created_cov_confs.items()
+                if name == uncertainties[0]
+            ][0]
+            upper_uncert_id = [
+                cc.id
+                for name, cc in created_cov_confs.items()
+                if name == uncertainties[1]
+            ][0]
+            update_kwargs.update(
+                uncertainty_lower_bounds_coverage_configuration_id=lower_uncert_id,
+                uncertainty_upper_bounds_coverage_configuration_id=upper_uncert_id,
+            )
+        cov_update = coverages.CoverageConfigurationUpdate(
+            **main_cov_conf.model_dump(
+                exclude={
+                    "uncertainty_lower_bounds_coverage_configuration_id",
+                    "uncertainty_upper_bounds_coverage_configuration_id",
+                    "secondary_coverage_configurations_ids",
+                    "possible_values",
+                }
+            ),
+            **update_kwargs,
+            possible_values=[
+                coverages.ConfigurationParameterPossibleValueUpdate(
+                    configuration_parameter_value_id=pv.configuration_parameter_value_id
+                )
+                for pv in main_cov_conf.possible_values
+            ],
+        )
+        database.update_coverage_configuration(
+            arpav_db_session,
+            main_cov_conf,
+            cov_update,
+        )
 
 
 @pytest.fixture()
