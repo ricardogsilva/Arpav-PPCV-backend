@@ -3,7 +3,6 @@ import functools
 import io
 import logging
 import warnings
-from concurrent import futures
 from typing import Optional
 
 import anyio
@@ -603,35 +602,25 @@ def get_coverage_time_series(
         if ss != base.CoverageDataSmoothingStrategy.NO_SMOOTHING
     ]
 
-    with futures.ProcessPoolExecutor() as executor:
-        to_do_map = {}
-        for cov, data_ in raw_data.items():
-            future_result = executor.submit(
-                _parse_ncss_dataset,
-                data_,
-                cov.configuration.netcdf_main_dataset_name,
-                start,
-                end,
+    for cov, data_ in raw_data.items():
+        df = _parse_ncss_dataset(
+            data_,
+            cov.configuration.netcdf_main_dataset_name,
+            start,
+            end,
+            cov.identifier,
+        )
+        coverage_result[(cov, base.CoverageDataSmoothingStrategy.NO_SMOOTHING)] = df[
+            cov.identifier
+        ].squeeze()
+        for smoothing_strategy in additional_coverage_smoothing_strategies:
+            df, smoothed_column = process_coverage_smoothing_strategy(
+                df,
                 cov.identifier,
+                smoothing_strategy,
+                ignore_warnings=(not settings.debug),
             )
-            to_do_map[future_result] = (cov, data_)
-        done_iter = futures.as_completed(to_do_map)
-        for future_ in done_iter:
-            df = future_.result()
-            cov, data_ = to_do_map[future_]
-            coverage_result[
-                (cov, base.CoverageDataSmoothingStrategy.NO_SMOOTHING)
-            ] = df[cov.identifier].squeeze()
-            for smoothing_strategy in additional_coverage_smoothing_strategies:
-                df, smoothed_column = process_coverage_smoothing_strategy(
-                    df,
-                    cov.identifier,
-                    smoothing_strategy,
-                    ignore_warnings=(not settings.debug),
-                )
-                coverage_result[(cov, smoothing_strategy)] = df[
-                    smoothed_column
-                ].squeeze()
+            coverage_result[(cov, smoothing_strategy)] = df[smoothed_column].squeeze()
 
     if not include_coverage_data:
         del coverage_result[(coverage, base.CoverageDataSmoothingStrategy.NO_SMOOTHING)]
