@@ -524,21 +524,32 @@ def get_related_coverages(
         possible_used = [
             pv.configuration_parameter_value for pv in related_cov_conf.possible_values
         ]
+        possible_used_ids = [
+            (
+                uv.configuration_parameter.id,
+                uv.id,
+            )
+            for uv in possible_used
+        ]
         values_to_use = []
         for used_value in used_values:
-            if used_value in possible_used:
-                values_to_use.append(used_value)
+            used_value_ids = (
+                used_value.configuration_parameter_value.configuration_parameter_id,
+                used_value.configuration_parameter_value.id,
+            )
+            if used_value_ids in possible_used_ids:
+                values_to_use.append(used_value.configuration_parameter_value)
             else:
                 used_param_id = (
                     used_value.configuration_parameter_value.configuration_parameter_id
                 )
                 try:
-                    possible = [
+                    first_used_value_with_same_config_parameter = [
                         cp
                         for cp in possible_used
                         if cp.configuration_parameter_id == used_param_id
                     ][0]
-                    values_to_use.append(possible)
+                    values_to_use.append(first_used_value_with_same_config_parameter)
                 except IndexError:
                     logger.warning(f"Could not find a usable value for {used_value}")
         related_id = related_cov_conf.build_coverage_identifier(values_to_use)
