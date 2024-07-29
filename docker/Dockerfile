@@ -4,9 +4,7 @@ FROM python:3.10
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     curl \
-    gdal-bin \
     apt-utils \
-    libgdal-dev \
     tini
 
 # download poetry

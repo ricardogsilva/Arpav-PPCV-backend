@@ -7,7 +7,6 @@ import shapely.io
 import shapely.geometry
 import sqlmodel
 import typer
-from django.conf import settings as django_settings
 from fastapi import Depends
 from fastapi.testclient import TestClient
 from geoalchemy2.shape import from_shape
@@ -24,7 +23,6 @@ from arpav_ppcv.schemas import (
 )
 from arpav_ppcv.webapp import dependencies
 from arpav_ppcv.webapp.app import create_app_from_settings
-from arpav_ppcv.webapp.legacy.django_settings import get_custom_django_settings
 from arpav_ppcv.webapp.api_v2.app import create_app as create_v2_app
 from arpav_ppcv.bootstrapper.configurationparameters import (
     generate_configuration_parameters as bootstrappable_configuration_parameters,
@@ -35,18 +33,6 @@ from arpav_ppcv.bootstrapper.coverage_configurations import (
 from arpav_ppcv.bootstrapper.variables import (
     generate_variable_configurations as bootstrappable_variables,
 )
-
-
-@pytest.hookimpl
-def pytest_configure():
-    """Custom configuration of pytest.
-
-    This custom configuration is here so that we may initialize django with the custom
-    settings-retrieval mechanism that is being used in the project.
-    """
-    settings = config.ArpavPpcvSettings()
-    custom_django_settings = get_custom_django_settings(settings)
-    django_settings.configure(**custom_django_settings)
 
 
 @pytest.fixture

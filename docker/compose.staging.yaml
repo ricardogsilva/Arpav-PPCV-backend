@@ -16,7 +16,6 @@
 #   minimum, only for relevant configuration file(s) and data collections
 
 x-env-file-db: &env-file-db ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_DB_SERVICE:-/home/arpav/environment-files/db-service.env}
-x-env-file-legacy-db: &env-file-legacy-db ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_LEGACY_DB_SERVICE:-/home/arpav/environment-files/legacy-db-service.env}
 x-env-file-webapp: &env-file-webapp ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_WEBAPP_SERVICE:-/home/arpav/environment-files/webapp-service.env}
 x-env-file-martin: &env-file-martin ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_MARTIN_SERVICE:-/home/arpav/environment-files/martin-service.env}
 x-env-file-frontend: &env-file-frontend ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_FRONTEND_SERVICE:-/home/arpav/environment-files/frontend-service.env}
@@ -76,15 +75,6 @@ services:
         target: /home/appuser/data/additional
     restart: unless-stopped
 
-  legacy-db:
-    networks:
-      - back
-    env_file:
-      - *env-file-legacy-db
-    volumes:
-      - legacy-db-data:/var/lib/postgresql/data
-    restart: unless-stopped
-
   db:
     networks:
       - back
@@ -138,4 +128,3 @@ services:
 
 volumes:
   db-data:
-  legacy-db-data:

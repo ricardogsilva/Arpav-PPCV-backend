@@ -10,7 +10,6 @@ from pathlib import Path
 import alembic.command
 import alembic.config
 import anyio
-import django
 import sqlmodel
 import typer
 import yaml
@@ -21,8 +20,6 @@ from babel.messages.pofile import (
 )
 from babel.messages.mofile import write_mo
 from babel.messages.extract import extract_from_dir
-from django.conf import settings as django_settings
-from django.core import management
 from rich import print
 from rich.padding import Padding
 from rich.panel import Panel
@@ -35,7 +32,6 @@ from .cliapp.app import app as cli_app
 from .bootstrapper.cliapp import app as bootstrapper_app
 from .observations_harvester.cliapp import app as observations_harvester_app
 from .thredds import crawler
-from .webapp.legacy.django_settings import get_custom_django_settings
 
 app = typer.Typer()
 db_app = typer.Typer()
@@ -165,24 +161,6 @@ def run_server(ctx: typer.Context):
     sys.stdout.flush()
     sys.stderr.flush()
     os.execvp("uvicorn", uvicorn_args)
-
-
-@app.command(
-    context_settings={
-        "allow_extra_args": True,
-        "ignore_unknown_options": True,
-    }
-)
-def django_admin(ctx: typer.Context, command: str):
-    """Run a django command.
-
-    Run a django management command, just like if you were calling django-admin.
-    """
-    settings: config.ArpavPpcvSettings = ctx.obj["settings"]
-    custom_django_settings = get_custom_django_settings(settings)
-    django_settings.configure(**custom_django_settings)
-    django.setup()
-    management.call_command(command, *ctx.args)
 
 
 @dev_app.command()
