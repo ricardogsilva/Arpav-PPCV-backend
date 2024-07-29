@@ -3,6 +3,7 @@ import re
 
 import httpx
 import pytest_httpx
+import pytest
 
 from arpav_ppcv.schemas import coverages
 from arpav_ppcv import database
@@ -31,6 +32,45 @@ def test_coverage_identifiers_list(
         headers={"accept": "application/json"},
     )
     assert list_response.status_code == 200
+
+
+@pytest.mark.parametrize(
+    "possible_values, expected_identifiers",
+    [
+        pytest.param(
+            {
+                "aggregation_period": "annual",
+                "climatological_variable": "tas",
+                "climatological_model": "model_ensemble",
+                "measure": "absolute",
+                "scenario": "rcp26",
+                "year_period": "DJF",
+            },
+            [
+                "tas_seasonal_absolute_model_ensemble-annual-model_ensemble-tas-absolute-rcp26-DJF",
+                "tas_seasonal_absolute_model_ensemble_lower_uncertainty-annual-model_ensemble-tas-absolute-rcp26-lower_bound-DJF",
+                "tas_seasonal_absolute_model_ensemble_upper_uncertainty-annual-model_ensemble-tas-absolute-rcp26-upper_bound-DJF",
+            ],
+        )
+    ],
+)
+def test_coverage_identifiers_list_with_possible_values_filter(
+    test_client_v2_app: httpx.Client,
+    sample_real_coverage_configurations: list[coverages.CoverageConfiguration],
+    possible_values: dict[str, str],
+    expected_identifiers: list[str],
+):
+    list_response = test_client_v2_app.get(
+        test_client_v2_app.app.url_path_for("list_coverage_identifiers"),
+        params={"possible_value": [f"{k}:{v}" for k, v in possible_values.items()]},
+        headers={"accept": "application/json"},
+    )
+    items = list_response.json()["items"]
+    identifiers = [i["identifier"] for i in items]
+    for expected_id in expected_identifiers:
+        assert expected_id in identifiers
+    for found_id in identifiers:
+        assert found_id in expected_identifiers
 
 
 def test_get_time_series(
@@ -69,3 +109,143 @@ def test_get_time_series(
     )
     print(series_response.content)
     assert series_response.status_code == 200
+
+
+@pytest.mark.parametrize(
+    [
+        "coverage_identifier",
+        "include_coverage_data",
+        "coverage_data_smoothing",
+        "include_observation_data",
+        "observation_data_smoothing",
+        "include_coverage_uncertainty",
+        "include_coverage_related_data",
+        "expected_italian_parameter_values",
+    ],
+    [
+        pytest.param(
+            "tas_seasonal_anomaly_model_ensemble-annual-model_ensemble-tas-anomaly-rcp45-DJF",
+            True,
+            ["NO_SMOOTHING"],
+            False,
+            None,
+            False,
+            False,
+            [
+                {
+                    ("series_name", "Temperatura media"),
+                    ("processing_method", "nessuna elaborazione"),
+                },
+            ],
+        ),
+        pytest.param(
+            "tas_seasonal_anomaly_model_ensemble-annual-model_ensemble-tas-anomaly-rcp45-DJF",
+            True,
+            ["NO_SMOOTHING", "MOVING_AVERAGE_11_YEARS"],
+            False,
+            None,
+            False,
+            False,
+            [
+                {
+                    ("series_name", "Temperatura media"),
+                    ("processing_method", "nessuna elaborazione"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("processing_method", "media mobile centrata a 11 anni"),
+                },
+            ],
+        ),
+        pytest.param(
+            "tas_seasonal_anomaly_model_ensemble-annual-model_ensemble-tas-anomaly-rcp45-DJF",
+            True,
+            ["NO_SMOOTHING", "MOVING_AVERAGE_11_YEARS"],
+            False,
+            None,
+            True,
+            False,
+            [
+                {
+                    ("series_name", "Temperatura media"),
+                    ("processing_method", "nessuna elaborazione"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("processing_method", "media mobile centrata a 11 anni"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("processing_method", "nessuna elaborazione"),
+                    ("uncertainty_type", "Limiti inferiori dell'incertezza"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("processing_method", "media mobile centrata a 11 anni"),
+                    ("uncertainty_type", "Limiti inferiori dell'incertezza"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("processing_method", "nessuna elaborazione"),
+                    ("uncertainty_type", "Limiti superiori dell'incertezza"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("processing_method", "media mobile centrata a 11 anni"),
+                    ("uncertainty_type", "Limiti superiori dell'incertezza"),
+                },
+            ],
+        ),
+    ],
+)
+def test_real_get_time_series(
+    httpx_mock: pytest_httpx.HTTPXMock,
+    test_client_v2_app: httpx.Client,
+    arpav_db_session,
+    sample_real_coverage_configurations: list[coverages.CoverageConfiguration],
+    sample_tas_csv_data: str,
+    coverage_identifier: str,
+    include_coverage_data: bool,
+    coverage_data_smoothing: list[str],
+    include_observation_data: bool,
+    observation_data_smoothing: list[str],
+    include_coverage_uncertainty: bool,
+    include_coverage_related_data: bool,
+    expected_italian_parameter_values: list[set[tuple[str, str]]],
+):
+    httpx_mock.add_response(
+        url=re.compile(r".*ncss/grid.*"),
+        method="get",
+        text=sample_tas_csv_data,
+    )
+    request_params = {
+        "coords": "POINT(11.5469 44.9524)",
+        "include_coverage_data": include_coverage_data,
+        "include_observation_data": include_observation_data,
+        "include_coverage_uncertainty": include_coverage_uncertainty,
+        "include_coverage_related_data": include_coverage_related_data,
+    }
+    if coverage_data_smoothing is not None:
+        request_params["coverage_data_smoothing"] = coverage_data_smoothing
+    if observation_data_smoothing is not None:
+        request_params["observation_data_smoothing"] = observation_data_smoothing
+    series_response = test_client_v2_app.get(
+        test_client_v2_app.app.url_path_for(
+            "get_time_series", coverage_identifier=coverage_identifier
+        ),
+        params=request_params,
+        headers={"accept": "application/json"},
+    )
+    print(series_response.content)
+    for found_series in series_response.json()["series"]:
+        found_italian_values = {
+            (k, v["it"])
+            for k, v in found_series["translations"]["parameter_values"].items()
+        }
+        print(f"{found_italian_values=}")
+        for expected in expected_italian_parameter_values:
+            print(f"{expected=}")
+            if expected <= found_italian_values:
+                break
+        else:
+            assert False
