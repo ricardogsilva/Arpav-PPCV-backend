@@ -47,6 +47,8 @@ class CoverageConfigurationRead(sqlmodel.SQLModel):
     description_english: Optional[str]
     description_italian: Optional[str]
     netcdf_main_dataset_name: str
+    wms_main_layer_name: str
+    wms_secondary_layer_name: Optional[str]
     coverage_id_pattern: str
     thredds_url_pattern: str
     unit: str

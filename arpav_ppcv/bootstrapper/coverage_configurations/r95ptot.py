@@ -26,6 +26,7 @@ def generate_configurations(
             description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="r95ptot",
             wms_main_layer_name="r95ptot-uncertainty_group",
+            wms_secondary_layer_name="r95ptot",
             thredds_url_pattern="ensembletwbc/std/clipped/pr_change_cumulative_check_avgagree_{time_window}_{scenario}_{year_period}_VFVGTAA.nc",
             unit="%",
             palette="uncert-stippled/div-BrBG",

@@ -504,6 +504,7 @@ def generate_configurations(
             description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="fd",
             wms_main_layer_name="fd_uncertainty_group",
+            wms_secondary_layer_name="fd",
             thredds_url_pattern="ensembletwbc/std/clipped/ecafdan_0_avgagree_{time_window}_{scenario}_ls_VFVG.nc",
             unit="gg",
             palette="uncert-stippled/seq-YlOrRd-inv",

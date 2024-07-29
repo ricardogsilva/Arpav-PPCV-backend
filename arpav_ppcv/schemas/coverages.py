@@ -154,6 +154,7 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
     netcdf_main_dataset_name: str
     thredds_url_pattern: str
     wms_main_layer_name: Optional[str] = None
+    wms_secondary_layer_name: Optional[str] = None
     unit: str = ""
     palette: str
     color_scale_min: float = 0.0
@@ -366,7 +367,10 @@ class CoverageConfigurationCreate(sqlmodel.SQLModel):
     description_english: Optional[str] = None
     description_italian: Optional[str] = None
     netcdf_main_dataset_name: str
+    # the point in having a wms_main_layer_name and wms_secondary_layer_name is to let
+    # the frontend toggle between them
     wms_main_layer_name: Optional[str] = None
+    wms_secondary_layer_name: Optional[str] = None
     thredds_url_pattern: str
     unit: str
     palette: str
@@ -400,6 +404,7 @@ class CoverageConfigurationUpdate(sqlmodel.SQLModel):
     description_italian: Optional[str] = None
     netcdf_main_dataset_name: Optional[str] = None
     wms_main_layer_name: Optional[str] = None
+    wms_secondary_layer_name: Optional[str] = None
     thredds_url_pattern: Optional[str] = None
     unit: Optional[str] = None
     palette: Optional[str] = None

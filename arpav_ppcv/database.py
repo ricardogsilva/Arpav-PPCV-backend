@@ -1029,6 +1029,7 @@ def create_coverage_configuration(
         description_italian=coverage_configuration_create.description_italian,
         netcdf_main_dataset_name=coverage_configuration_create.netcdf_main_dataset_name,
         wms_main_layer_name=coverage_configuration_create.wms_main_layer_name,
+        wms_secondary_layer_name=coverage_configuration_create.wms_secondary_layer_name,
         thredds_url_pattern=coverage_configuration_create.thredds_url_pattern,
         unit=coverage_configuration_create.unit,
         palette=coverage_configuration_create.palette,
