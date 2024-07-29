@@ -146,9 +146,6 @@ async def _run_tests(
     env_variables: dict[str, str],
 ):
     arpav_db_params = _get_db_parameters(env_variables["ARPAV_PPCV__TEST_DB_DSN"])
-    legacy_db_params = _get_db_parameters(
-        env_variables["ARPAV_PPCV__DJANGO_APP__DB_DSN"]
-    )
 
     arpav_db_service = (
         client.container()
@@ -160,27 +157,15 @@ async def _run_tests(
         .with_exposed_port(int(arpav_db_params["port"]))
         .as_service()
     )
-    django_db_service = (
-        client.container()
-        .from_(POSTGIS_IMAGE_VERSION)
-        .with_env_variable("PGDATA", "/var/lib/postgresql/data/pgdata")
-        .with_env_variable("POSTGRES_DB", legacy_db_params["db"])
-        .with_env_variable("POSTGRES_PASSWORD", legacy_db_params["password"])
-        .with_env_variable("POSTGRES_USER", legacy_db_params["user"])
-        .with_exposed_port(int(legacy_db_params["port"]))
-        .as_service()
-    )
-    test_container = (
-        built_container.with_service_binding(arpav_db_params["host"], arpav_db_service)
-        .with_service_binding(legacy_db_params["host"], django_db_service)
-        .without_entrypoint()
-    )
+    test_container = built_container.with_service_binding(
+        arpav_db_params["host"], arpav_db_service
+    ).without_entrypoint()
     for var_name, var_value in env_variables.items():
         test_container = test_container.with_env_variable(var_name, var_value)
     return await (
-        test_container.with_exec(shlex.split("poetry install --with dev"))
-        .with_exec(shlex.split("poetry run arpav-ppcv django-admin migrate"))
-        .with_exec(shlex.split("poetry run pytest --reuse-db tests"))
+        test_container.with_exec(shlex.split("poetry install --with dev")).with_exec(
+            shlex.split("poetry run pytest ")
+        )
     ).stdout()
 
 
@@ -201,10 +186,6 @@ async def _run_pipeline(
         # "ARPAV_PPCV__DB_DSN": "postgresql://arpav:arpavpassword@db:5432/arpav_ppcv",
         "ARPAV_PPCV__TEST_DB_DSN": "postgresql://arpavtest:arpavtestpassword@test-db:5432/arpav_ppcv_test",
         "ARPAV_PPCV__LOG_CONFIG_FILE": "/home/appuser/app/dev-log-config.yml",
-        "ARPAV_PPCV__DJANGO_APP__DB_DSN": "postgres://postgres:postgres@legacy-db:5432/postgres",
-        "ARPAV_PPCV__DJANGO_APP__THREDDS__PORT": "8081",
-        "ARPAV_PPCV__DJANGO_APP__REDIS_DSN": "redis://redis:6379",
-        "ARPAV_PPCV__DJANGO_APP__SECRET_KEY": "some-dev-key",
     }
 
     conf = dagger.Config(
