@@ -1684,6 +1684,7 @@ def generate_configurations(
             description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="pr",
             wms_main_layer_name="pr-uncertainty_group",
+            wms_secondary_layer_name="pr",
             thredds_url_pattern="ensembletwbc/std/clipped/pr_avgagree_percentage_{time_window}_{scenario}_{year_period}_VFVGTAA.nc",
             unit="%",
             palette="uncert-stippled/div-BrBG",

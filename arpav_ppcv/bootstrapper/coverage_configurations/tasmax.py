@@ -1106,6 +1106,7 @@ def generate_configurations(
             description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="tasmax",
             wms_main_layer_name="tasmax-uncertainty_group",
+            wms_secondary_layer_name="tasmax",
             thredds_url_pattern="ensembletwbc/std/clipped/tasmax_avgagree_anom_{time_window}_{scenario}_{year_period}_VFVGTAA.nc",
             unit="ºC",
             palette="uncert-stippled/seq-YlOrRd",

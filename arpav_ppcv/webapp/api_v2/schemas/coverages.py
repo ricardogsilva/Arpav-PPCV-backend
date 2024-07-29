@@ -70,6 +70,7 @@ class CoverageConfigurationReadListItem(pydantic.BaseModel):
     display_name_english: str
     display_name_italian: str
     wms_main_layer_name: str | None
+    wms_secondary_layer_name: str | None
     coverage_id_pattern: str
     possible_values: list[ConfigurationParameterPossibleValueRead]
 
@@ -163,6 +164,7 @@ class CoverageIdentifierReadListItem(pydantic.BaseModel):
     related_coverage_configuration_url: str
     wms_base_url: str
     wms_main_layer_name: str | None = None
+    wms_secondary_layer_name: str | None = None
     possible_values: list[ConfigurationParameterPossibleValueRead]
 
     @classmethod
@@ -186,6 +188,7 @@ class CoverageIdentifierReadListItem(pydantic.BaseModel):
             identifier=instance.identifier,
             wms_base_url=wms_base_url,
             wms_main_layer_name=instance.configuration.wms_main_layer_name,
+            wms_secondary_layer_name=instance.configuration.wms_secondary_layer_name,
             related_coverage_configuration_url=str(
                 request.url_for(
                     "get_coverage_configuration",

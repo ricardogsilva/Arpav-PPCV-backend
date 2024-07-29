@@ -27,6 +27,7 @@ def generate_configurations(
             description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="cdd",
             wms_main_layer_name="consecutive_dry_days_index_per_time_period-uncertainty_group",
+            wms_secondary_layer_name="consecutive_dry_days_index_per_time_period",
             thredds_url_pattern="ensembletwbc/std/clipped/eca_cdd_an_avgagree_{time_window}_{scenario}_{year_period}_ls_VFVGTAA.nc",
             unit="gg",
             palette="uncert-stippled/div-BrBG-inv",
