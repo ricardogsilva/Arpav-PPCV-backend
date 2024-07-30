@@ -5,7 +5,10 @@ import httpx
 import pytest_httpx
 import pytest
 
-from arpav_ppcv.schemas import coverages
+from arpav_ppcv.schemas import (
+    coverages,
+    observations,
+)
 from arpav_ppcv import database
 
 random.seed(0)
@@ -77,7 +80,7 @@ def test_get_time_series(
     httpx_mock: pytest_httpx.HTTPXMock,
     test_client_v2_app: httpx.Client,
     arpav_db_session,
-    sample_tas_csv_data: str,
+    sample_tas_csv_data: dict[str, str],
 ):
     db_cov_conf = coverages.CoverageConfiguration(
         name="fake_tas",
@@ -92,7 +95,7 @@ def test_get_time_series(
     httpx_mock.add_response(
         url=re.compile(r".*ncss/grid.*"),
         method="get",
-        text=sample_tas_csv_data,
+        text=sample_tas_csv_data["tas"],
     )
     identifiers = database.generate_coverage_identifiers(db_cov_conf)
     cov_id = random.choice(identifiers)
@@ -113,7 +116,6 @@ def test_get_time_series(
 
 @pytest.mark.parametrize(
     [
-        "coverage_identifier",
         "include_coverage_data",
         "coverage_data_smoothing",
         "include_observation_data",
@@ -124,7 +126,6 @@ def test_get_time_series(
     ],
     [
         pytest.param(
-            "tas_seasonal_anomaly_model_ensemble-annual-model_ensemble-tas-anomaly-rcp45-DJF",
             True,
             ["NO_SMOOTHING"],
             False,
@@ -139,7 +140,6 @@ def test_get_time_series(
             ],
         ),
         pytest.param(
-            "tas_seasonal_anomaly_model_ensemble-annual-model_ensemble-tas-anomaly-rcp45-DJF",
             True,
             ["NO_SMOOTHING", "MOVING_AVERAGE_11_YEARS"],
             False,
@@ -158,7 +158,6 @@ def test_get_time_series(
             ],
         ),
         pytest.param(
-            "tas_seasonal_anomaly_model_ensemble-annual-model_ensemble-tas-anomaly-rcp45-DJF",
             True,
             ["NO_SMOOTHING", "MOVING_AVERAGE_11_YEARS"],
             False,
@@ -196,6 +195,116 @@ def test_get_time_series(
                 },
             ],
         ),
+        pytest.param(
+            True,
+            ["NO_SMOOTHING", "MOVING_AVERAGE_11_YEARS"],
+            False,
+            None,
+            False,
+            True,
+            [
+                {
+                    ("series_name", "Temperatura media"),
+                    ("processing_method", "nessuna elaborazione"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("processing_method", "media mobile centrata a 11 anni"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("climatological_model", "EC-EARTH RCA4"),
+                    ("processing_method", "nessuna elaborazione"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("climatological_model", "EC-EARTH RCA4"),
+                    ("processing_method", "media mobile centrata a 11 anni"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("climatological_model", "HadGEM RACMO22E"),
+                    ("processing_method", "nessuna elaborazione"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("climatological_model", "HadGEM RACMO22E"),
+                    ("processing_method", "media mobile centrata a 11 anni"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("climatological_model", "Insieme di 5 modelli"),
+                    ("processing_method", "nessuna elaborazione"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("climatological_model", "Insieme di 5 modelli"),
+                    ("processing_method", "media mobile centrata a 11 anni"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("climatological_model", "EC-EARTH RACMO22E"),
+                    ("processing_method", "nessuna elaborazione"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("climatological_model", "EC-EARTH RACMO22E"),
+                    ("processing_method", "media mobile centrata a 11 anni"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("climatological_model", "MPI-ESM-LR-REMO2009"),
+                    ("processing_method", "nessuna elaborazione"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("climatological_model", "MPI-ESM-LR-REMO2009"),
+                    ("processing_method", "media mobile centrata a 11 anni"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("climatological_model", "EC-EARTH CCLM4-8-17"),
+                    ("processing_method", "nessuna elaborazione"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("climatological_model", "EC-EARTH CCLM4-8-17"),
+                    ("processing_method", "media mobile centrata a 11 anni"),
+                },
+            ],
+        ),
+        pytest.param(
+            True,
+            ["NO_SMOOTHING", "MOVING_AVERAGE_11_YEARS"],
+            True,
+            ["NO_SMOOTHING", "MOVING_AVERAGE_5_YEARS"],
+            False,
+            False,
+            [
+                {
+                    ("series_name", "Temperatura media"),
+                    ("processing_method", "nessuna elaborazione"),
+                },
+                {
+                    ("series_name", "Temperatura media"),
+                    ("processing_method", "media mobile centrata a 11 anni"),
+                },
+                {
+                    (
+                        "series_name",
+                        "Temperatura media (dalla stazione di osservazione)",
+                    ),
+                    ("processing_method", "nessuna elaborazione"),
+                },
+                {
+                    (
+                        "series_name",
+                        "Temperatura media (dalla stazione di osservazione)",
+                    ),
+                    ("processing_method", "media mobile centrata a 11 anni"),
+                },
+            ],
+        ),
     ],
 )
 def test_real_get_time_series(
@@ -203,8 +312,8 @@ def test_real_get_time_series(
     test_client_v2_app: httpx.Client,
     arpav_db_session,
     sample_real_coverage_configurations: list[coverages.CoverageConfiguration],
-    sample_tas_csv_data: str,
-    coverage_identifier: str,
+    sample_real_monthly_measurements: list[observations.MonthlyMeasurement],
+    sample_tas_csv_data: dict[str, str],
     include_coverage_data: bool,
     coverage_data_smoothing: list[str],
     include_observation_data: bool,
@@ -213,11 +322,40 @@ def test_real_get_time_series(
     include_coverage_related_data: bool,
     expected_italian_parameter_values: list[set[tuple[str, str]]],
 ):
+    coverage_identifier = "tas_seasonal_absolute_model_ensemble-annual-model_ensemble-tas-absolute-rcp45-DJF"
+    tas_thredds_url_pattern = "tas_avg_"
+    tas_stddown_thredds_url_pattern = "tas_stddown_.*"
+    tas_stdup_thredds_url_pattern = "tas_stdup_.*"
     httpx_mock.add_response(
-        url=re.compile(r".*ncss/grid.*"),
+        url=re.compile(rf".*?ncss/grid.*?{tas_thredds_url_pattern}.*"),
         method="get",
-        text=sample_tas_csv_data,
+        text=sample_tas_csv_data["tas"],
     )
+    if include_coverage_uncertainty:
+        httpx_mock.add_response(
+            url=re.compile(rf".*?ncss/grid.*?{tas_stddown_thredds_url_pattern}"),
+            method="get",
+            text=sample_tas_csv_data["tas_stddown"],
+        )
+        httpx_mock.add_response(
+            url=re.compile(rf".*?ncss/grid.*?{tas_stdup_thredds_url_pattern}"),
+            method="get",
+            text=sample_tas_csv_data["tas_stdup"],
+        )
+    if include_coverage_related_data:
+        patterns = (
+            "tas_EC-EARTH_CCLM4-8-17_",
+            "tas_EC-EARTH_RACMO22E_",
+            "tas_EC-EARTH_RCA4_",
+            "tas_MPI-ESM-LR_REMO2009_",
+            "tas_HadGEM2-ES_RACMO22E_",
+        )
+        for patt in patterns:
+            httpx_mock.add_response(
+                url=re.compile(rf".*?ncss/grid.*?{patt}.*"),
+                method="get",
+                text=sample_tas_csv_data["tas"],
+            )
     request_params = {
         "coords": "POINT(11.5469 44.9524)",
         "include_coverage_data": include_coverage_data,

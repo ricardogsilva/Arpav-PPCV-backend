@@ -5,8 +5,8 @@ def generate_variable_configurations() -> list[VariableCreate]:
     return [
         VariableCreate(
             name="TDd",
-            display_name_english="Mean temperature",
-            display_name_italian="Temperatura media",
+            display_name_english="Mean temperature (from observation station)",
+            display_name_italian="Temperatura media (dalla stazione di osservazione)",
             description_english="Average daily air temperature near the ground",
             description_italian=(
                 "Temperatura media giornaliera dell'aria vicino al suolo"
@@ -15,8 +15,8 @@ def generate_variable_configurations() -> list[VariableCreate]:
         ),
         VariableCreate(
             name="TXd",
-            display_name_english="Max temperature",
-            display_name_italian="Temperatura massima",
+            display_name_english="Max temperature (from observation station)",
+            display_name_italian="Temperatura massima (dalla stazione di osservazione)",
             description_english="Maximum daily air temperature near the ground",
             description_italian=(
                 "Temperatura massima giornaliera dell'aria vicino al suolo"
@@ -25,8 +25,8 @@ def generate_variable_configurations() -> list[VariableCreate]:
         ),
         VariableCreate(
             name="TNd",
-            display_name_english="Minimum temperature",
-            display_name_italian="Temperatura minima",
+            display_name_english="Minimum temperature (from observation station)",
+            display_name_italian="Temperatura minima (dalla stazione di osservazione)",
             description_english="Minimum daily air temperature near the ground",
             description_italian=(
                 "Temperatura minima giornaliera dell'aria vicino al suolo"
@@ -35,16 +35,16 @@ def generate_variable_configurations() -> list[VariableCreate]:
         ),
         VariableCreate(
             name="PRCPTOT",
-            display_name_english="Rainfall",
-            display_name_italian="Precipitazione",
+            display_name_english="Rainfall (from observation station)",
+            display_name_italian="Precipitazione (dalla stazione di osservazione)",
             description_english="Daily precipitation near the ground",
             description_italian="Precipitazioni giornaliere in prossimità del suolo",
             unit_english="mm",
         ),
         VariableCreate(
             name="TR",
-            display_name_english="Tropical nights",
-            display_name_italian="Notti tropicali",
+            display_name_english="Tropical nights (from observation station)",
+            display_name_italian="Notti tropicali (dalla stazione di osservazione)",
             description_english=(
                 "Number of days with minimum temperature greater than 20 °C"
             ),
@@ -56,8 +56,8 @@ def generate_variable_configurations() -> list[VariableCreate]:
         ),
         VariableCreate(
             name="SU30",
-            display_name_english="Hot days",
-            display_name_italian="Giorni caldi",
+            display_name_english="Hot days (from observation station)",
+            display_name_italian="Giorni caldi (dalla stazione di osservazione)",
             description_english=(
                 "Number of days with maximum temperature greater than 30 °C"
             ),
@@ -69,8 +69,8 @@ def generate_variable_configurations() -> list[VariableCreate]:
         ),
         VariableCreate(
             name="FD",
-            display_name_english="Cold days",
-            display_name_italian="Giorni di gelo",
+            display_name_english="Cold days (from observation station)",
+            display_name_italian="Giorni di gelo (dalla stazione di osservazione)",
             description_english=(
                 "Number of days with minimum temperature less than 0 °C"
             ),
