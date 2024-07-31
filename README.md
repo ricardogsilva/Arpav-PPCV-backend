@@ -96,8 +96,6 @@ this can also be modified if needed. The system recognizes the following environ
   know what you are doing, as other parts of the system rely on it.
 - `ARPAV_PPCV__V2_API_MOUNT_PREFIX` - (str - "/api/v2") URL prefix of the web application API. Do not modify this unless
   you know what you are doing, as other parts of the system rely on it.
-- `ARPAV_PPCV__DJANGO_APP` - (`DjangoAppSettings`) - Django-related settings - THESE ARE NOT DOCUMENTED, AS THE LEGACY
-  DJANGO APP IS DEPRECATED AND SHALL BE REMOVED SOON.
 - `ARPAV_PPCV__LOG_CONFIG_FILE` - (Path - `None`) - Path to the config file for the logging of the application.
 - `ARPAV_PPCV__SESSION_SECRET_KEY` - (str - `"changeme"`) - Secret key used by starlette sessions. Set this to a big
   random string.

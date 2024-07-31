@@ -62,26 +62,14 @@ services:
       - "traefik.http.routers.arpav-backend-router.rule=PathRegexp(`^/(api|admin)`)"
       - "traefik.http.services.arpav-backend-service.loadbalancer.server.port=5001"
     depends_on:
-      legacy-db:
-        condition: service_healthy
       db:
         condition: service_healthy
-
-  legacy-db:
-    image: "postgis/postgis:16-3.4"
-    environment:
-      PG_DATA: /var/lib/postgresql/data/pgdata
-    healthcheck: *postgres-db-healthcheck
 
   db:
     image: "postgis/postgis:16-3.4"
     environment:
       PG_DATA: /var/lib/postgresql/data/pgdata
     healthcheck: *postgres-db-healthcheck
-
-  redis:
-    image: redis:4
-    restart: unless-stopped
 
   martin:
     image: 'ghcr.io/maplibre/martin:v0.13.0'
