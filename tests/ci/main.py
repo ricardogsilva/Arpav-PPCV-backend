@@ -163,9 +163,9 @@ async def _run_tests(
     for var_name, var_value in env_variables.items():
         test_container = test_container.with_env_variable(var_name, var_value)
     return await (
-        test_container.with_exec(shlex.split("poetry install --with dev")).with_exec(
-            shlex.split("poetry run pytest ")
-        )
+        test_container.with_exec(shlex.split("poetry install --with dev"))
+        .with_exec(shlex.split("poetry run arpav-ppcv translations compile"))
+        .with_exec(shlex.split("poetry run pytest "))
     ).stdout()
 
 
