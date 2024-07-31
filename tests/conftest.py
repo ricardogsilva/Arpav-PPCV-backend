@@ -121,6 +121,13 @@ def sample_real_station(arpav_db_session) -> observations.Station:
         type_="meteo",
         active_since=dt.date(1986, 10, 30),
         active_until=None,
+        geom=from_shape(
+            shapely.io.from_geojson(
+                geojson_pydantic.Point(
+                    type="Point", coordinates=(12.42397152, 46.65215334)
+                ).model_dump_json()
+            )
+        ),
     )
     arpav_db_session.add(db_station)
     arpav_db_session.commit()
