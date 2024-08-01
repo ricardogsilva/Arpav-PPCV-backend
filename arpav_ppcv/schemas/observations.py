@@ -131,6 +131,25 @@ class StationCreate(sqlmodel.SQLModel):
     active_since: Optional[dt.date] = None
     active_until: Optional[dt.date] = None
 
+    def __hash__(self):
+        return hash(
+            "".join(
+                (
+                    self.code,
+                    self.geom.model_dump_json(),
+                    str(self.altitude_m) or "",
+                    self.name,
+                    self.type_,
+                    self.active_since.isoformat()
+                    if self.active_since is not None
+                    else "",
+                    self.active_until.isoformat()
+                    if self.active_until is not None
+                    else "",
+                )
+            )
+        )
+
 
 class StationUpdate(sqlmodel.SQLModel):
     code: Optional[str] = None

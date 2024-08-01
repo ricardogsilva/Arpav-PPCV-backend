@@ -14,10 +14,57 @@ app = typer.Typer()
 
 
 @app.command()
-def refresh_stations(ctx: typer.Context) -> None:
-    client = httpx.Client()
+def refresh_stations(
+    ctx: typer.Context,
+    variable: Annotated[
+        str,
+        typer.Option(
+            help=(
+                "Name of the variable to process. If not provided, all "
+                "variables are processed."
+            )
+        ),
+    ] = None,
+    month: Annotated[
+        int,
+        typer.Option(
+            help=(
+                "Only refresh stations that have monthly measurements for "
+                "the input month."
+            )
+        ),
+    ] = None,
+    season: Annotated[
+        int,
+        typer.Option(
+            help=(
+                "Only refresh stations that have seasonal measurements for "
+                "the input season."
+            )
+        ),
+    ] = None,
+    year: Annotated[
+        bool, typer.Option(help=("Only refresh stations that have yearly measurements"))
+    ] = False,
+) -> None:
+    client = httpx.AsyncClient(timeout=30)
     with sqlmodel.Session(ctx.obj["engine"]) as session:
-        created = operations.refresh_stations(client, session)
+        if variable is not None:
+            db_variable = database.get_variable_by_name(session, variable)
+            if db_variable is not None:
+                variable_filter = [db_variable]
+            else:
+                raise SystemExit("Invalid variable name")
+        else:
+            variable_filter = database.collect_all_variables(session)
+        created = operations.refresh_stations(
+            client,
+            session,
+            variable_filter,
+            fetch_stations_with_months=[month] if month is not None else None,
+            fetch_stations_with_seasons=[season] if season is not None else None,
+            fetch_stations_with_yearly_measurements=year,
+        )
         print(f"Created {len(created)} stations:")
         print("\n".join(s.code for s in created))
 
