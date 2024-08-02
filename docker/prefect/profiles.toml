@@ -1,0 +1,22 @@
+[profiles]
+
+
+[profiles.arpav-ppcv-server-dev]
+PREFECT_API_URL = "http://0.0.0.0:4200/api"
+PREFECT_CLI_PROMPT = false
+PREFECT_DEBUG_MODE = true
+PREFECT_HOME = "/prefect_home"
+PREFECT_SERVER_ALLOW_EPHEMERAL_MODE = false
+PREFECT_SERVER_API_HOST = "0.0.0.0"
+PREFECT_SERVER_API_PORT = "4200"
+PREFECT_SERVER_CSRF_PROTECTION_ENABLED = true
+PREFECT_UI_API_URL = "http://localhost:8877/prefect/api"
+PREFECT_UI_URL = "http://localhost:8877/prefect"
+PREFECT_UI_SERVE_BASE = "/prefect"
+
+
+[profiles.arpav-ppcv-worker]
+PREFECT_API_URL = "http://prefect-server:4200/api"
+PREFECT_DEBUG_MODE = true
+PREFECT_HOME = "/prefect_home"
+PREFECT_SERVER_ALLOW_EPHEMERAL_MODE = false

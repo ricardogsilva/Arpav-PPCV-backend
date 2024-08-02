@@ -23,6 +23,8 @@
 # blocks with a name like `x-something`. Then we mark these as being YAML
 # anchors. Later in the file we refer to them using YAML aliases.
 
+x-prefect-image: &prefect-image prefecthq/prefect:3.0.0rc14-python3.10
+
 x-postgres-db-healthcheck: &postgres-db-healthcheck
   interval: 10s
   timeout: 3s
@@ -52,7 +54,7 @@ services:
     image: "ghcr.io/geobeyond/arpav-ppcv/arpav-ppcv:latest"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.arpav-frontend-router.rule=!PathRegexp(`^/(api|admin|vector-tiles)`)"
+      - "traefik.http.routers.arpav-frontend-router.rule=!PathRegexp(`^/(api|admin|prefect|vector-tiles)`)"
       - "traefik.http.services.arpav-frontend-service.loadbalancer.server.port=80"
 
   webapp:
@@ -82,3 +84,24 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  prefect-server:
+    image: *prefect-image
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prefect-router.rule=PathPrefix(`/prefect`)"
+      - "traefik.http.services.prefect-service.loadbalancer.server.port=4200"
+#      - "traefik.http.middlewares.strip-prefect-prefix-middleware.stripprefix.prefixes=/prefect"
+#      - "traefik.http.routers.prefect-router.middlewares=strip-prefect-prefix-middleware@docker"
+    environment:
+      PREFECT_PROFILES_PATH: "/prefect_profiles.toml"
+#    healthcheck:
+#      test:
+
+  prefect-worker:
+    image: *prefect-image
+#    depends_on:
+#      prefect-server:
+#        condition: service_healthy
+    environment:
+      PREFECT_PROFILES_PATH: "/prefect_profiles.toml"

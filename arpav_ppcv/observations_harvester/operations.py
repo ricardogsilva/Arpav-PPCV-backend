@@ -30,8 +30,8 @@ logger = logging.getLogger(__name__)
 async def fetch_remote_stations(
     client: httpx.AsyncClient,
     variables: Sequence[observations.Variable],
-    fetch_stations_with_months: Sequence[int],
-    fetch_stations_with_seasons: Sequence[int],
+    fetch_stations_with_months: bool,
+    fetch_stations_with_seasons: bool,
     fetch_stations_with_yearly_measurements: bool,
 ) -> AsyncGenerator[dict, None]:
     station_url = (
@@ -42,32 +42,34 @@ async def fetch_remote_stations(
             f"Retrieving stations with monthly measurements for variable "
             f"{variable.name!r}..."
         )
-        for month in fetch_stations_with_months:
-            logger.info(f"Processing month {month}...")
-            month_response = await client.get(
-                station_url,
-                params={
-                    "indicatore": variable.name,
-                    "tabella": "M",
-                    "periodo": str(month),
-                },
-            )
-            month_response.raise_for_status()
-            for raw_station in month_response.json().get("data", []):
-                yield raw_station
-        for season in fetch_stations_with_seasons:
-            logger.info(f"Processing season {season}...")
-            season_response = await client.get(
-                station_url,
-                params={
-                    "indicatore": variable.name,
-                    "tabella": "S",
-                    "periodo": str(season),
-                },
-            )
-            season_response.raise_for_status()
-            for raw_station in season_response.json().get("data", []):
-                yield raw_station
+        if fetch_stations_with_months:
+            for month in range(1, 13):
+                logger.info(f"Processing month {month}...")
+                month_response = await client.get(
+                    station_url,
+                    params={
+                        "indicatore": variable.name,
+                        "tabella": "M",
+                        "periodo": str(month),
+                    },
+                )
+                month_response.raise_for_status()
+                for raw_station in month_response.json().get("data", []):
+                    yield raw_station
+        if fetch_stations_with_seasons:
+            for season in range(1, 5):
+                logger.info(f"Processing season {season}...")
+                season_response = await client.get(
+                    station_url,
+                    params={
+                        "indicatore": variable.name,
+                        "tabella": "S",
+                        "periodo": str(season),
+                    },
+                )
+                season_response.raise_for_status()
+                for raw_station in season_response.json().get("data", []):
+                    yield raw_station
         if fetch_stations_with_yearly_measurements:
             logger.info("Processing year...")
             year_response = await client.get(
@@ -121,8 +123,8 @@ def parse_station(
 async def harvest_stations(
     client: httpx.AsyncClient,
     variables_to_refresh: Sequence[observations.Variable],
-    fetch_stations_with_months: Sequence[int],
-    fetch_stations_with_seasons: Sequence[int],
+    fetch_stations_with_months: bool,
+    fetch_stations_with_seasons: bool,
     fetch_stations_with_yearly_measurements: bool,
 ) -> set[observations.StationCreate]:
     coord_converter = pyproj.Transformer.from_crs(

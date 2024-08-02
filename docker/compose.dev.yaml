@@ -157,6 +157,24 @@ services:
         source: /$PWD/docker/martin/config.yaml
         target: /martin-config.yaml
 
+  prefect-server:
+    command: ["prefect", "--profile", "arpav-ppcv-server-dev", "server", "start"]
+    volumes:
+#      - prefect-server-home:/prefect_home
+      - type: bind
+        source: $PWD/docker/prefect/profiles.toml
+        target: /prefect_profiles.toml
+
+  prefect-worker:
+    command: ["prefect", "--profile", "arpav-ppcv-worker", "worker", "start", "--type", "process", "--pool", "arpav-ppcv-pool"]
+    volumes:
+#      - prefect-worker-home:/prefect_home
+      - type: bind
+        source: $PWD/docker/prefect/profiles.toml
+        target: /prefect_profiles.toml
+
 volumes:
   db-data:
   test-db-data:
+  prefect-server-home:
+  prefect-worker-home:
