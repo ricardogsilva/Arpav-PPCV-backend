@@ -23,7 +23,8 @@
 # blocks with a name like `x-something`. Then we mark these as being YAML
 # anchors. Later in the file we refer to them using YAML aliases.
 
-x-prefect-image: &prefect-image prefecthq/prefect:3.0.0rc14-python3.10
+x-prefect-image: &prefect-image "prefecthq/prefect:3.0.0rc16-python3.10"
+x-backend-image: &backend-image "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend:latest"
 
 x-postgres-db-healthcheck: &postgres-db-healthcheck
   interval: 10s
@@ -36,7 +37,20 @@ x-postgres-db-healthcheck: &postgres-db-healthcheck
     response=$$(echo 'SELECT 1' | psql $${args})
     if [ $${response} = '1' ];
     then exit 0;
-    else echo "+++++++++++++DB $${POSTGRES_DB} is not up+++++++++++++"; exit 1;
+    else echo "+++++++++++++ DB $${POSTGRES_DB} is not up+++++++++++++"; exit 1;
+    fi
+
+
+x-prefect-server-healthcheck: &prefect-server-healthcheck
+  interval: 10s
+  timeout: 3s
+  start_period: 1m
+  retries: 10
+  test: |
+    status=$$(python -c 'import httpx; print(httpx.get("http://127.0.0.1:4200/api/health").status_code)')
+    if [ $${status} = '200' ];
+    then exit 0;
+    else echo "+++++++++++++ Prefect server is not up+++++++++++++"; exit 1;
     fi
 
 name: arpav-ppcv
@@ -58,7 +72,7 @@ services:
       - "traefik.http.services.arpav-frontend-service.loadbalancer.server.port=80"
 
   webapp:
-    image: "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend:latest"
+    image: *backend-image
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.arpav-backend-router.rule=PathRegexp(`^/(api|admin)`)"
@@ -93,15 +107,27 @@ services:
       - "traefik.http.services.prefect-service.loadbalancer.server.port=4200"
 #      - "traefik.http.middlewares.strip-prefect-prefix-middleware.stripprefix.prefixes=/prefect"
 #      - "traefik.http.routers.prefect-router.middlewares=strip-prefect-prefix-middleware@docker"
+      - "traefik.http.middlewares.replace-prefect-path-middleware.replacepathregex.regex=/prefect/api"
+      - "traefik.http.middlewares.replace-prefect-path-middleware.replacepathregex.replacement=/api"
+      - "traefik.http.routers.prefect-router.middlewares=replace-prefect-path-middleware@docker"
     environment:
       PREFECT_PROFILES_PATH: "/prefect_profiles.toml"
-#    healthcheck:
-#      test:
+    depends_on:
+      prefect-db:
+        condition: service_healthy
+    healthcheck: *prefect-server-healthcheck
 
   prefect-worker:
-    image: *prefect-image
-#    depends_on:
-#      prefect-server:
-#        condition: service_healthy
+    image: *backend-image
+    entrypoint: ["tini", "-g", "--", "poetry", "run", "prefect"]
+    depends_on:
+      prefect-server:
+        condition: service_healthy
     environment:
       PREFECT_PROFILES_PATH: "/prefect_profiles.toml"
+
+  prefect-db:
+    image: "postgis/postgis:16-3.4"
+    environment:
+      PG_DATA: /var/lib/postgresql/data/pgdata
+    healthcheck: *postgres-db-healthcheck

@@ -158,23 +158,58 @@ services:
         target: /martin-config.yaml
 
   prefect-server:
-    command: ["prefect", "--profile", "arpav-ppcv-server-dev", "server", "start"]
+    command: ["prefect", "server", "start"]
+    environment:
+      PREFECT_PROFILE: "arpav-ppcv-server-dev"
+      PREFECT_API_DATABASE_CONNECTION_URL: "postgresql+asyncpg://prefect:prefectpassword@prefect-db/prefect"
+      PREFECT_API_URL: "http://0.0.0.0:4200/api"
+      PREFECT_CLI_PROMPT: false
+      PREFECT_DEBUG_MODE: true
+      PREFECT_HOME: "/prefect_home"
+      PREFECT_SERVER_ALLOW_EPHEMERAL_MODE: false
+      PREFECT_SERVER_API_HOST: "0.0.0.0"
+      PREFECT_SERVER_API_PORT: "4200"
+      PREFECT_SERVER_CSRF_PROTECTION_ENABLED: true
+      PREFECT_UI_API_URL: "http://localhost:8877/prefect/api"
+      PREFECT_UI_URL: "http://localhost:8877/prefect/ui"
+      PREFECT_UI_SERVE_BASE: "/prefect/ui"
+
     volumes:
-#      - prefect-server-home:/prefect_home
+      - prefect-server-home:/prefect_home
       - type: bind
         source: $PWD/docker/prefect/profiles.toml
         target: /prefect_profiles.toml
 
   prefect-worker:
-    command: ["prefect", "--profile", "arpav-ppcv-worker", "worker", "start", "--type", "process", "--pool", "arpav-ppcv-pool"]
+    image: *webapp-image
+    command: ["worker", "start", "--type", "process", "--pool", "arpav-ppcv-pool"]
+    environment:
+      PREFECT_PROFILE: "arpav-ppcv-worker"
+      PREFECT_API_URL: "http://prefect-server:4200/api"
+      PREFECT_DEBUG_MODE: true
+      PREFECT_HOME: "/prefect_home"
+      <<: *common-env
     volumes:
-#      - prefect-worker-home:/prefect_home
+      - prefect-worker-home:/prefect_home
       - type: bind
         source: $PWD/docker/prefect/profiles.toml
         target: /prefect_profiles.toml
+
+  prefect-db:
+    environment:
+      POSTGRES_USER: prefect
+      POSTGRES_PASSWORD: prefectpassword
+      POSTGRES_DB: prefect
+    volumes:
+      - prefect-db-data:/var/lib/postgresql/data
+    # The below command adds a more verbose logging of operations - DON'T USE THIS IN PRODUCTION!
+    # The server's performance is impacted by this command. Moreover, logged statements may contain
+    # sensitive information
+    command: "-clog_statement=all"
 
 volumes:
   db-data:
   test-db-data:
   prefect-server-home:
   prefect-worker-home:
+  prefect-db-data:
