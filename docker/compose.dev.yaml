@@ -189,7 +189,6 @@ services:
     ]
     environment:
       PREFECT_API_URL: "http://prefect-server:4200/api"
-      ARPAV_PPCV__PREFECT__OBSERVATION_STATIONS_REFRESHER_FLOW_CRON_SCHEDULE: "*/5 * * * *"
       PREFECT_DEBUG_MODE: true
       <<: *common-env
     volumes:
