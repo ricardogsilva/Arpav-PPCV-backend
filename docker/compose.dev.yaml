@@ -62,6 +62,9 @@ services:
       ARPAV_PPCV__CORS_ORIGINS: '["*"]'
       ARPAV_PPCV__CORS_METHODS: '["*"]'
       ARPAV_PPCV__ALLOW_CORS_CREDENTIALS: true
+      PREFECT_PROFILE: "arpav-ppcv-worker"
+      PREFECT_API_URL: "http://prefect-server:4200/api"
+      PREFECT_DEBUG_MODE: true
     ports:
       - target: 5001
         published: 5001
@@ -180,20 +183,21 @@ services:
         source: $PWD/docker/prefect/profiles.toml
         target: /prefect_profiles.toml
 
-  prefect-worker:
+  prefect-static-worker:
     image: *webapp-image
-    command: ["worker", "start", "--type", "process", "--pool", "arpav-ppcv-pool"]
+    command: [
+      "start-periodic-tasks",
+      "--refresh-stations",
+      "--refresh-monthly-measurements",
+      "--refresh-seasonal-measurements",
+      "--refresh-yearly-measurements",
+    ]
     environment:
-      PREFECT_PROFILE: "arpav-ppcv-worker"
       PREFECT_API_URL: "http://prefect-server:4200/api"
       PREFECT_DEBUG_MODE: true
-      PREFECT_HOME: "/prefect_home"
       <<: *common-env
     volumes:
-      - prefect-worker-home:/prefect_home
-      - type: bind
-        source: $PWD/docker/prefect/profiles.toml
-        target: /prefect_profiles.toml
+      *common-volumes
 
   prefect-db:
     environment:

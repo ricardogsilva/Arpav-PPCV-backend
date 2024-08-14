@@ -2,6 +2,7 @@ import datetime as dt
 import logging
 import uuid
 from collections.abc import (
+    Generator,
     AsyncGenerator,
     Sequence,
 )
@@ -25,6 +26,64 @@ from ..schemas.base import Season
 from ..schemas import observations
 
 logger = logging.getLogger(__name__)
+
+
+def sync_fetch_remote_stations(
+    client: httpx.Client,
+    variables: Sequence[observations.Variable],
+    fetch_stations_with_months: bool,
+    fetch_stations_with_seasons: bool,
+    fetch_stations_with_yearly_measurements: bool,
+) -> Generator[dict, None, None]:
+    station_url = (
+        "https://api.arpa.veneto.it/REST/v1/clima_indicatori/staz_attive_lunghe"
+    )
+    for variable in variables:
+        logger.info(
+            f"Retrieving stations with monthly measurements for variable "
+            f"{variable.name!r}..."
+        )
+        if fetch_stations_with_months:
+            for month in range(1, 13):
+                logger.info(f"Processing month {month}...")
+                month_response = client.get(
+                    station_url,
+                    params={
+                        "indicatore": variable.name,
+                        "tabella": "M",
+                        "periodo": str(month),
+                    },
+                )
+                month_response.raise_for_status()
+                for raw_station in month_response.json().get("data", []):
+                    yield raw_station
+        if fetch_stations_with_seasons:
+            for season in range(1, 5):
+                logger.info(f"Processing season {season}...")
+                season_response = client.get(
+                    station_url,
+                    params={
+                        "indicatore": variable.name,
+                        "tabella": "S",
+                        "periodo": str(season),
+                    },
+                )
+                season_response.raise_for_status()
+                for raw_station in season_response.json().get("data", []):
+                    yield raw_station
+        if fetch_stations_with_yearly_measurements:
+            logger.info("Processing year...")
+            year_response = client.get(
+                station_url,
+                params={
+                    "indicatore": variable.name,
+                    "tabella": "A",
+                    "periodo": "0",
+                },
+            )
+            year_response.raise_for_status()
+            for raw_station in year_response.json().get("data", []):
+                yield raw_station
 
 
 async def fetch_remote_stations(
@@ -118,6 +177,28 @@ def parse_station(
         active_since=active_since,
         active_until=active_until,
     )
+
+
+def sync_harvest_stations(
+    client: httpx.Client,
+    variables_to_refresh: Sequence[observations.Variable],
+    fetch_stations_with_months: bool,
+    fetch_stations_with_seasons: bool,
+    fetch_stations_with_yearly_measurements: bool,
+) -> set[observations.StationCreate]:
+    coord_converter = pyproj.Transformer.from_crs(
+        pyproj.CRS("epsg:4258"), pyproj.CRS("epsg:4326"), always_xy=True
+    ).transform
+    stations = set()
+    for raw_station in sync_fetch_remote_stations(
+        client,
+        variables_to_refresh,
+        fetch_stations_with_months,
+        fetch_stations_with_seasons,
+        fetch_stations_with_yearly_measurements,
+    ):
+        stations.add(parse_station(raw_station, coord_converter))
+    return stations
 
 
 async def harvest_stations(
@@ -215,7 +296,7 @@ def harvest_monthly_measurements(
                 )
                 existing = {}
                 for db_measurement in existing_measurements:
-                    measurement_id = _build_monthly_measurement_id(db_measurement)
+                    measurement_id = build_monthly_measurement_id(db_measurement)
                     existing[measurement_id] = db_measurement
                 response = client.get(
                     "https://api.arpa.veneto.it/REST/v1/clima_indicatori",
@@ -234,7 +315,7 @@ def harvest_monthly_measurements(
                         value=raw_measurement["valore"],
                         date=dt.date(raw_measurement["anno"], month, 1),
                     )
-                    measurement_id = _build_monthly_measurement_id(
+                    measurement_id = build_monthly_measurement_id(
                         monthly_measurement_create
                     )
                     if measurement_id not in existing:
@@ -287,7 +368,7 @@ def harvest_seasonal_measurements(
                 )
                 existing = {}
                 for db_measurement in existing_measurements:
-                    measurement_id = _build_seasonal_measurement_id(db_measurement)
+                    measurement_id = build_seasonal_measurement_id(db_measurement)
                     existing[measurement_id] = db_measurement
 
                 season_query_param = {
@@ -314,7 +395,7 @@ def harvest_seasonal_measurements(
                         year=int(raw_measurement["anno"]),
                         season=current_season,
                     )
-                    measurement_id = _build_seasonal_measurement_id(measurement_create)
+                    measurement_id = build_seasonal_measurement_id(measurement_create)
                     if measurement_id not in existing:
                         measurements_create.append(measurement_create)
     return measurements_create
@@ -336,7 +417,7 @@ def refresh_seasonal_measurements(
     return created_measurements
 
 
-def _build_monthly_measurement_id(
+def build_monthly_measurement_id(
     measurement: observations.MonthlyMeasurement
     | observations.MonthlyMeasurementCreate,
 ) -> str:
@@ -346,7 +427,7 @@ def _build_monthly_measurement_id(
     )
 
 
-def _build_seasonal_measurement_id(
+def build_seasonal_measurement_id(
     measurement: observations.SeasonalMeasurement
     | observations.SeasonalMeasurementCreate,
 ) -> str:
@@ -356,7 +437,7 @@ def _build_seasonal_measurement_id(
     )
 
 
-def _build_yearly_measurement_id(
+def build_yearly_measurement_id(
     measurement: observations.YearlyMeasurement | observations.YearlyMeasurementCreate,
 ) -> str:
     return f"{measurement.station_id}-{measurement.variable_id}-{measurement.year}"
@@ -408,7 +489,7 @@ def harvest_yearly_measurements(
             )
             existing = {}
             for db_measurement in existing_measurements:
-                measurement_id = _build_yearly_measurement_id(db_measurement)
+                measurement_id = build_yearly_measurement_id(db_measurement)
                 existing[measurement_id] = db_measurement
             response = client.get(
                 "https://api.arpa.veneto.it/REST/v1/clima_indicatori",
@@ -427,7 +508,7 @@ def harvest_yearly_measurements(
                     value=raw_measurement["valore"],
                     year=int(raw_measurement["anno"]),
                 )
-                measurement_id = _build_yearly_measurement_id(yearly_measurement_create)
+                measurement_id = build_yearly_measurement_id(yearly_measurement_create)
                 if measurement_id not in existing:
                     yearly_measurements_create.append(yearly_measurement_create)
     return yearly_measurements_create

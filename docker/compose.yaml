@@ -23,7 +23,7 @@
 # blocks with a name like `x-something`. Then we mark these as being YAML
 # anchors. Later in the file we refer to them using YAML aliases.
 
-x-prefect-image: &prefect-image "prefecthq/prefect:3.0.0rc16-python3.10"
+x-prefect-image: &prefect-image "prefecthq/prefect:3.0.0rc17-python3.10"
 x-backend-image: &backend-image "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend:latest"
 
 x-postgres-db-healthcheck: &postgres-db-healthcheck
@@ -117,14 +117,12 @@ services:
         condition: service_healthy
     healthcheck: *prefect-server-healthcheck
 
-  prefect-worker:
+  prefect-static-worker:
     image: *backend-image
-    entrypoint: ["tini", "-g", "--", "poetry", "run", "prefect"]
+    entrypoint: ["tini", "-g", "--", "poetry", "run", "arpav-ppcv", "prefect"]
     depends_on:
       prefect-server:
         condition: service_healthy
-    environment:
-      PREFECT_PROFILES_PATH: "/prefect_profiles.toml"
 
   prefect-db:
     image: "postgis/postgis:16-3.4"
