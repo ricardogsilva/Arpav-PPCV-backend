@@ -63,6 +63,9 @@ services:
       - type: bind
         source: /var/run/docker.sock
         target: /var/run/docker.sock
+      - type: bind
+        source: ${TRAEFIK_BASIC_AUTH_USERS_FILE:-/$PWD/docker/traefik/basicauth-users.txt}
+        target: /traefikauth/usersfile
 
   frontend:
     image: "ghcr.io/geobeyond/arpav-ppcv/arpav-ppcv:latest"
@@ -105,9 +108,11 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.prefect-router.rule=PathPrefix(`/prefect`)"
       - "traefik.http.services.prefect-service.loadbalancer.server.port=4200"
+      - "traefik.http.middlewares.middleware-chain.chain.middlewares=prefect-auth,replace-prefect-path-middleware"
       - "traefik.http.middlewares.replace-prefect-path-middleware.replacepathregex.regex=/prefect/api"
       - "traefik.http.middlewares.replace-prefect-path-middleware.replacepathregex.replacement=/api"
-      - "traefik.http.routers.prefect-router.middlewares=replace-prefect-path-middleware@docker"
+      - "traefik.http.middlewares.prefect-auth.basicauth.usersfile=/traefikauth/usersfile"
+      - "traefik.http.routers.prefect-router.middlewares=middleware-chain"
     depends_on:
       prefect-db:
         condition: service_healthy
