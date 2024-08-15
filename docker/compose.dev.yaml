@@ -163,7 +163,6 @@ services:
   prefect-server:
     command: ["prefect", "server", "start"]
     environment:
-      PREFECT_PROFILE: "arpav-ppcv-server-dev"
       PREFECT_API_DATABASE_CONNECTION_URL: "postgresql+asyncpg://prefect:prefectpassword@prefect-db/prefect"
       PREFECT_API_URL: "http://0.0.0.0:4200/api"
       PREFECT_CLI_PROMPT: false
@@ -179,9 +178,6 @@ services:
 
     volumes:
       - prefect-server-home:/prefect_home
-      - type: bind
-        source: $PWD/docker/prefect/profiles.toml
-        target: /prefect_profiles.toml
 
   prefect-static-worker:
     image: *webapp-image
@@ -194,6 +190,7 @@ services:
     ]
     environment:
       PREFECT_API_URL: "http://prefect-server:4200/api"
+      ARPAV_PPCV__PREFECT__OBSERVATION_STATIONS_REFRESHER_FLOW_CRON_SCHEDULE: "*/5 * * * *"
       PREFECT_DEBUG_MODE: true
       <<: *common-env
     volumes:

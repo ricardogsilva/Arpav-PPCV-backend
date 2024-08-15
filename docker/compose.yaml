@@ -105,13 +105,9 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.prefect-router.rule=PathPrefix(`/prefect`)"
       - "traefik.http.services.prefect-service.loadbalancer.server.port=4200"
-#      - "traefik.http.middlewares.strip-prefect-prefix-middleware.stripprefix.prefixes=/prefect"
-#      - "traefik.http.routers.prefect-router.middlewares=strip-prefect-prefix-middleware@docker"
       - "traefik.http.middlewares.replace-prefect-path-middleware.replacepathregex.regex=/prefect/api"
       - "traefik.http.middlewares.replace-prefect-path-middleware.replacepathregex.replacement=/api"
       - "traefik.http.routers.prefect-router.middlewares=replace-prefect-path-middleware@docker"
-    environment:
-      PREFECT_PROFILES_PATH: "/prefect_profiles.toml"
     depends_on:
       prefect-db:
         condition: service_healthy

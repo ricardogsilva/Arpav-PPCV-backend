@@ -1,7 +1,0 @@
-active = "ephemeral"
-
-[profiles.arpav-ppcv-server-dev]
-PREFECT_API_URL = "http://0.0.0.0:4200/api"
-
-[profiles.arpav-ppcv-worker]
-PREFECT_API_URL = "http://prefect-server:4200/api"
