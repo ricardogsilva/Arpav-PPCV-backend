@@ -4,6 +4,7 @@ from typing import Sequence
 import httpx
 import sqlmodel
 import prefect
+import prefect.artifacts
 import pyproj
 
 from arpav_ppcv import database
@@ -140,9 +141,15 @@ def refresh_stations(
                 print(f"Found {len(to_create)} new stations. Creating them now...")
                 for s in to_create:
                     print(f"- ({s.code}) {s.name}")
-                database.create_many_stations(db_session, to_create)
+                created = database.create_many_stations(db_session, to_create)
             else:
+                created = []
                 print("No new stations found.")
+            prefect.artifacts.create_table_artifact(
+                key="stations-created",
+                table=[{"id": s.id, "code": s.code, "name": s.name} for s in created],
+                description=f"# Created {len(created)} stations",
+            )
         else:
             print("There are no variables to process, skipping...")
 
@@ -204,19 +211,17 @@ def refresh_monthly_measurements(
 ):
     settings = get_settings()
     client = httpx.Client()
+    all_created = []
     with sqlmodel.Session(database.get_engine(settings)) as db_session:
-        db_variables = _get_variables(db_session, variable_name)
-        if len(db_variables) > 0:
-            db_stations = _get_stations(db_session, station_code)
-            if len(db_stations) > 0:
+        if len(db_variables := _get_variables(db_session, variable_name)) > 0:
+            if len(db_stations := _get_stations(db_session, station_code)) > 0:
                 for db_station in db_stations:
                     to_create = []
                     to_wait_for = []
                     print(f"Processing station: {db_station.name!r}...")
                     for db_variable in db_variables:
                         print(f"Processing variable: {db_variable.name!r}...")
-                        months = _get_months(month)
-                        if len(months) > 0:
+                        if len(months := _get_months(month)) > 0:
                             for current_month in months:
                                 print(f"Processing month: {current_month!r}...")
                                 fut = harvest_monthly_measurements.submit(
@@ -232,11 +237,19 @@ def refresh_monthly_measurements(
                     for future in to_wait_for:
                         to_create.extend(future.result())
                     print(f"creating {len(to_create)} new monthly measurements...")
-                    database.create_many_monthly_measurements(db_session, to_create)
+                    created = database.create_many_monthly_measurements(
+                        db_session, to_create
+                    )
+                    all_created.extend(created)
             else:
                 print("There are no stations to process, skipping...")
         else:
             print("There are no variables to process, skipping...")
+        prefect.artifacts.create_table_artifact(
+            key="monthly-measurements-created",
+            table=_build_created_measurements_table(all_created),
+            description=f"# Created {len(all_created)} monthly measurements",
+        )
 
 
 @prefect.task(
@@ -304,20 +317,18 @@ def refresh_seasonal_measurements(
 ):
     settings = get_settings()
     client = httpx.Client()
+    all_created = []
     with sqlmodel.Session(database.get_engine(settings)) as db_session:
-        db_variables = _get_variables(db_session, variable_name)
-        if len(db_variables) > 0:
-            db_stations = _get_stations(db_session, station_code)
-            if len(db_stations) > 0:
+        if len(db_variables := _get_variables(db_session, variable_name)) > 0:
+            if len(db_stations := _get_stations(db_session, station_code)) > 0:
                 for db_station in db_stations:
                     to_create = []
                     to_wait_for = []
                     print(f"Processing station: {db_station.name!r}...")
                     for db_variable in db_variables:
                         print(f"Processing variable: {db_variable.name!r}...")
-                        seasons = _get_seasons(season_name)
-                        if len(seasons) > 0:
-                            for season in _get_seasons(season_name):
+                        if len(seasons := _get_seasons(season_name)) > 0:
+                            for season in seasons:
                                 print(f"Processing season: {season!r}...")
                                 fut = harvest_seasonal_measurements.submit(
                                     client, db_session, db_station, db_variable, season
@@ -328,11 +339,19 @@ def refresh_seasonal_measurements(
                     for future in to_wait_for:
                         to_create.extend(future.result())
                     print(f"creating {len(to_create)} new seasonal measurements...")
-                    database.create_many_seasonal_measurements(db_session, to_create)
+                    created = database.create_many_seasonal_measurements(
+                        db_session, to_create
+                    )
+                    all_created.extend(created)
             else:
                 print("There are no stations to process, skipping...")
         else:
             print("There are no variables to process, skipping...")
+        prefect.artifacts.create_table_artifact(
+            key="seasonal-measurements-created",
+            table=_build_created_measurements_table(all_created),
+            description=f"# Created {len(all_created)} seasonal measurements",
+        )
 
 
 @prefect.task(
@@ -391,11 +410,10 @@ def refresh_yearly_measurements(
 ):
     settings = get_settings()
     client = httpx.Client()
+    all_created = []
     with sqlmodel.Session(database.get_engine(settings)) as db_session:
-        db_variables = _get_variables(db_session, variable_name)
-        if len(db_variables) > 0:
-            db_stations = _get_stations(db_session, station_code)
-            if len(db_stations) > 0:
+        if len(db_variables := _get_variables(db_session, variable_name)) > 0:
+            if len(db_stations := _get_stations(db_session, station_code)) > 0:
                 for db_station in db_stations:
                     to_create = []
                     to_wait_for = []
@@ -409,11 +427,19 @@ def refresh_yearly_measurements(
                     for future in to_wait_for:
                         to_create.extend(future.result())
                     print(f"creating {len(to_create)} new yearly measurements...")
-                    database.create_many_yearly_measurements(db_session, to_create)
+                    created = database.create_many_yearly_measurements(
+                        db_session, to_create
+                    )
+                    all_created.extend(created)
             else:
                 print("There are no stations to process, skipping...")
         else:
             print("There are no variables to process, skipping...")
+        prefect.artifacts.create_table_artifact(
+            key="yearly-measurements-created",
+            table=_build_created_measurements_table(all_created),
+            description=f"# Created {len(all_created)} yearly measurements",
+        )
 
 
 def _get_stations(
@@ -460,3 +486,27 @@ def _get_months(month_index: int | None = None) -> list[int]:
     else:
         result = list(range(1, 13))
     return result
+
+
+def _build_created_measurements_table(
+    measurements: Sequence[observations.MonthlyMeasurement]
+    | Sequence[observations.SeasonalMeasurement]
+    | Sequence[observations.YearlyMeasurement],
+) -> list[dict]:
+    aggregated_items = {}
+    for measurement in measurements:
+        station_identifier = f"{measurement.station.name} ({measurement.station.code})"
+        station_items = aggregated_items.setdefault(station_identifier, {})
+        variable_items = station_items.setdefault(measurement.variable.name, [])
+        variable_items.append(measurement)
+    table_contents = []
+    for station_identifier, station_items in aggregated_items.items():
+        for variable_name, measurement_items in station_items.items():
+            table_contents.append(
+                {
+                    "station": station_identifier,
+                    "variable": variable_name,
+                    "number of new measurements": len(measurement_items),
+                }
+            )
+    return table_contents

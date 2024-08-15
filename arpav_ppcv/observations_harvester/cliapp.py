@@ -8,7 +8,6 @@ app = typer.Typer()
 
 @app.command()
 def refresh_stations(
-    ctx: typer.Context,
     variable: Annotated[
         str,
         typer.Option(
@@ -50,7 +49,6 @@ def refresh_stations(
 
 @app.command()
 def refresh_monthly_measurements(
-    ctx: typer.Context,
     station: Annotated[
         str,
         typer.Option(
@@ -77,7 +75,6 @@ def refresh_monthly_measurements(
 
 @app.command()
 def refresh_seasonal_measurements(
-    ctx: typer.Context,
     station: Annotated[
         str,
         typer.Option(
@@ -105,7 +102,6 @@ def refresh_seasonal_measurements(
 
 @app.command()
 def refresh_yearly_measurements(
-    ctx: typer.Context,
     station: Annotated[
         str,
         typer.Option(
