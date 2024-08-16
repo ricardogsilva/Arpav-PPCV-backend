@@ -90,7 +90,7 @@ def test_parse_ncss_dataset(
     expected_last_dt_value,
 ):
     result = operations._parse_ncss_dataset(
-        raw_data=sample_tas_csv_data,
+        raw_data=sample_tas_csv_data["tas"],
         source_main_ds_name="tas",
         time_start=time_start,
         time_end=time_end,
