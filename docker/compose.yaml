@@ -64,7 +64,7 @@ services:
         source: /var/run/docker.sock
         target: /var/run/docker.sock
       - type: bind
-        source: ${TRAEFIK_BASIC_AUTH_USERS_FILE:-/$PWD/docker/traefik/basicauth-users.txt}
+        source: ${ARPAV_PPCV_TRAEFIK_BASIC_AUTH_USERS_FILE:-/$PWD/docker/traefik/basicauth-users.txt}
         target: /traefikauth/usersfile
 
   frontend:
