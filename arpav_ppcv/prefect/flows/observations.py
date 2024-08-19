@@ -35,7 +35,7 @@ def harvest_stations(
         pyproj.CRS("epsg:4258"), pyproj.CRS("epsg:4326"), always_xy=True
     ).transform
     stations = set()
-    retriever = operations.sync_fetch_remote_stations(
+    retriever = operations.fetch_remote_stations(
         client=client,
         variables=[variable],
         fetch_stations_with_months=fetch_stations_with_months,

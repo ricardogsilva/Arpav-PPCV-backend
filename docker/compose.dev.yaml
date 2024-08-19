@@ -62,7 +62,6 @@ services:
       ARPAV_PPCV__CORS_ORIGINS: '["*"]'
       ARPAV_PPCV__CORS_METHODS: '["*"]'
       ARPAV_PPCV__ALLOW_CORS_CREDENTIALS: true
-      PREFECT_PROFILE: "arpav-ppcv-worker"
       PREFECT_API_URL: "http://prefect-server:4200/api"
       PREFECT_DEBUG_MODE: true
     ports:
