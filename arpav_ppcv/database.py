@@ -1207,7 +1207,7 @@ def list_municipalities(
     name_filter: Optional[str] = None,
     province_name_filter: Optional[str] = None,
     region_name_filter: Optional[str] = None,
-) -> Optional[municipalities.Municipality]:
+) -> tuple[Sequence[municipalities.Municipality], Optional[int]]:
     """List existing municipalities.
 
     Both ``polygon_intersection_filter`` and ``point_filter`` parameters are expected
@@ -1249,6 +1249,14 @@ def list_municipalities(
     return items, num_items
 
 
+def collect_all_municipalities(
+    session: sqlmodel.Session,
+) -> Sequence[municipalities.Municipality]:
+    _, num_total = list_municipalities(session, limit=1, include_total=True)
+    result, _ = list_municipalities(session, limit=num_total, include_total=False)
+    return result
+
+
 def create_many_municipalities(
     session: sqlmodel.Session,
     municipalities_to_create: Sequence[municipalities.MunicipalityCreate],
@@ -1272,6 +1280,13 @@ def create_many_municipalities(
         for db_record in db_records:
             session.refresh(db_record)
         return db_records
+
+
+def delete_all_municipalities(session: sqlmodel.Session) -> None:
+    """Delete all municipalities."""
+    for db_municipality in collect_all_municipalities(session):
+        session.delete(db_municipality)
+    session.commit()
 
 
 def list_coverage_identifiers(

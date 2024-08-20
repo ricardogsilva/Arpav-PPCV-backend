@@ -55,7 +55,7 @@ def list_municipalities(
         region_name_filter=region,
         **geom_filter_kwarg,
     )
-    _, unfiltered_total = db.list_stations(
+    _, unfiltered_total = db.list_municipalities(
         db_session, limit=1, offset=0, include_total=True
     )
     return municipalities_geojson.MunicipalityFeatureCollection.from_items(
