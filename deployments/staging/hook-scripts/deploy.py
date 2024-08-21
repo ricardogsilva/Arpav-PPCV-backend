@@ -8,6 +8,7 @@
 
 import argparse
 import dataclasses
+import httpx
 import json
 import logging
 import os
@@ -15,6 +16,7 @@ import shlex
 import shutil
 from pathlib import Path
 from typing import (
+    Optional,
     Protocol,
     Sequence,
 )
@@ -236,8 +238,29 @@ class _CollectLegacyStaticFiles:
         )
 
 
+@dataclasses.dataclass
+class _SendDiscordChannelNotification:
+    webhook_url: str
+    content: str
+    name: str = "send a notification to a discord channel"
+
+    def handle(self) -> None:
+        print("Sending discord channel notification...")
+        response = httpx.post(self.webhook_url, params={"content": self.content})
+        try:
+            response.raise_for_status()
+        except httpx.HTTPStatusError:
+            print("sending notification failed")
+        else:
+            print("notification sent")
+
+
 def perform_deployment(
-    *, raw_request_payload: str, deployment_root: Path, confirmed: bool = False
+    *,
+    raw_request_payload: str,
+    deployment_root: Path,
+    webhook_url: Optional[str] = None,
+    confirmed: bool = False,
 ):
     if not confirmed:
         print("Performing a dry-run")
@@ -283,6 +306,15 @@ def perform_deployment(
         _RunLegacyMigrations(webapp_service_name=webapp_service_name),
         _CollectLegacyStaticFiles(webapp_service_name=webapp_service_name),
     ]
+    if webhook_url is not None:
+        deployment_steps.append(
+            _SendDiscordChannelNotification(
+                webhook_url=webhook_url,
+                content=(
+                    "A new deployment of ARPAV-PPCV to staging environment has finished"
+                ),
+            )
+        )
     for step in deployment_steps:
         print(f"Running step: {step.name!r}...")
         if confirmed:
@@ -290,6 +322,9 @@ def perform_deployment(
 
 
 if __name__ == "__main__":
+    discord_notification_env_var_name = (
+        "ARPAV_PPCV_DEPLOYMENT_STATUS_DISCORD_WEBHOOK_URL"
+    )
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "deployment_root", help="Root directory of the deployment", type=Path
@@ -304,16 +339,30 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument(
+        "--send-discord-notification",
+        action="store_true",
+        help=(
+            f"Send a notification to the discord channel. This only works if "
+            f"the {discord_notification_env_var_name} environment variable is set"
+        ),
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         help="Turn on debug logging level",
     )
     args = parser.parse_args()
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARNING)
+    notification_url = os.getenv(discord_notification_env_var_name)
     try:
         perform_deployment(
             raw_request_payload=args.payload,
             deployment_root=args.deployment_root,
+            webhook_url=(
+                notification_url
+                if (notification_url is not None and args.send_discord_notification)
+                else None
+            ),
             confirmed=args.confirm,
         )
     except RuntimeError as err:
