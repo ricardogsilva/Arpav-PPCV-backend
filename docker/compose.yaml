@@ -104,6 +104,7 @@ services:
 
   prefect-server:
     image: *prefect-image
+    command: ["prefect", "server", "start"]
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.prefect-router.rule=PathPrefix(`/prefect`)"

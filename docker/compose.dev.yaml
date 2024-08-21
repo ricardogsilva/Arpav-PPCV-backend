@@ -160,7 +160,6 @@ services:
         target: /martin-config.yaml
 
   prefect-server:
-    command: ["prefect", "server", "start"]
     environment:
       PREFECT_API_DATABASE_CONNECTION_URL: "postgresql+asyncpg://prefect:prefectpassword@prefect-db/prefect"
       PREFECT_API_URL: "http://0.0.0.0:4200/api"
