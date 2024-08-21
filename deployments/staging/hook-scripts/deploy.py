@@ -259,7 +259,7 @@ def perform_deployment(
     *,
     raw_request_payload: str,
     deployment_root: Path,
-    webhook_url: Optional[str] = None,
+    discord_webhook_url: Optional[str] = None,
     confirmed: bool = False,
 ):
     if not confirmed:
@@ -306,10 +306,10 @@ def perform_deployment(
         _RunLegacyMigrations(webapp_service_name=webapp_service_name),
         _CollectLegacyStaticFiles(webapp_service_name=webapp_service_name),
     ]
-    if webhook_url is not None:
+    if discord_webhook_url is not None:
         deployment_steps.append(
             _SendDiscordChannelNotification(
-                webhook_url=webhook_url,
+                webhook_url=discord_webhook_url,
                 content=(
                     "A new deployment of ARPAV-PPCV to staging environment has finished"
                 ),
@@ -353,16 +353,21 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARNING)
-    notification_url = os.getenv(discord_notification_env_var_name)
+    webhook_url = None
+    if notification_url := os.getenv(discord_notification_env_var_name) is not None:
+        if args.send_discord_notification:
+            webhook_url = notification_url
+    else:
+        if args.send_discord_notification:
+            logger.warning(
+                f"Not sending discord notification because "
+                f"{discord_notification_env_var_name} is not set"
+            )
     try:
         perform_deployment(
             raw_request_payload=args.payload,
             deployment_root=args.deployment_root,
-            webhook_url=(
-                notification_url
-                if (notification_url is not None and args.send_discord_notification)
-                else None
-            ),
+            discord_webhook_url=webhook_url,
             confirmed=args.confirm,
         )
     except RuntimeError as err:
