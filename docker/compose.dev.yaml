@@ -180,16 +180,8 @@ services:
 
   prefect-static-worker:
     image: *webapp-image
-    command: [
-      "start-periodic-tasks",
-      "--refresh-stations",
-      "--refresh-monthly-measurements",
-      "--refresh-seasonal-measurements",
-      "--refresh-yearly-measurements",
-    ]
     environment:
       PREFECT_API_URL: "http://prefect-server:4200/api"
-      ARPAV_PPCV__PREFECT__OBSERVATION_STATIONS_REFRESHER_FLOW_CRON_SCHEDULE: "*/5 * * * *"
       PREFECT_DEBUG_MODE: true
       <<: *common-env
     volumes:

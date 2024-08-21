@@ -64,7 +64,7 @@ services:
         source: /var/run/docker.sock
         target: /var/run/docker.sock
       - type: bind
-        source: ${ARPAV_PPCV_TRAEFIK_BASIC_AUTH_USERS_FILE:-/$PWD/docker/traefik/basicauth-users.txt}
+        source: ${ARPAV_PPCV_TRAEFIK_BASIC_AUTH_USERS_FILE:-$PWD/docker/traefik/basicauth-users.txt}
         target: /traefikauth/usersfile
 
   frontend:
@@ -121,6 +121,13 @@ services:
   prefect-static-worker:
     image: *backend-image
     entrypoint: ["tini", "-g", "--", "poetry", "run", "arpav-ppcv", "prefect"]
+    command: [
+      "start-periodic-tasks",
+      "--refresh-stations",
+      "--refresh-monthly-measurements",
+      "--refresh-seasonal-measurements",
+      "--refresh-yearly-measurements",
+    ]
     depends_on:
       prefect-server:
         condition: service_healthy
