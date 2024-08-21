@@ -58,7 +58,7 @@ services:
     networks:
       - back
     labels:
-      - "traefik.http.routers.arpav-backend.entrypoints=web"
+      - "traefik.http.routers.arpav-frontend.entrypoints=web"
       - "exposed.inside=true"
 
   webapp:
