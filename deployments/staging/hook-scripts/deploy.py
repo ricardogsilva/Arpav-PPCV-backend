@@ -3,24 +3,25 @@
 # This script is to be run by the `webhook` server whenever there
 # is a push to the arpav-ppcv-backend repository.
 #
-# In order to simplify deployment, this script only uses stuff from the Python
-# standard library.
+# NOTE: IN ORDER TO SIMPLIFY DEPLOYMENT, THIS SCRIPT SHALL ONLY USE STUFF FROM THE
+# PYTHON STANDARD LIBRARY
 
 import argparse
 import dataclasses
-import httpx
 import json
 import logging
 import os
 import shlex
 import shutil
+import urllib.request
 from pathlib import Path
+from subprocess import run
 from typing import (
     Optional,
     Protocol,
     Sequence,
 )
-from subprocess import run
+from urllib.error import HTTPError
 
 logger = logging.getLogger(__name__)
 
@@ -246,13 +247,24 @@ class _SendDiscordChannelNotification:
 
     def handle(self) -> None:
         print("Sending discord channel notification...")
-        response = httpx.post(self.webhook_url, params={"content": self.content})
+        request = urllib.request.Request(self.webhook_url, method="POST")
+        request.add_header("Content-Type", "application/json")
+
+        # the discord server blocks the default user-agent sent by urllib, the
+        # one sent by httpx works, so we just use that
+        request.add_header("User-Agent", "python-httpx/0.27.0")
         try:
-            response.raise_for_status()
-        except httpx.HTTPStatusError:
+            with urllib.request.urlopen(
+                request, data=json.dumps({"content": self.content}).encode("utf-8")
+            ) as response:
+                if 299 <= response.status <= 200:
+                    print("notification sent")
+                else:
+                    print(
+                        f"notification response was not successful: {response.status}"
+                    )
+        except HTTPError:
             print("sending notification failed")
-        else:
-            print("notification sent")
 
 
 def perform_deployment(
