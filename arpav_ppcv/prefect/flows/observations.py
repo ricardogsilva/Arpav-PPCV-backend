@@ -147,7 +147,9 @@ def refresh_stations(
                 print("No new stations found.")
             prefect.artifacts.create_table_artifact(
                 key="stations-created",
-                table=[{"id": s.id, "code": s.code, "name": s.name} for s in created],
+                table=[
+                    {"id": str(s.id), "code": s.code, "name": s.name} for s in created
+                ],
                 description=f"# Created {len(created)} stations",
             )
         else:
