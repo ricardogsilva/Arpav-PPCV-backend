@@ -120,22 +120,10 @@ celerybeat-schedule
 ## Plugin-specific files:
 
 # IntelliJ
-/out/
 .idea/
 # mpeltonen/sbt-idea plugin
 .idea_modules/
 
-
-# Django
-backend/storage
-backend/static
-backend/.env
-#backend/djcore
-
-/docker/basemap/data/
-/docker/basemap/gebco/
-/proxy/node_modules/
-
-/Arpav-PPCV
-
 .venv
+
+docker/traefik/basicauth-users.txt

@@ -19,6 +19,25 @@ class ContactSettings(pydantic.BaseModel):
     email: str = "info@geobeyond.it"
 
 
+class PrefectSettings(pydantic.BaseModel):
+    num_flow_retries: int = 5
+    flow_retry_delay_seconds: int = 5
+    num_task_retries: int = 5
+    task_retry_delay_seconds: int = 5
+    observation_stations_refresher_flow_cron_schedule: str = (
+        "0 1 * * 1"  # run once every week, at 01:00 on monday
+    )
+    observation_monthly_measurements_refresher_flow_cron_schedule: str = (
+        "0 2 * * 1"  # run once every week, at 02:00 on monday
+    )
+    observation_seasonal_measurements_refresher_flow_cron_schedule: str = (
+        "0 3 * * 1"  # run once every week, at 03:00 on monday
+    )
+    observation_yearly_measurements_refresher_flow_cron_schedule: str = (
+        "0 4 * * 1"  # run once every week, at 04:00 on monday
+    )
+
+
 class ThreddsServerSettings(pydantic.BaseModel):
     base_url: str = "http://localhost:8080/thredds"
     wms_service_url_fragment: str = "wms"
@@ -74,8 +93,9 @@ class ArpavPpcvSettings(BaseSettings):  # noqa
     templates_dir: Optional[Path] = Path(__file__).parent / "webapp/templates"
     static_dir: Optional[Path] = Path(__file__).parent / "webapp/static"
     thredds_server: ThreddsServerSettings = ThreddsServerSettings()
+    prefect: PrefectSettings = PrefectSettings()
     martin_tile_server_base_url: str = "http://localhost:3000"
-    nearest_station_radius_meters: int = 10_000
+    nearest_station_radius_meters: int = 200
     v2_api_mount_prefix: str = "/api/v2"
     log_config_file: Path | None = None
     session_secret_key: str = "changeme"

@@ -23,6 +23,9 @@
 # blocks with a name like `x-something`. Then we mark these as being YAML
 # anchors. Later in the file we refer to them using YAML aliases.
 
+x-prefect-image: &prefect-image "prefecthq/prefect:3.0.0rc17-python3.10"
+x-backend-image: &backend-image "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend:latest"
+
 x-postgres-db-healthcheck: &postgres-db-healthcheck
   interval: 10s
   timeout: 3s
@@ -34,7 +37,20 @@ x-postgres-db-healthcheck: &postgres-db-healthcheck
     response=$$(echo 'SELECT 1' | psql $${args})
     if [ $${response} = '1' ];
     then exit 0;
-    else echo "+++++++++++++DB $${POSTGRES_DB} is not up+++++++++++++"; exit 1;
+    else echo "+++++++++++++ DB $${POSTGRES_DB} is not up+++++++++++++"; exit 1;
+    fi
+
+
+x-prefect-server-healthcheck: &prefect-server-healthcheck
+  interval: 10s
+  timeout: 3s
+  start_period: 1m
+  retries: 10
+  test: |
+    status=$$(python -c 'import httpx; print(httpx.get("http://127.0.0.1:4200/api/health").status_code)')
+    if [ $${status} = '200' ];
+    then exit 0;
+    else echo "+++++++++++++ Prefect server is not up+++++++++++++"; exit 1;
     fi
 
 name: arpav-ppcv
@@ -47,16 +63,19 @@ services:
       - type: bind
         source: /var/run/docker.sock
         target: /var/run/docker.sock
+      - type: bind
+        source: ${ARPAV_PPCV_TRAEFIK_BASIC_AUTH_USERS_FILE:-/$PWD/docker/traefik/basicauth-users.txt}
+        target: /traefikauth/usersfile
 
   frontend:
     image: "ghcr.io/geobeyond/arpav-ppcv/arpav-ppcv:latest"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.arpav-frontend-router.rule=!PathRegexp(`^/(api|admin|vector-tiles)`)"
+      - "traefik.http.routers.arpav-frontend-router.rule=!PathRegexp(`^/(api|admin|prefect|vector-tiles)`)"
       - "traefik.http.services.arpav-frontend-service.loadbalancer.server.port=80"
 
   webapp:
-    image: "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend:latest"
+    image: *backend-image
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.arpav-backend-router.rule=PathRegexp(`^/(api|admin)`)"
@@ -82,3 +101,32 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  prefect-server:
+    image: *prefect-image
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prefect-router.rule=PathPrefix(`/prefect`)"
+      - "traefik.http.services.prefect-service.loadbalancer.server.port=4200"
+      - "traefik.http.middlewares.middleware-chain.chain.middlewares=prefect-auth,replace-prefect-path-middleware"
+      - "traefik.http.middlewares.replace-prefect-path-middleware.replacepathregex.regex=/prefect/api"
+      - "traefik.http.middlewares.replace-prefect-path-middleware.replacepathregex.replacement=/api"
+      - "traefik.http.middlewares.prefect-auth.basicauth.usersfile=/traefikauth/usersfile"
+      - "traefik.http.routers.prefect-router.middlewares=middleware-chain"
+    depends_on:
+      prefect-db:
+        condition: service_healthy
+    healthcheck: *prefect-server-healthcheck
+
+  prefect-static-worker:
+    image: *backend-image
+    entrypoint: ["tini", "-g", "--", "poetry", "run", "arpav-ppcv", "prefect"]
+    depends_on:
+      prefect-server:
+        condition: service_healthy
+
+  prefect-db:
+    image: "postgis/postgis:16-3.4"
+    environment:
+      PG_DATA: /var/lib/postgresql/data/pgdata
+    healthcheck: *postgres-db-healthcheck

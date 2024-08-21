@@ -209,6 +209,13 @@ project's container registry. This is governed by a two-stage workflow, orchestr
 The strategy described above employs an installation of the [webhook](https://github.com/adnanh/webhook) server,
 together with some custom deployment scripts.
 
+Relevant places to look for configuration in the staging environment, in addition to the `${HOME}` directory:
+
+- `/opt/traefik`
+- `/etc/system/system/docker.service.d`
+- `/etc/system/system/traefik.service`
+- `/etc/system/system/webhook.service`
+
 
 ##### Production environment
 

@@ -31,6 +31,7 @@ from . import (
 from .cliapp.app import app as cli_app
 from .bootstrapper.cliapp import app as bootstrapper_app
 from .observations_harvester.cliapp import app as observations_harvester_app
+from .prefect.cliapp import app as prefect_app
 from .thredds import crawler
 
 app = typer.Typer()
@@ -43,6 +44,7 @@ app.add_typer(dev_app, name="dev")
 app.add_typer(observations_harvester_app, name="observations-harvester")
 app.add_typer(bootstrapper_app, name="bootstrap")
 app.add_typer(translations_app, name="translations")
+app.add_typer(prefect_app, name="prefect")
 
 
 @app.callback()

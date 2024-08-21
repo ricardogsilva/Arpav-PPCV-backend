@@ -1,7 +1,14 @@
 import datetime as dt
 import logging
 import uuid
-from typing import Optional
+from collections.abc import (
+    Generator,
+    Sequence,
+)
+from typing import (
+    Callable,
+    Optional,
+)
 
 import geojson_pydantic
 import httpx
@@ -19,77 +26,119 @@ from ..schemas import observations
 logger = logging.getLogger(__name__)
 
 
+def fetch_remote_stations(
+    client: httpx.Client,
+    variables: Sequence[observations.Variable],
+    fetch_stations_with_months: bool,
+    fetch_stations_with_seasons: bool,
+    fetch_stations_with_yearly_measurements: bool,
+) -> Generator[dict, None, None]:
+    station_url = (
+        "https://api.arpa.veneto.it/REST/v1/clima_indicatori/staz_attive_lunghe"
+    )
+    for variable in variables:
+        logger.info(
+            f"Retrieving stations with monthly measurements for variable "
+            f"{variable.name!r}..."
+        )
+        if fetch_stations_with_months:
+            for month in range(1, 13):
+                logger.info(f"Processing month {month}...")
+                month_response = client.get(
+                    station_url,
+                    params={
+                        "indicatore": variable.name,
+                        "tabella": "M",
+                        "periodo": str(month),
+                    },
+                )
+                month_response.raise_for_status()
+                for raw_station in month_response.json().get("data", []):
+                    yield raw_station
+        if fetch_stations_with_seasons:
+            for season in range(1, 5):
+                logger.info(f"Processing season {season}...")
+                season_response = client.get(
+                    station_url,
+                    params={
+                        "indicatore": variable.name,
+                        "tabella": "S",
+                        "periodo": str(season),
+                    },
+                )
+                season_response.raise_for_status()
+                for raw_station in season_response.json().get("data", []):
+                    yield raw_station
+        if fetch_stations_with_yearly_measurements:
+            logger.info("Processing year...")
+            year_response = client.get(
+                station_url,
+                params={
+                    "indicatore": variable.name,
+                    "tabella": "A",
+                    "periodo": "0",
+                },
+            )
+            year_response.raise_for_status()
+            for raw_station in year_response.json().get("data", []):
+                yield raw_station
+
+
+def parse_station(
+    raw_station: dict, coord_converter: Callable
+) -> observations.StationCreate:
+    station_code = str(raw_station["statcd"])
+    if raw_start := raw_station.get("iniziovalidita"):
+        try:
+            active_since = dt.date(*(int(i) for i in raw_start.split("-")))
+        except TypeError:
+            logger.warning(
+                f"Could not extract a valid date from the input {raw_start!r}"
+            )
+            active_since = None
+    else:
+        active_since = None
+    if raw_end := raw_station.get("finevalidita"):
+        try:
+            active_until = dt.date(*raw_end.split("-"))
+        except TypeError:
+            logger.warning(f"Could not extract a valid date from the input {raw_end!r}")
+            active_until = None
+    else:
+        active_until = None
+    pt_4258 = shapely.Point(raw_station["EPSG4258_LON"], raw_station["EPSG4258_LAT"])
+    pt_4326 = shapely.ops.transform(coord_converter, pt_4258)
+    return observations.StationCreate(
+        code=station_code,
+        geom=geojson_pydantic.Point(type="Point", coordinates=(pt_4326.x, pt_4326.y)),
+        altitude_m=raw_station["altitude"],
+        name=raw_station["statnm"],
+        type_=raw_station.get("stattype", "").lower().replace(" ", "_"),
+        active_since=active_since,
+        active_until=active_until,
+    )
+
+
 def harvest_stations(
-    client: httpx.Client, db_session: sqlmodel.Session
-) -> list[observations.StationCreate]:
-    existing_stations = {s.code: s for s in database.collect_all_stations(db_session)}
-    stations_create = {}
+    client: httpx.Client,
+    variables_to_refresh: Sequence[observations.Variable],
+    fetch_stations_with_months: bool,
+    fetch_stations_with_seasons: bool,
+    fetch_stations_with_yearly_measurements: bool,
+) -> set[observations.StationCreate]:
     coord_converter = pyproj.Transformer.from_crs(
         pyproj.CRS("epsg:4258"), pyproj.CRS("epsg:4326"), always_xy=True
     ).transform
-    existing_variables = database.collect_all_variables(db_session)
-    for idx, variable in enumerate(existing_variables):
-        logger.info(
-            f"({idx+1}/{len(existing_variables)}) Processing stations for "
-            f"variable {variable.name!r}..."
-        )
-        response = client.get(
-            "https://api.arpa.veneto.it/REST/v1/clima_indicatori/staz_attive",
-            params={"indicatore": variable.name},
-        )
-        response.raise_for_status()
-        for raw_station in response.json().get("data", []):
-            station_code = str(raw_station["statcd"])
-            if raw_start := raw_station.get("iniziovalidita"):
-                try:
-                    active_since = dt.date(*(int(i) for i in raw_start.split("-")))
-                except TypeError:
-                    logger.warning(
-                        f"Could not extract a valid date from the input {raw_start!r}"
-                    )
-                    active_since = None
-            else:
-                active_since = None
-            if raw_end := raw_station.get("finevalidita"):
-                try:
-                    active_until = dt.date(*raw_end.split("-"))
-                except TypeError:
-                    logger.warning(
-                        f"Could not extract a valid date from the input {raw_end!r}"
-                    )
-                    active_until = None
-            else:
-                active_until = None
-            if (
-                station_code not in existing_stations
-                and station_code not in stations_create
-            ):
-                pt_4258 = shapely.Point(
-                    raw_station["EPSG4258_LON"], raw_station["EPSG4258_LAT"]
-                )
-                pt_4326 = shapely.ops.transform(coord_converter, pt_4258)
-                station_create = observations.StationCreate(
-                    code=station_code,
-                    geom=geojson_pydantic.Point(
-                        type="Point", coordinates=(pt_4326.x, pt_4326.y)
-                    ),
-                    altitude_m=raw_station["altitude"],
-                    name=raw_station["statnm"],
-                    type_=raw_station["stattype"].lower().replace(" ", "_"),
-                    active_since=active_since,
-                    active_until=active_until,
-                )
-                stations_create[station_create.code] = station_create
-    return list(stations_create.values())
-
-
-def refresh_stations(
-    client: httpx.Client, db_session: sqlmodel.Session
-) -> list[observations.Station]:
-    to_create = harvest_stations(client, db_session)
-    logger.info(f"About to create {len(to_create)} stations...")
-    created_variables = database.create_many_stations(db_session, to_create)
-    return created_variables
+    stations = set()
+    for raw_station in fetch_remote_stations(
+        client,
+        variables_to_refresh,
+        fetch_stations_with_months,
+        fetch_stations_with_seasons,
+        fetch_stations_with_yearly_measurements,
+    ):
+        stations.add(parse_station(raw_station, coord_converter))
+    return stations
 
 
 def harvest_monthly_measurements(
@@ -121,7 +170,7 @@ def harvest_monthly_measurements(
                 )
                 existing = {}
                 for db_measurement in existing_measurements:
-                    measurement_id = _build_monthly_measurement_id(db_measurement)
+                    measurement_id = build_monthly_measurement_id(db_measurement)
                     existing[measurement_id] = db_measurement
                 response = client.get(
                     "https://api.arpa.veneto.it/REST/v1/clima_indicatori",
@@ -140,7 +189,7 @@ def harvest_monthly_measurements(
                         value=raw_measurement["valore"],
                         date=dt.date(raw_measurement["anno"], month, 1),
                     )
-                    measurement_id = _build_monthly_measurement_id(
+                    measurement_id = build_monthly_measurement_id(
                         monthly_measurement_create
                     )
                     if measurement_id not in existing:
@@ -193,7 +242,7 @@ def harvest_seasonal_measurements(
                 )
                 existing = {}
                 for db_measurement in existing_measurements:
-                    measurement_id = _build_seasonal_measurement_id(db_measurement)
+                    measurement_id = build_seasonal_measurement_id(db_measurement)
                     existing[measurement_id] = db_measurement
 
                 season_query_param = {
@@ -220,7 +269,7 @@ def harvest_seasonal_measurements(
                         year=int(raw_measurement["anno"]),
                         season=current_season,
                     )
-                    measurement_id = _build_seasonal_measurement_id(measurement_create)
+                    measurement_id = build_seasonal_measurement_id(measurement_create)
                     if measurement_id not in existing:
                         measurements_create.append(measurement_create)
     return measurements_create
@@ -242,7 +291,7 @@ def refresh_seasonal_measurements(
     return created_measurements
 
 
-def _build_monthly_measurement_id(
+def build_monthly_measurement_id(
     measurement: observations.MonthlyMeasurement
     | observations.MonthlyMeasurementCreate,
 ) -> str:
@@ -252,7 +301,7 @@ def _build_monthly_measurement_id(
     )
 
 
-def _build_seasonal_measurement_id(
+def build_seasonal_measurement_id(
     measurement: observations.SeasonalMeasurement
     | observations.SeasonalMeasurementCreate,
 ) -> str:
@@ -262,7 +311,7 @@ def _build_seasonal_measurement_id(
     )
 
 
-def _build_yearly_measurement_id(
+def build_yearly_measurement_id(
     measurement: observations.YearlyMeasurement | observations.YearlyMeasurementCreate,
 ) -> str:
     return f"{measurement.station_id}-{measurement.variable_id}-{measurement.year}"
@@ -314,7 +363,7 @@ def harvest_yearly_measurements(
             )
             existing = {}
             for db_measurement in existing_measurements:
-                measurement_id = _build_yearly_measurement_id(db_measurement)
+                measurement_id = build_yearly_measurement_id(db_measurement)
                 existing[measurement_id] = db_measurement
             response = client.get(
                 "https://api.arpa.veneto.it/REST/v1/clima_indicatori",
@@ -333,7 +382,7 @@ def harvest_yearly_measurements(
                     value=raw_measurement["valore"],
                     year=int(raw_measurement["anno"]),
                 )
-                measurement_id = _build_yearly_measurement_id(yearly_measurement_create)
+                measurement_id = build_yearly_measurement_id(yearly_measurement_create)
                 if measurement_id not in existing:
                     yearly_measurements_create.append(yearly_measurement_create)
     return yearly_measurements_create
