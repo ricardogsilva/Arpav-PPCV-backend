@@ -19,6 +19,9 @@ x-env-file-db: &env-file-db ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_DB_SERVICE:-/home/a
 x-env-file-webapp: &env-file-webapp ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_WEBAPP_SERVICE:-/home/arpav/environment-files/webapp-service.env}
 x-env-file-martin: &env-file-martin ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_MARTIN_SERVICE:-/home/arpav/environment-files/martin-service.env}
 x-env-file-frontend: &env-file-frontend ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_FRONTEND_SERVICE:-/home/arpav/environment-files/frontend-service.env}
+x-env-file-prefect-db: &env-file-prefect-db ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_PREFECT_DB_SERVICE:-/home/arpav/environment-files/prefect-db-service.env}
+x-env-file-prefect-server: &env-file-prefect-server ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_PREFECT_SERVER_SERVICE:-/home/arpav/environment-files/prefect-server-service.env}
+x-env-file-prefect-static-worker: &env-file-prefect-static-worker ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_PREFECT_STATIC_WORKER_SERVICE:-/home/arpav/environment-files/prefect-static-worker-service.env}
 
 name: arpav-ppcv-staging
 
@@ -126,5 +129,31 @@ services:
         target: /additional
     restart: unless-stopped
 
+  prefect-server:
+    networks:
+      - back
+    labels:
+      - "traefik.http.routers.prefect-router.entrypoints=web"
+      - "exposed.inside=true"
+    env_file:
+      - *env-file-prefect-server
+
+  prefect-static-worker:
+    networks:
+      - back
+    env_file:
+      - *env-file-prefect-static-worker
+    restart: unless-stopped
+
+  prefect-db:
+    networks:
+      - back
+    env_file:
+      - *env-file-prefect-db
+    volumes:
+      - prefect-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
 volumes:
   db-data:
+  prefect-db-data:
