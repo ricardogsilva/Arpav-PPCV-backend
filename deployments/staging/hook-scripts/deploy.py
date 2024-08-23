@@ -229,7 +229,7 @@ class _SendDiscordChannelNotification:
             with urllib.request.urlopen(
                 request, data=json.dumps({"content": self.content}).encode("utf-8")
             ) as response:
-                if 299 <= response.status <= 200:
+                if 200 <= response.status <= 299:
                     print("notification sent")
                 else:
                     print(
@@ -345,7 +345,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARNING)
     webhook_url = None
-    if notification_url := os.getenv(discord_notification_env_var_name) is not None:
+    if (notification_url := os.getenv(discord_notification_env_var_name)) is not None:
         if args.send_discord_notification:
             webhook_url = notification_url
     else:
