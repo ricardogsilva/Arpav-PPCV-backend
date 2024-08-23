@@ -92,8 +92,22 @@ this can also be modified if needed. The system recognizes the following environ
 - `ARPAV_PPCV__MARTIN_TILE_SERVER_BASE_URL` - (str - "http://localhost:3000") Base URL of the Martin vector tile server.
 - `ARPAV_PPCV__NEAREST_STATION_RADIUS_METERS` - (int - 10_000) Distance to use when looking for the nearest
   observation station.
-- `ARPAV_PPCV__V1_API_MOUNT_PREFIX` - (str - "/api/v1") URL prefix of the legacy API. Do not modify this unless you
-  know what you are doing, as other parts of the system rely on it.
+- `ARPAV_PPCV__PREFECT__NUM_FLOW_RETRIES` - (int - 5) Number of times a prefect flow will retry when it fails
+- `ARPAV_PPCV__PREFECT__FLOW_RETRY_DELAY_SECONDS` - (int - 5) How many seconds should prefect wait after retrying a failed flow
+- `ARPAV_PPCV__PREFECT__NUM_TASK_RETRIES` - (int - 5) Number of times a prefect task will retry when it fails
+- `ARPAV_PPCV__PREFECT__TASK_RETRY_DELAY_SECONDS` - (int - 5) How many seconds should prefect wait after retrying a failed task
+- `ARPAV_PPCV__PREFECT__OBSERVATION_STATIONS_REFRESHER_FLOW_CRON_SCHEDULE` - (str - `"0 1 * * 1"`) Cron schedule for
+  running the flow that refreshes observation stations. The default value should be read like this: run once every week,
+  at 01:00 on Monday
+- `ARPAV_PPCV__PREFECT__OBSERVATION_MONTHLY_MEASUREMENTS_REFRESHER_FLOW_CRON_SCHEDULE` - (str - `"0 2 * * 1"`) Cron
+  schedule for running the flow that refreshes monthly measurements. The default value should be read like this: run
+  once every week, at 02:00 on Monday
+- `ARPAV_PPCV__PREFECT__OBSERVATION_SEASONAL_MEASUREMENTS_REFRESHER_FLOW_CRON_SCHEDULE` - (str - `"0 3 * * 1"`) Cron
+  schedule for running the flow that refreshes seasonal measurements. The default value should be read like this: run
+  once every week, at 03:00 on Monday
+- `ARPAV_PPCV__PREFECT__OBSERVATION_YEARLY_MEASUREMENTS_REFRESHER_FLOW_CRON_SCHEDULE` - (str - `"0 4 * * 1"`) Cron
+  schedule for running the flow that refreshes yearly measurements. The default value should be read like this: run
+  once every week, at 04:00 on Monday
 - `ARPAV_PPCV__V2_API_MOUNT_PREFIX` - (str - "/api/v2") URL prefix of the web application API. Do not modify this unless
   you know what you are doing, as other parts of the system rely on it.
 - `ARPAV_PPCV__LOG_CONFIG_FILE` - (Path - `None`) - Path to the config file for the logging of the application.
