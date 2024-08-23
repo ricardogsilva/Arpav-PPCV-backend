@@ -31,3 +31,18 @@ postgres:
         name: varchar
         province_name: varchar
         region_name: varchar
+        centroid_epsg_4326_lon: float
+        centroid_epsg_4326_lat: float
+
+    municipality-centroids:
+      schema: public
+      table: municipality_centroids
+      srid: 4326
+      geometry_column: geom
+      id_column: ~
+      geometry_type: POINT
+      properties:
+        id: uuid
+        name: varchar
+        province_name: varchar
+        region_name: varchar

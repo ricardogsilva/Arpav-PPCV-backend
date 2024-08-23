@@ -25,6 +25,8 @@ class Municipality(sqlmodel.SQLModel, table=True):
     name: str
     province_name: str
     region_name: str
+    centroid_epsg_4326_lon: float | None = None
+    centroid_epsg_4326_lat: float | None = None
 
 
 class MunicipalityCreate(sqlmodel.SQLModel):
@@ -32,3 +34,5 @@ class MunicipalityCreate(sqlmodel.SQLModel):
     name: str
     province_name: str
     region_name: str
+    centroid_epsg_4326_lon: float | None = None
+    centroid_epsg_4326_lat: float | None = None

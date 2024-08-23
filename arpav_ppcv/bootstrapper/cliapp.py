@@ -36,30 +36,96 @@ app = typer.Typer()
 
 
 @app.command("municipalities")
-def bootstrap_municipalities(ctx: typer.Context) -> None:
-    """Bootstrap Italian municipalities."""
-    data_directory = Path(__file__).parents[2] / "data"
-    municipalities_dataset = data_directory / "limits_IT_municipalities.geojson"
+def bootstrap_municipalities(
+    ctx: typer.Context, municipalities_dataset: Path, force: bool = False
+) -> None:
+    """Bootstrap Italian municipalities"""
+    # data_directory = Path(__file__).parents[2] / "data"
+    # municipalities_dataset = data_directory / "limits_IT_municipalities.geojson"
     to_create = []
-    with municipalities_dataset.open() as fh:
-        municipalities_geojson = json.load(fh)
-        for idx, feature in enumerate(municipalities_geojson["features"]):
-            print(
-                f"parsing feature ({idx+1}/{len(municipalities_geojson['features'])})..."
-            )
-            props = feature["properties"]
-            mun_create = municipalities.MunicipalityCreate(
-                geom=geojson_pydantic.MultiPolygon(
-                    type="MultiPolygon", coordinates=feature["geometry"]["coordinates"]
-                ),
-                name=props["name"],
-                province_name=props["prov_name"],
-                region_name=props["reg_name"],
-            )
-            to_create.append(mun_create)
-    print(f"About to save {len(to_create)} municipalities...")
+
+    should_bootstrap = False
     with sqlmodel.Session(ctx.obj["engine"]) as session:
-        database.create_many_municipalities(session, to_create)
+        _, num_existing_municipalities = database.list_municipalities(
+            session, include_total=True
+        )
+        if num_existing_municipalities == 0:
+            should_bootstrap = True
+        else:
+            if force:
+                should_bootstrap = True
+            else:
+                print(
+                    "Municipalities have already been bootstrapped. Supply the "
+                    "`--force` option to discard existing records and re-boostrap "
+                    "them again"
+                )
+        if should_bootstrap:
+            has_centroid_info = False
+            with municipalities_dataset.open() as fh:
+                municipalities_geojson = json.load(fh)
+                for idx, feature in enumerate(municipalities_geojson["features"]):
+                    print(
+                        f"parsing feature ({idx + 1}/{len(municipalities_geojson['features'])})..."
+                    )
+                    props = feature["properties"]
+                    if idx == 0:
+                        has_centroid_info = props.get("xcoord") is not None
+                    mun_create = municipalities.MunicipalityCreate(
+                        geom=geojson_pydantic.MultiPolygon(
+                            type="MultiPolygon",
+                            coordinates=feature["geometry"]["coordinates"],
+                        ),
+                        name=props["name"],
+                        province_name=props["province_name"],
+                        region_name=props["region_name"],
+                        centroid_epsg_4326_lon=props.get("xcoord"),
+                        centroid_epsg_4326_lat=props.get("ycoord"),
+                    )
+                    to_create.append(mun_create)
+            if len(to_create) > 0:
+                if num_existing_municipalities > 0:
+                    print("About to delete pre-existing municipalities...")
+                    database.delete_all_municipalities(session)
+                print(f"About to save {len(to_create)} municipalities...")
+                database.create_many_municipalities(session, to_create)
+                if has_centroid_info:
+                    print("About to (re)create municipality centroids DB view...")
+                    ctx.invoke(bootstrap_municipality_centroids, ctx)
+            else:
+                print("There are no municipalities to create, skipping...")
+    print("Done!")
+
+
+@app.command("municipality-centroids")
+def bootstrap_municipality_centroids(
+    ctx: typer.Context,
+):
+    """Refresh the municipality centroids' DB view."""
+    view_name = "public.municipality_centroids"
+    index_name = "idx_municipality_centroids"
+    drop_view_statement = sqlmodel.text(f"DROP MATERIALIZED VIEW IF EXISTS {view_name}")
+    create_view_statement = sqlmodel.text(
+        f"CREATE MATERIALIZED VIEW {view_name} "
+        f"AS SELECT "
+        f"id, "
+        f"ST_Point(centroid_epsg_4326_lon, centroid_epsg_4326_lat, 4326) AS geom, "
+        f"name, "
+        f"province_name, "
+        f"region_name "
+        f"FROM municipality "
+        f"WITH DATA"
+    )
+    create_index_statement = sqlmodel.text(
+        f"CREATE INDEX {index_name} ON {view_name} USING gist (geom)"
+    )
+    drop_index_statement = sqlmodel.text(f"DROP INDEX IF EXISTS {index_name}")
+    with sqlmodel.Session(ctx.obj["engine"]) as session:
+        session.execute(drop_view_statement)
+        session.execute(drop_index_statement)
+        session.execute(create_view_statement)
+        session.execute(create_index_statement)
+        session.commit()
     print("Done!")
 
 
