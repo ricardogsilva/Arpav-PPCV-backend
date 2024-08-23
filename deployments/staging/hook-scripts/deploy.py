@@ -149,10 +149,12 @@ class _PullImages:
 @dataclasses.dataclass
 class _StartCompose:
     env_file_db_service: Path
-    env_file_legacy_db_service: Path
     env_file_webapp_service: Path
     env_file_frontend_service: Path
     env_file_martin_service: Path
+    env_file_prefect_db_service: Path
+    env_file_prefect_server_service: Path
+    env_file_prefect_static_worker_service: Path
     compose_files_fragment: str
     name: str = "start docker compose"
 
@@ -166,10 +168,12 @@ class _StartCompose:
             env={
                 **os.environ,
                 "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_DB_SERVICE": self.env_file_db_service,
-                "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_LEGACY_DB_SERVICE": self.env_file_legacy_db_service,  # noqa
                 "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_WEBAPP_SERVICE": self.env_file_webapp_service,  # noqa
                 "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_FRONTEND_SERVICE": self.env_file_frontend_service,  # noqa
                 "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_MARTIN_SERVICE": self.env_file_martin_service,  # noqa
+                "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_PREFECT_DB_SERVICE": self.env_file_prefect_db_service,  # noqa
+                "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_PREFECT_SERVER_SERVICE": self.env_file_prefect_server_service,  # noqa
+                "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_PREFECT_STATIC_WORKER_SERVICE": self.env_file_prefect_static_worker_service,  # noqa
             },
             check=True,
         )
@@ -202,38 +206,6 @@ class _RunMigrations:
             shlex.split(
                 f"docker exec {self.webapp_service_name} poetry run "
                 f"arpav-ppcv db upgrade"
-            ),
-            check=True,
-        )
-
-
-@dataclasses.dataclass
-class _RunLegacyMigrations:
-    webapp_service_name: str
-    name: str = "run legacy DB migrations"
-
-    def handle(self) -> None:
-        print("Upgrading legacy database...")
-        run(
-            shlex.split(
-                f"docker exec {self.webapp_service_name} poetry run "
-                f"arpav-ppcv django-admin migrate"
-            ),
-            check=True,
-        )
-
-
-@dataclasses.dataclass
-class _CollectLegacyStaticFiles:
-    webapp_service_name: str
-    name: str = "collect legacy static files"
-
-    def handle(self) -> None:
-        print("Collecting legacy static files...")
-        run(
-            shlex.split(
-                f"docker exec {self.webapp_service_name} poetry run "
-                f"arpav-ppcv django-admin collectstatic --no-input"
             ),
             check=True,
         )
@@ -284,12 +256,15 @@ def perform_deployment(
     clone_destination = Path("/tmp/arpav-ppcv-backend")
     deployment_env_files = {
         "db_service": deployment_root / "environment-files/db-service.env",
-        "legacy_db_service": (
-            deployment_root / "environment-files/legacy-db-service.env"
-        ),
         "webapp_service": deployment_root / "environment-files/webapp-service.env",
         "frontend_service": deployment_root / "environment-files/frontend-service.env",
         "martin_service": deployment_root / "environment-files/martin-service.env",
+        "prefect_db_service": deployment_root
+        / "environment-files/prefect-db-service.env",
+        "prefect_server_service": deployment_root
+        / "environment-files/prefect-server-service.env",
+        "prefect_static_worker_service": deployment_root
+        / "environment-files/prefect-static-worker-service.env",
     }
     webapp_service_name = "arpav-ppcv-staging-webapp-1"
     deployment_steps = [
@@ -307,16 +282,20 @@ def perform_deployment(
         ),
         _StartCompose(
             env_file_db_service=deployment_env_files["db_service"],
-            env_file_legacy_db_service=deployment_env_files["legacy_db_service"],
             env_file_webapp_service=deployment_env_files["webapp_service"],
             env_file_frontend_service=deployment_env_files["frontend_service"],
             env_file_martin_service=deployment_env_files["martin_service"],
+            env_file_prefect_db_service=deployment_env_files["prefect_db_service"],
+            env_file_prefect_server_service=deployment_env_files[
+                "prefect_server_service"
+            ],
+            env_file_prefect_static_worker_service=deployment_env_files[
+                "prefect_static_worker_service"
+            ],
             compose_files_fragment=compose_files,
         ),
         _RunMigrations(webapp_service_name=webapp_service_name),
         _CompileTranslations(webapp_service_name=webapp_service_name),
-        _RunLegacyMigrations(webapp_service_name=webapp_service_name),
-        _CollectLegacyStaticFiles(webapp_service_name=webapp_service_name),
     ]
     if discord_webhook_url is not None:
         deployment_steps.append(
