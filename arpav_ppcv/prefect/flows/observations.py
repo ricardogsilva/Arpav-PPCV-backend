@@ -18,6 +18,7 @@ from arpav_ppcv.schemas import (
 # this is a module global because we need to configure the prefect flow and
 # task with values from it
 settings = get_settings()
+db_engine = database.get_engine(settings)
 
 
 @prefect.task(
@@ -92,9 +93,8 @@ def refresh_stations(
     refresh_stations_with_seasonal_data: bool = True,
     refresh_stations_with_yearly_data: bool = True,
 ):
-    settings = get_settings()
     client = httpx.Client()
-    with sqlmodel.Session(database.get_engine(settings)) as db_session:
+    with sqlmodel.Session(db_engine) as db_session:
         db_variables = _get_variables(db_session, variable_name)
         if len(db_variables) > 0:
             to_filter_for_new_stations = set()
@@ -211,10 +211,9 @@ def refresh_monthly_measurements(
     variable_name: str | None = None,
     month: int | None = None,
 ):
-    settings = get_settings()
     client = httpx.Client()
     all_created = []
-    with sqlmodel.Session(database.get_engine(settings)) as db_session:
+    with sqlmodel.Session(db_engine) as db_session:
         if len(db_variables := _get_variables(db_session, variable_name)) > 0:
             if len(db_stations := _get_stations(db_session, station_code)) > 0:
                 for db_station in db_stations:
@@ -317,10 +316,9 @@ def refresh_seasonal_measurements(
     variable_name: str | None = None,
     season_name: str | None = None,
 ):
-    settings = get_settings()
     client = httpx.Client()
     all_created = []
-    with sqlmodel.Session(database.get_engine(settings)) as db_session:
+    with sqlmodel.Session(db_engine) as db_session:
         if len(db_variables := _get_variables(db_session, variable_name)) > 0:
             if len(db_stations := _get_stations(db_session, station_code)) > 0:
                 for db_station in db_stations:
@@ -410,10 +408,9 @@ def refresh_yearly_measurements(
     station_code: str | None = None,
     variable_name: str | None = None,
 ):
-    settings = get_settings()
     client = httpx.Client()
     all_created = []
-    with sqlmodel.Session(database.get_engine(settings)) as db_session:
+    with sqlmodel.Session(db_engine) as db_session:
         if len(db_variables := _get_variables(db_session, variable_name)) > 0:
             if len(db_stations := _get_stations(db_session, station_code)) > 0:
                 for db_station in db_stations:

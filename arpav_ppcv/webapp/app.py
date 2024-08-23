@@ -1,18 +1,31 @@
-import fastapi
+import contextlib
+
 from starlette.applications import Starlette
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
-from .. import config
+from .. import (
+    config,
+    database,
+)
 from .api_v2.app import create_app as create_v2_app
 from .admin.app import create_admin
 from .routes import routes
 
 
-def create_app_from_settings(settings: config.ArpavPpcvSettings) -> fastapi.FastAPI:
+@contextlib.asynccontextmanager
+async def lifespan(app: Starlette):
+    yield
+    # ensure the database engine is properly disposed of, closing any connections
+    database._DB_ENGINE.dispose()  # noqa
+    database._DB_ENGINE = None
+
+
+def create_app_from_settings(settings: config.ArpavPpcvSettings) -> Starlette:
     app = Starlette(
         debug=settings.debug,
         routes=routes,
+        lifespan=lifespan,
     )
     settings.static_dir.mkdir(parents=True, exist_ok=True)
     app.mount("/static", StaticFiles(directory=settings.static_dir), name="static")
@@ -28,6 +41,6 @@ def create_app_from_settings(settings: config.ArpavPpcvSettings) -> fastapi.Fast
     return app
 
 
-def create_app() -> fastapi.FastAPI:
+def create_app() -> Starlette:
     settings = config.get_settings()
     return create_app_from_settings(settings)
