@@ -15,7 +15,7 @@ A previous version had originally been developed by [inkode](http://inkode.it)
 
 ---
 
-This repository contains the source code for the backend components of the ARPAV-PPCV platform.
+This repository contains source code for the backend components of the ARPAV-PPCV platform.
 
 Its main goal is to serve climate-related data in the form of both historical observations and forecast models.
 
