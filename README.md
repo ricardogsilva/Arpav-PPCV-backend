@@ -19,17 +19,21 @@ This repository contains the source code for the backend components of the ARPAV
 
 Its main goal is to serve climate-related data in the form of both historical observations and forecast models.
 
-Briefly, the backend component is a web application that serves an OpenAPI API that is consumed by the frontend.
-It contains some additional services, which are used to support it and provide additional functionality, namely:
+Briefly, the backend component consists of two main services:
+
+1. A web application that serves an OpenAPI API that is consumed by the frontend.
+2. A worker that is used to execute workflows outside the request/response cycle of a webapplication
+
+The backend contains some additional services, which are used to support it and provide additional functionality, namely:
 
 - a vector tile server
 - The integration with ARPA's THREDDS server, which is used for tasks related to model data (WMS service, download of
   NetCDF files, data subsetting for time series visualizations)
 
-The main application is launched by maeans of a custom CLI command. This CLI additionally provides a multitude of
+The main applications are launched by means of custom CLI commands. This CLI additionally provides a multitude of
 maintenance commands, such as upgrading the database schema, refreshing historical observations data, etc.
 
-This component is implemented in Python, using these main libraries and frameworks:
+This is implemented in Python, using these main libraries and frameworks:
 
 - FastAPI
 - geoalchemy2
@@ -40,6 +44,7 @@ This component is implemented in Python, using these main libraries and framewor
 - starlette_admin
 - sqlalchemy
 - uvicorn
+- prefect
 
 
 ### Installation
