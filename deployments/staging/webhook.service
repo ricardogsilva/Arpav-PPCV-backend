@@ -6,6 +6,7 @@
 
 [Service]
 Environment="WEBHOOK_SECRET=change-me"
+Environment="ARPAV_PPCV_DEPLOYMENT_STATUS_DISCORD_WEBHOOK_URL=change-me"
 ExecStart=/usr/bin/webhook -template -port 9001 -hooks /home/arpav/webhooks/hooks.yaml
 User=arpav
 Group=arpav

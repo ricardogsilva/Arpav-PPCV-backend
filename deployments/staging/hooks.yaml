@@ -22,6 +22,8 @@
     # ensure the deployment script does not run in dry-mode
     - source: string
       name: '--confirm'
+    - source: string
+      name: '--send-discord-notification'
   command-working-directory: /home/arpav/webhooks/hook-scripts
   trigger-rule:
     match:

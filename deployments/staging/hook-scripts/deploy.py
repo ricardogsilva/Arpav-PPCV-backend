@@ -3,8 +3,8 @@
 # This script is to be run by the `webhook` server whenever there
 # is a push to the arpav-ppcv-backend repository.
 #
-# In order to simplify deployment, this script only uses stuff from the Python
-# standard library.
+# NOTE: IN ORDER TO SIMPLIFY DEPLOYMENT, THIS SCRIPT SHALL ONLY USE STUFF FROM THE
+# PYTHON STANDARD LIBRARY
 
 import argparse
 import dataclasses
@@ -13,12 +13,15 @@ import logging
 import os
 import shlex
 import shutil
+import urllib.request
 from pathlib import Path
+from subprocess import run
 from typing import (
+    Optional,
     Protocol,
     Sequence,
 )
-from subprocess import run
+from urllib.error import HTTPError
 
 logger = logging.getLogger(__name__)
 
@@ -146,10 +149,12 @@ class _PullImages:
 @dataclasses.dataclass
 class _StartCompose:
     env_file_db_service: Path
-    env_file_legacy_db_service: Path
     env_file_webapp_service: Path
     env_file_frontend_service: Path
     env_file_martin_service: Path
+    env_file_prefect_db_service: Path
+    env_file_prefect_server_service: Path
+    env_file_prefect_static_worker_service: Path
     compose_files_fragment: str
     name: str = "start docker compose"
 
@@ -163,10 +168,12 @@ class _StartCompose:
             env={
                 **os.environ,
                 "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_DB_SERVICE": self.env_file_db_service,
-                "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_LEGACY_DB_SERVICE": self.env_file_legacy_db_service,  # noqa
                 "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_WEBAPP_SERVICE": self.env_file_webapp_service,  # noqa
                 "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_FRONTEND_SERVICE": self.env_file_frontend_service,  # noqa
                 "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_MARTIN_SERVICE": self.env_file_martin_service,  # noqa
+                "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_PREFECT_DB_SERVICE": self.env_file_prefect_db_service,  # noqa
+                "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_PREFECT_SERVER_SERVICE": self.env_file_prefect_server_service,  # noqa
+                "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_PREFECT_STATIC_WORKER_SERVICE": self.env_file_prefect_static_worker_service,  # noqa
             },
             check=True,
         )
@@ -205,39 +212,39 @@ class _RunMigrations:
 
 
 @dataclasses.dataclass
-class _RunLegacyMigrations:
-    webapp_service_name: str
-    name: str = "run legacy DB migrations"
+class _SendDiscordChannelNotification:
+    webhook_url: str
+    content: str
+    name: str = "send a notification to a discord channel"
 
     def handle(self) -> None:
-        print("Upgrading legacy database...")
-        run(
-            shlex.split(
-                f"docker exec {self.webapp_service_name} poetry run "
-                f"arpav-ppcv django-admin migrate"
-            ),
-            check=True,
-        )
+        print("Sending discord channel notification...")
+        request = urllib.request.Request(self.webhook_url, method="POST")
+        request.add_header("Content-Type", "application/json")
 
-
-@dataclasses.dataclass
-class _CollectLegacyStaticFiles:
-    webapp_service_name: str
-    name: str = "collect legacy static files"
-
-    def handle(self) -> None:
-        print("Collecting legacy static files...")
-        run(
-            shlex.split(
-                f"docker exec {self.webapp_service_name} poetry run "
-                f"arpav-ppcv django-admin collectstatic --no-input"
-            ),
-            check=True,
-        )
+        # the discord server blocks the default user-agent sent by urllib, the
+        # one sent by httpx works, so we just use that
+        request.add_header("User-Agent", "python-httpx/0.27.0")
+        try:
+            with urllib.request.urlopen(
+                request, data=json.dumps({"content": self.content}).encode("utf-8")
+            ) as response:
+                if 200 <= response.status <= 299:
+                    print("notification sent")
+                else:
+                    print(
+                        f"notification response was not successful: {response.status}"
+                    )
+        except HTTPError:
+            print("sending notification failed")
 
 
 def perform_deployment(
-    *, raw_request_payload: str, deployment_root: Path, confirmed: bool = False
+    *,
+    raw_request_payload: str,
+    deployment_root: Path,
+    discord_webhook_url: Optional[str] = None,
+    confirmed: bool = False,
 ):
     if not confirmed:
         print("Performing a dry-run")
@@ -249,12 +256,15 @@ def perform_deployment(
     clone_destination = Path("/tmp/arpav-ppcv-backend")
     deployment_env_files = {
         "db_service": deployment_root / "environment-files/db-service.env",
-        "legacy_db_service": (
-            deployment_root / "environment-files/legacy-db-service.env"
-        ),
         "webapp_service": deployment_root / "environment-files/webapp-service.env",
         "frontend_service": deployment_root / "environment-files/frontend-service.env",
         "martin_service": deployment_root / "environment-files/martin-service.env",
+        "prefect_db_service": deployment_root
+        / "environment-files/prefect-db-service.env",
+        "prefect_server_service": deployment_root
+        / "environment-files/prefect-server-service.env",
+        "prefect_static_worker_service": deployment_root
+        / "environment-files/prefect-static-worker-service.env",
     }
     webapp_service_name = "arpav-ppcv-staging-webapp-1"
     deployment_steps = [
@@ -272,17 +282,30 @@ def perform_deployment(
         ),
         _StartCompose(
             env_file_db_service=deployment_env_files["db_service"],
-            env_file_legacy_db_service=deployment_env_files["legacy_db_service"],
             env_file_webapp_service=deployment_env_files["webapp_service"],
             env_file_frontend_service=deployment_env_files["frontend_service"],
             env_file_martin_service=deployment_env_files["martin_service"],
+            env_file_prefect_db_service=deployment_env_files["prefect_db_service"],
+            env_file_prefect_server_service=deployment_env_files[
+                "prefect_server_service"
+            ],
+            env_file_prefect_static_worker_service=deployment_env_files[
+                "prefect_static_worker_service"
+            ],
             compose_files_fragment=compose_files,
         ),
         _RunMigrations(webapp_service_name=webapp_service_name),
         _CompileTranslations(webapp_service_name=webapp_service_name),
-        _RunLegacyMigrations(webapp_service_name=webapp_service_name),
-        _CollectLegacyStaticFiles(webapp_service_name=webapp_service_name),
     ]
+    if discord_webhook_url is not None:
+        deployment_steps.append(
+            _SendDiscordChannelNotification(
+                webhook_url=discord_webhook_url,
+                content=(
+                    "A new deployment of ARPAV-PPCV to staging environment has finished"
+                ),
+            )
+        )
     for step in deployment_steps:
         print(f"Running step: {step.name!r}...")
         if confirmed:
@@ -290,6 +313,9 @@ def perform_deployment(
 
 
 if __name__ == "__main__":
+    discord_notification_env_var_name = (
+        "ARPAV_PPCV_DEPLOYMENT_STATUS_DISCORD_WEBHOOK_URL"
+    )
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "deployment_root", help="Root directory of the deployment", type=Path
@@ -304,16 +330,35 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument(
+        "--send-discord-notification",
+        action="store_true",
+        help=(
+            f"Send a notification to the discord channel. This only works if "
+            f"the {discord_notification_env_var_name} environment variable is set"
+        ),
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         help="Turn on debug logging level",
     )
     args = parser.parse_args()
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARNING)
+    webhook_url = None
+    if (notification_url := os.getenv(discord_notification_env_var_name)) is not None:
+        if args.send_discord_notification:
+            webhook_url = notification_url
+    else:
+        if args.send_discord_notification:
+            logger.warning(
+                f"Not sending discord notification because "
+                f"{discord_notification_env_var_name} is not set"
+            )
     try:
         perform_deployment(
             raw_request_payload=args.payload,
             deployment_root=args.deployment_root,
+            discord_webhook_url=webhook_url,
             confirmed=args.confirm,
         )
     except RuntimeError as err:
