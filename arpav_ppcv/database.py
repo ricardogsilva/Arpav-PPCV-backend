@@ -27,6 +27,7 @@ from .schemas import (
 logger = logging.getLogger(__name__)
 
 _DB_ENGINE = None
+_TEST_DB_ENGINE = None
 
 
 def get_engine(settings: config.ArpavPpcvSettings, use_test_db: Optional[bool] = False):
@@ -38,13 +39,23 @@ def get_engine(settings: config.ArpavPpcvSettings, use_test_db: Optional[bool] =
     #
     # Note: this function cannot use the `functools.cache` decorator because
     # the `settings` parameter is not hashable
-    global _DB_ENGINE
-    db_dsn = settings.test_db_dsn if use_test_db else settings.db_dsn
-    if _DB_ENGINE is None:
-        _DB_ENGINE = sqlmodel.create_engine(
-            db_dsn.unicode_string(), echo=True if settings.verbose_db_logs else False
-        )
-    return _DB_ENGINE
+    if use_test_db:
+        global _TEST_DB_ENGINE
+        if _TEST_DB_ENGINE is None:
+            _TEST_DB_ENGINE = sqlmodel.create_engine(
+                settings.test_db_dsn.unicode_string(),
+                echo=True if settings.verbose_db_logs else False,
+            )
+        result = _TEST_DB_ENGINE
+    else:
+        global _DB_ENGINE
+        if _DB_ENGINE is None:
+            _DB_ENGINE = sqlmodel.create_engine(
+                settings.db_dsn.unicode_string(),
+                echo=True if settings.verbose_db_logs else False,
+            )
+        result = _DB_ENGINE
+    return result
 
 
 def create_variable(
