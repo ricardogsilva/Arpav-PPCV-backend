@@ -6,6 +6,7 @@ from typing import (
     Optional,
 )
 
+import anyio.to_thread
 import httpx
 import pydantic
 import shapely.io
@@ -48,7 +49,7 @@ router = APIRouter()
     "/configuration-parameters",
     response_model=coverage_schemas.ConfigurationParameterList,
 )
-async def list_configuration_parameters(
+def list_configuration_parameters(
     request: Request,
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
@@ -79,7 +80,7 @@ async def list_configuration_parameters(
     "/coverage-configurations",
     response_model=coverage_schemas.CoverageConfigurationList,
 )
-async def list_coverage_configurations(
+def list_coverage_configurations(
     request: Request,
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
@@ -251,8 +252,10 @@ async def wms_endpoint(
 
     Pass additional relevant WMS query parameters directly to this endpoint.
     """
-    db_coverage_configuration = db.get_coverage_configuration_by_coverage_identifier(
-        db_session, coverage_identifier
+    db_coverage_configuration = await anyio.to_thread.run_sync(
+        db.get_coverage_configuration_by_coverage_identifier,
+        db_session,
+        coverage_identifier,
     )
     if db_coverage_configuration is not None:
         try:
