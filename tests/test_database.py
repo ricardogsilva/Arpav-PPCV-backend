@@ -205,6 +205,20 @@ def test_create_coverage_configuration_simple(
         )
 
 
+def test_delete_coverage_configuration_works(
+    arpav_db_session, sample_real_coverage_configurations
+):
+    cov_conf_name = "tas_annual_absolute_model_ensemble"
+    db_cov_conf = database.get_coverage_configuration_by_name(
+        arpav_db_session, cov_conf_name
+    )
+    database.delete_coverage_configuration(arpav_db_session, db_cov_conf.id)
+    assert (
+        database.get_coverage_configuration_by_name(arpav_db_session, cov_conf_name)
+        is None
+    )
+
+
 def test_create_coverage_configuration_with_possible_values(
     arpav_db_session, sample_configuration_parameters
 ):

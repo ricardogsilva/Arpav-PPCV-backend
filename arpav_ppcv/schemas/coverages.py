@@ -188,7 +188,8 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         sa_relationship_kwargs={
             "foreign_keys": (
                 "RelatedCoverageConfiguration.main_coverage_configuration_id"
-            )
+            ),
+            "cascade": "all, delete, delete-orphan",
         },
     )
     primary_coverage_configurations: list[
@@ -198,7 +199,8 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         sa_relationship_kwargs={
             "foreign_keys": (
                 "RelatedCoverageConfiguration.secondary_coverage_configuration_id"
-            )
+            ),
+            "cascade": "all, delete, delete-orphan",
         },
     )
 
