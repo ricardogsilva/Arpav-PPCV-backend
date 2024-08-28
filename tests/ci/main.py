@@ -26,7 +26,7 @@ def run_ci_pipeline(
             )
         ),
     ] = False,
-    with_load_tests: Annotated[bool, typer.Option(help=("Run load tests"))] = False,
+    with_load_tests: Annotated[bool, typer.Option(help="Run load tests")] = False,
     with_security_scan: Annotated[
         bool,
         typer.Option(
@@ -169,7 +169,11 @@ async def _run_tests(
 
 
 def _get_arpav_db_service(
-    client: dagger.Client, db_name: str, db_user: str, db_password: str, db_port: str
+    client: dagger.Client,
+    db_name: str,
+    db_user: str,
+    db_password: str,
+    db_port: str | int,
 ) -> dagger.Service:
     return (
         client.container()
@@ -199,12 +203,9 @@ async def _run_load_tests(
     db_service = _get_arpav_db_service(client, db_name, db_user, db_password, db_port)
     db_dsn = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 
-    original_entrypoint = await test_container.entrypoint()
     # modifications made to the test container:
     # - add a proper ARPAV_PPCV__DB_DSN env var, because we are simulating the live
     #   system
-    # - remove the original entrypoint in order to be able to run poetry commands
-    #   to bootstrap the system, then reinstate the entrypoint afterwards
     webap_service = (
         test_container.without_entrypoint()
         .with_env_variable("ARPAV_PPCV__DB_DSN", db_dsn)
@@ -220,7 +221,8 @@ async def _run_load_tests(
             shlex.split("poetry run arpav-ppcv bootstrap coverage-configurations")
         )
         .with_exec(shlex.split("poetry run arpav-ppcv translations compile"))
-        .with_entrypoint(original_entrypoint)
+        .with_exec(shlex.split("poetry run arpav-ppcv run-server"))
+        .with_exposed_port(5001)
         .as_service()
     )
     webapp_service_alias = "webapp"
@@ -301,8 +303,6 @@ async def _run_pipeline(
                 await _run_load_tests(
                     client,
                     test_container,
-                    num_users=10,
-                    run_time_seconds=10,
                 )
         if publish_docker_image is not None:
             sanitized_name = _sanitize_docker_image_name(publish_docker_image)
