@@ -1179,6 +1179,20 @@ def update_coverage_configuration(
     return db_coverage_configuration
 
 
+def delete_coverage_configuration(
+    session: sqlmodel.Session, coverage_configuration_id: uuid.UUID
+) -> None:
+    """Delete a coverage configuration."""
+    db_coverage_configuration = get_coverage_configuration(
+        session, coverage_configuration_id
+    )
+    if db_coverage_configuration is not None:
+        session.delete(db_coverage_configuration)
+        session.commit()
+    else:
+        raise RuntimeError("Coverage configuration not found")
+
+
 def generate_coverage_identifiers(
     coverage_configuration: coverages.CoverageConfiguration,
     configuration_parameter_values_filter: Optional[
