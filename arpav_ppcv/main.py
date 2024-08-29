@@ -178,7 +178,13 @@ def import_thredds_datasets(
         ),
     ],
     output_base_dir: Annotated[
-        Path, typer.Argument(help="Base path for downloaded NetCDF files.")
+        Path,
+        typer.Argument(
+            help=(
+                "Base path for downloaded NetCDF files. Example: "
+                "/home/appuser/data/datasets"
+            )
+        ),
     ],
     name_filter: Annotated[
         str,
@@ -201,15 +207,13 @@ def import_thredds_datasets(
 ):
     """Import NetCDF datasets from a THREDDS server."""
     with sqlmodel.Session(ctx.obj["engine"]) as session:
-        all_cov_confs = database.collect_all_coverage_configurations(session)
-        if name_filter:
-            relevant_cov_confs = [cc for cc in all_cov_confs if name_filter in cc.name]
-        else:
-            relevant_cov_confs = all_cov_confs
+        relevant_cov_confs = database.collect_all_coverage_configurations(
+            session, name_filter=name_filter
+        )
         urls = []
         for cov_conf in relevant_cov_confs:
             cov_conf_urls = crawler.get_coverage_configuration_urls(
-                session, base_thredds_url, cov_conf
+                base_thredds_url, cov_conf
             )
             urls.extend(cov_conf_urls)
 

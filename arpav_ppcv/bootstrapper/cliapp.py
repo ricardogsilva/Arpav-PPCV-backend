@@ -19,7 +19,10 @@ from ..schemas.coverages import (
 
 from .coverage_configurations import (
     cdd,
+    cdds,
     fd,
+    hdds,
+    hwdi,
     pr,
     r95ptot,
     snwdays,
@@ -188,9 +191,12 @@ def bootstrap_coverage_configurations(
         }
     coverage_configurations = []
     coverage_configurations.extend(cdd.generate_configurations(conf_param_values))
+    coverage_configurations.extend(cdds.generate_configurations(conf_param_values))
     coverage_configurations.extend(
         fd.generate_configurations(conf_param_values, variables)
     )
+    coverage_configurations.extend(hdds.generate_configurations(conf_param_values))
+    coverage_configurations.extend(hwdi.generate_configurations(conf_param_values))
     coverage_configurations.extend(
         pr.generate_configurations(conf_param_values, variables)
     )
@@ -233,7 +239,10 @@ def bootstrap_coverage_configurations(
     to_update = {}
     for name, related_names in {
         **cdd.get_related_map(),
+        **cdds.get_related_map(),
         **fd.get_related_map(),
+        **hdds.get_related_map(),
+        **hwdi.get_related_map(),
         **pr.get_related_map(),
         **r95ptot.get_related_map(),
         **snwdays.get_related_map(),
@@ -249,7 +258,10 @@ def bootstrap_coverage_configurations(
 
     for name, uncertainties in {
         **cdd.get_uncertainty_map(),
+        **cdds.get_uncertainty_map(),
         **fd.get_uncertainty_map(),
+        **hdds.get_uncertainty_map(),
+        **hwdi.get_uncertainty_map(),
         **pr.get_uncertainty_map(),
         **r95ptot.get_uncertainty_map(),
         **snwdays.get_uncertainty_map(),
