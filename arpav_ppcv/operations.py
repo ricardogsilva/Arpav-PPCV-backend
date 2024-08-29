@@ -3,7 +3,10 @@ import functools
 import io
 import logging
 import warnings
-from typing import Optional
+from typing import (
+    Optional,
+    TypedDict,
+)
 
 import anyio
 import cftime
@@ -893,3 +896,122 @@ def _get_spatial_buffer(
         point_geom_projected, distance=distance_meters
     )
     return transform(inverse_coordinate_transformer, buffer_geom_projected)
+
+
+class ForecastVariableMenuTreeCombination(TypedDict):
+    configuration_parameter: coverages.ConfigurationParameter
+    values: list[coverages.ConfigurationParameterPossibleValue]
+
+
+class ForecastVariableMenuTree(TypedDict):
+    climatological_variable: coverages.ConfigurationParameterPossibleValue
+    aggregation_period: coverages.ConfigurationParameterPossibleValue
+    measure: coverages.ConfigurationParameterPossibleValue
+    combinations: dict[str, ForecastVariableMenuTreeCombination]
+
+
+def get_forecast_variable_parameters(
+    session: sqlmodel.Session,
+) -> dict[str, ForecastVariableMenuTree]:
+    # - retrieve all the cov confs that have the variable
+    # - for each cov conf, aggregate by aggregation_period and measure
+    result = {}
+    all_cov_confs = database.collect_all_coverage_configurations(session)
+    for cov_conf in all_cov_confs:
+        variable_pvs = [
+            pv
+            for pv in cov_conf.possible_values
+            if pv.configuration_parameter_value.configuration_parameter.name
+            == "climatological_variable"
+        ]
+        if (num_pvs := len(variable_pvs)) >= 1:
+            variable_pv = variable_pvs[0]
+            if num_pvs > 1:
+                logger.info(
+                    f"coverage configuration {cov_conf.name!r} defines "
+                    f"{len(variable_pvs)} `climatological_variable`s, keeping only the "
+                    f"first one..."
+                )
+        else:
+            logger.info(
+                f"coverage configuration {cov_conf.name!r} does not have a "
+                f"`climatological_variable`, skipping..."
+            )
+            continue
+
+        aggreg_period_pvs = [
+            pv
+            for pv in cov_conf.possible_values
+            if pv.configuration_parameter_value.configuration_parameter.name
+            == "aggregation_period"
+        ]
+        if (num_aggreg_periods := len(aggreg_period_pvs)) >= 1:
+            aggreg_period_pv = aggreg_period_pvs[0]
+            if num_aggreg_periods > 1:
+                logger.info(
+                    f"coverage configuration {cov_conf.name!r} defines "
+                    f"{len(variable_pvs)} `aggregation_period`s, keeping only the "
+                    f"first one..."
+                )
+        else:
+            logger.info(
+                f"coverage configuration {cov_conf.name!r} does not have a "
+                f"`aggregation_period`, skipping..."
+            )
+            continue
+
+        measure_pvs = [
+            pv
+            for pv in cov_conf.possible_values
+            if pv.configuration_parameter_value.configuration_parameter.name
+            == "measure"
+        ]
+        if (num_measures := len(measure_pvs)) >= 1:
+            measure_pv = measure_pvs[0]
+            if num_measures > 1:
+                logger.info(
+                    f"coverage configuration {cov_conf.name!r} defines "
+                    f"{len(variable_pvs)} `measures`s, keeping only the "
+                    f"first one..."
+                )
+        else:
+            logger.info(
+                f"coverage configuration {cov_conf.name!r} does not have a "
+                f"`measure`, skipping..."
+            )
+            continue
+
+        result_key = "-".join(
+            (
+                variable_pv.configuration_parameter_value.name,
+                aggreg_period_pv.configuration_parameter_value.name,
+                measure_pv.configuration_parameter_value.name,
+            )
+        )
+        aggregated_variable = result.setdefault(result_key, {})
+        aggregated_variable[
+            "climatological_variable"
+        ] = variable_pv.configuration_parameter_value
+        aggregated_variable[
+            "aggregation_period"
+        ] = aggreg_period_pv.configuration_parameter_value
+        aggregated_variable["measure"] = measure_pv.configuration_parameter_value
+        combinations = aggregated_variable.setdefault("combinations", {})
+        params_to_ignore = (
+            "climatological_variable",
+            "aggregation_period",
+            "measure",
+            "uncertainty_type",
+        )
+        for pv in cov_conf.possible_values:
+            param_name = pv.configuration_parameter_value.configuration_parameter.name
+            if param_name not in params_to_ignore:
+                param_entry = combinations.setdefault(param_name, {})
+                param_entry[
+                    "configuration_parameter"
+                ] = pv.configuration_parameter_value.configuration_parameter
+                values = param_entry.setdefault("values", [])
+                existing_value_names = [cpv.name for cpv in values]
+                if pv.configuration_parameter_value.name not in existing_value_names:
+                    values.append(pv.configuration_parameter_value)
+    return result
