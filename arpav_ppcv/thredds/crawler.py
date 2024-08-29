@@ -7,7 +7,6 @@ from pathlib import Path
 import anyio
 import exceptiongroup
 import httpx
-import sqlmodel
 
 from ..schemas import coverages
 from .. import database
@@ -24,12 +23,11 @@ _THREDDS_FILE_SERVER_URL_FRAGMENT = "fileServer"
 
 
 def get_coverage_configuration_urls(
-    session: sqlmodel.Session,
     base_thredds_url: str,
     coverage_configuration: coverages.CoverageConfiguration,
 ) -> list[str]:
-    coverage_identifiers = database.list_allowed_coverage_identifiers(
-        session, coverage_configuration_id=coverage_configuration.id
+    coverage_identifiers = database.generate_coverage_identifiers(
+        coverage_configuration=coverage_configuration
     )
     result = []
     for cov_identifier in coverage_identifiers:

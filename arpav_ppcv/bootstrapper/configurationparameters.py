@@ -17,8 +17,15 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     name="cdd",
                     display_name_english="CDD",
                     display_name_italian="CDD",
-                    description_english="Consecutive Cold Days",
+                    description_english="Consecutive Dry Days",
                     description_italian="Giorni secchi",
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="cdds",
+                    display_name_english="CDDs",
+                    display_name_italian="CDDs",
+                    description_english="Cooling degree days",
+                    description_italian="Gradi giorno di raffrescamento",
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     name="fd",
@@ -26,6 +33,20 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="FD",
                     description_english="Frozen Days",
                     description_italian="Giorni di gelo",
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="hdds",
+                    display_name_english="HDDs",
+                    display_name_italian="HDDs",
+                    description_english="Heating degree days",
+                    description_italian="Gradi giorno di riscaldamento",
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="hwdi",
+                    display_name_english="HWDI",
+                    display_name_italian="HWDI",
+                    description_english="Duration of heat waves",
+                    description_italian="Durata delle ondate di calore",
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     name="pr",
