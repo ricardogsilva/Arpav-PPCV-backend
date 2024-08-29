@@ -55,6 +55,7 @@ dagger-io = "^0.9.10"
 ruff = "^0.2.2"
 pre-commit = "^3.7.1"
 pytest-httpx = "^0.30.0"
+locust = "^2.31.4"
 
 
 [tool.poetry.group.jupyter]

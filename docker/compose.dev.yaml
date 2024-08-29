@@ -198,6 +198,17 @@ services:
     # sensitive information
     command: "-clog_statement=all"
 
+  locust:
+    image: locustio/locust
+    ports:
+      - target: 8089
+        published: 8089
+    volumes:
+      - type: bind
+        source: $PWD/tests/loadtests
+        target: /mnt/locust
+    command: ["-f", "/mnt/locust/locustfile.py"]
+
 volumes:
   db-data:
   test-db-data:

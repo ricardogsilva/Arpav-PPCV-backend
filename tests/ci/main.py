@@ -10,6 +10,7 @@ import typer
 
 logger = logging.getLogger(__name__)
 POSTGIS_IMAGE_VERSION = "postgis/postgis:16-3.4"
+REPO_ROOT = Path(__file__).parents[2]
 
 cli_app = typer.Typer()
 
@@ -25,6 +26,7 @@ def run_ci_pipeline(
             )
         ),
     ] = False,
+    with_load_tests: Annotated[bool, typer.Option(help="Run load tests")] = False,
     with_security_scan: Annotated[
         bool,
         typer.Option(
@@ -66,6 +68,7 @@ def run_ci_pipeline(
     return asyncio.run(
         _run_pipeline(
             with_tests=with_tests,
+            with_load_tests=with_load_tests,
             with_security_scan=with_security_scan,
             with_linter=with_linter,
             with_formatter=with_formatter,
@@ -145,20 +148,16 @@ async def _run_tests(
     built_container: dagger.Container,
     env_variables: dict[str, str],
 ):
-    arpav_db_params = _get_db_parameters(env_variables["ARPAV_PPCV__TEST_DB_DSN"])
-
-    arpav_db_service = (
-        client.container()
-        .from_(POSTGIS_IMAGE_VERSION)
-        .with_env_variable("PGDATA", "/var/lib/postgresql/data/pgdata")
-        .with_env_variable("POSTGRES_DB", arpav_db_params["db"])
-        .with_env_variable("POSTGRES_PASSWORD", arpav_db_params["password"])
-        .with_env_variable("POSTGRES_USER", arpav_db_params["user"])
-        .with_exposed_port(int(arpav_db_params["port"]))
-        .as_service()
+    db_params = _get_db_parameters(env_variables["ARPAV_PPCV__TEST_DB_DSN"])
+    arpav_db_service = _get_arpav_db_service(
+        client,
+        db_params["db"],
+        db_params["user"],
+        db_params["password"],
+        db_params["port"],
     )
     test_container = built_container.with_service_binding(
-        arpav_db_params["host"], arpav_db_service
+        db_params["host"], arpav_db_service
     ).without_entrypoint()
     for var_name, var_value in env_variables.items():
         test_container = test_container.with_env_variable(var_name, var_value)
@@ -169,9 +168,93 @@ async def _run_tests(
     ).stdout()
 
 
+def _get_arpav_db_service(
+    client: dagger.Client,
+    db_name: str,
+    db_user: str,
+    db_password: str,
+    db_port: str | int,
+) -> dagger.Service:
+    return (
+        client.container()
+        .from_(POSTGIS_IMAGE_VERSION)
+        .with_env_variable("PGDATA", "/var/lib/postgresql/data/pgdata")
+        .with_env_variable("POSTGRES_DB", db_name)
+        .with_env_variable("POSTGRES_PASSWORD", db_password)
+        .with_env_variable("POSTGRES_USER", db_user)
+        .with_exposed_port(int(db_port))
+        .as_service()
+    )
+
+
+async def _run_load_tests(
+    client: dagger.Client,
+    test_container: dagger.Container,
+    num_users: int = 20,
+    spawn_rate_users_second: int = 5,
+    run_time_seconds: int = 60,
+):
+    # "ARPAV_PPCV__DB_DSN": "postgresql://arpav:arpavpassword@db:5432/arpav_ppcv",
+    db_user = "arpav"
+    db_password = "arpavpassword"
+    db_host = "db"
+    db_port = 5432
+    db_name = "arpav_ppcv"
+    db_service = _get_arpav_db_service(client, db_name, db_user, db_password, db_port)
+    db_dsn = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+
+    # modifications made to the test container:
+    # - add a proper ARPAV_PPCV__DB_DSN env var, because we are simulating the live
+    #   system
+    webap_service = (
+        test_container.without_entrypoint()
+        .with_env_variable("ARPAV_PPCV__DB_DSN", db_dsn)
+        .with_service_binding(db_host, db_service)
+        .with_exec(shlex.split("poetry run arpav-ppcv db upgrade"))
+        .with_exec(shlex.split("poetry run arpav-ppcv bootstrap observation-variables"))
+        .with_exec(
+            shlex.split(
+                "poetry run arpav-ppcv bootstrap coverage-configuration-parameters"
+            )
+        )
+        .with_exec(
+            shlex.split("poetry run arpav-ppcv bootstrap coverage-configurations")
+        )
+        .with_exec(shlex.split("poetry run arpav-ppcv translations compile"))
+        .with_exec(shlex.split("poetry run arpav-ppcv run-server"))
+        .with_exposed_port(5001)
+        .as_service()
+    )
+    webapp_service_alias = "webapp"
+    locust_dir_mount_path = "/mnt/locust"
+    locust_container = (
+        client.container()
+        .from_("locustio/locust")
+        .with_mounted_directory(
+            locust_dir_mount_path,
+            client.host().directory(str(REPO_ROOT / "tests/loadtests")),
+        )
+        # .with_service_binding(db_host, db_service)
+        .with_service_binding(webapp_service_alias, webap_service)
+    )
+    return await (
+        locust_container.with_exec(
+            shlex.split(
+                f"--headless --users {num_users} "
+                f"--spawn-rate {spawn_rate_users_second} "
+                f"--host http://{webapp_service_alias}:5001 "
+                f"--locustfile {locust_dir_mount_path}/locustfile.py "
+                f"--run-time {run_time_seconds}s "
+                f"--stop-timeout 10s"
+            )
+        )
+    ).stdout()
+
+
 async def _run_pipeline(
     *,
     with_tests: bool,
+    with_load_tests: bool,
     with_security_scan: bool,
     with_linter: bool,
     with_formatter: bool,
@@ -191,12 +274,11 @@ async def _run_pipeline(
     conf = dagger.Config(
         log_output=sys.stderr,
     )
-    repo_root = Path(__file__).parents[2]
     build_args = []
     if git_commit is not None:
         build_args.append(dagger.BuildArg(name="GIT_COMMIT", value=git_commit))
     async with dagger.Connection(conf) as client:
-        src = client.host().directory(str(repo_root))
+        src = client.host().directory(str(REPO_ROOT))
         built_container = (
             client.container()
             .build(context=src, dockerfile="docker/Dockerfile", build_args=build_args)
@@ -211,8 +293,17 @@ async def _run_pipeline(
             await _run_linter(built_container)
         if with_security_scan:
             await _run_security_scan(built_container)
-        if with_tests:
-            await _run_tests(client, built_container, env_variables)
+        if with_tests or with_load_tests:
+            test_container = built_container
+            for var_name, var_value in env_variables.items():
+                test_container = test_container.with_env_variable(var_name, var_value)
+            if with_tests:
+                await _run_tests(client, built_container, env_variables)
+            if with_load_tests:
+                await _run_load_tests(
+                    client,
+                    test_container,
+                )
         if publish_docker_image is not None:
             sanitized_name = _sanitize_docker_image_name(publish_docker_image)
             await built_container.publish(sanitized_name)
