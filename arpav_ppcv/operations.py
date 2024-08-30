@@ -621,22 +621,31 @@ def get_coverage_time_series(
             end,
             cov.identifier,
         )
-        coverage_result[(cov, base.CoverageDataSmoothingStrategy.NO_SMOOTHING)] = df[
-            cov.identifier
-        ].squeeze()
-        for smoothing_strategy in additional_coverage_smoothing_strategies:
-            df, smoothed_column = process_coverage_smoothing_strategy(
-                df,
-                cov.identifier,
-                smoothing_strategy,
-                ignore_warnings=(not settings.debug),
-            )
-            coverage_result[(cov, smoothing_strategy)] = df[smoothed_column].squeeze()
+        unsmoothed_data = df[cov.identifier]
+        coverage_result[
+            (cov, base.CoverageDataSmoothingStrategy.NO_SMOOTHING)
+        ] = unsmoothed_data
+        if unsmoothed_data.count() > 1:
+            for smoothing_strategy in additional_coverage_smoothing_strategies:
+                df, smoothed_column = process_coverage_smoothing_strategy(
+                    df,
+                    cov.identifier,
+                    smoothing_strategy,
+                    ignore_warnings=(not settings.debug),
+                )
+                coverage_result[(cov, smoothing_strategy)] = df[
+                    smoothed_column
+                ].squeeze()
 
     if not include_coverage_data:
         del coverage_result[(coverage, base.CoverageDataSmoothingStrategy.NO_SMOOTHING)]
         for smoothing_strategy in additional_coverage_smoothing_strategies:
-            del coverage_result[(coverage, smoothing_strategy)]
+            try:
+                del coverage_result[(coverage, smoothing_strategy)]
+            except (
+                KeyError
+            ):  # requested smoothing may not be present if the data has a single row
+                pass
 
     observation_result = None
     if include_observation_data:
