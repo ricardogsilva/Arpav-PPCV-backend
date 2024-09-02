@@ -20,6 +20,7 @@ import sqlmodel
 from anyio.from_thread import start_blocking_portal
 from dateutil.parser import isoparse
 from geoalchemy2.shape import to_shape
+from pandas.core.indexes.datetimes import DatetimeIndex
 from pyproj.enums import TransformDirection
 from shapely.ops import transform
 
@@ -437,11 +438,26 @@ def _parse_ncss_dataset(
 
         # - filter out values outside the temporal range
         df.set_index("time", inplace=True)
+
+        # check that we got a datetime index, otherwise we need to modify the values
+        if type(df.index) is not DatetimeIndex:
+            new_index = pd.to_datetime(df.index.map(_simplify_date))
+            df.index = new_index
+
         if time_start is not None:
             df = df[time_start:]
         if time_end is not None:
             df = df[:time_end]
         return df
+
+
+def _simplify_date(raw_date: str) -> str:
+    """Simplify a date by loosing its day and time information.
+
+    This will reset a date to the first day of the underlying month.
+    """
+    raw_year, raw_month = raw_date.split("-")[:2]
+    return f"{raw_year}-{raw_month}-01T00:00:00+00:00"
 
 
 def process_coverage_smoothing_strategy(
