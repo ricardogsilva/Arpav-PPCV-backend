@@ -7,6 +7,7 @@ from typing import (
     Optional,
     Final,
     TYPE_CHECKING,
+    TypedDict,
 )
 
 import pydantic
@@ -525,3 +526,15 @@ class CoverageInternal:
 
     def __hash__(self):
         return hash(self.identifier)
+
+
+class ForecastVariableMenuTreeCombination(TypedDict):
+    configuration_parameter: ConfigurationParameter
+    values: list[ConfigurationParameterValue]
+
+
+class ForecastVariableMenuTree(TypedDict):
+    climatological_variable: ConfigurationParameterValue
+    aggregation_period: ConfigurationParameterValue
+    measure: ConfigurationParameterValue
+    combinations: dict[str, ForecastVariableMenuTreeCombination]

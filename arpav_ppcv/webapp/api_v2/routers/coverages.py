@@ -552,3 +552,24 @@ def get_time_series(
             raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
     else:
         raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
+
+
+@router.get(
+    "/variable-combinations",
+    response_model=coverage_schemas.ForecastVariableCombinationsList,
+)
+def get_variable_combinations(
+    db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+):
+    variable_combinations = operations.get_forecast_variable_parameters(db_session)
+    var_combinations = []
+    for var_name, var_menu in variable_combinations.items():
+        var_combinations.append(
+            coverage_schemas.VariableCombinations.from_items(var_menu)
+        )
+    return coverage_schemas.ForecastVariableCombinationsList(
+        combinations=var_combinations,
+        translations=coverage_schemas.ForecastMenuTranslations.from_items(
+            list(variable_combinations.values())
+        ),
+    )

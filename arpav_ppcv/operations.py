@@ -3,10 +3,7 @@ import functools
 import io
 import logging
 import warnings
-from typing import (
-    Optional,
-    TypedDict,
-)
+from typing import Optional
 
 import anyio
 import cftime
@@ -898,23 +895,9 @@ def _get_spatial_buffer(
     return transform(inverse_coordinate_transformer, buffer_geom_projected)
 
 
-class ForecastVariableMenuTreeCombination(TypedDict):
-    configuration_parameter: coverages.ConfigurationParameter
-    values: list[coverages.ConfigurationParameterPossibleValue]
-
-
-class ForecastVariableMenuTree(TypedDict):
-    climatological_variable: coverages.ConfigurationParameterPossibleValue
-    aggregation_period: coverages.ConfigurationParameterPossibleValue
-    measure: coverages.ConfigurationParameterPossibleValue
-    combinations: dict[str, ForecastVariableMenuTreeCombination]
-
-
 def get_forecast_variable_parameters(
     session: sqlmodel.Session,
-) -> dict[str, ForecastVariableMenuTree]:
-    # - retrieve all the cov confs that have the variable
-    # - for each cov conf, aggregate by aggregation_period and measure
+) -> dict[str, coverages.ForecastVariableMenuTree]:
     result = {}
     all_cov_confs = database.collect_all_coverage_configurations(session)
     for cov_conf in all_cov_confs:
