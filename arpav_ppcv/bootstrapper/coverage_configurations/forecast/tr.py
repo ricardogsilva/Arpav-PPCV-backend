@@ -1,5 +1,5 @@
-from ....schemas.base import ObservationAggregationType
-from ....schemas.coverages import (
+from ...schemas.base import ObservationAggregationType
+from ...schemas.coverages import (
     CoverageConfigurationCreate,
     ConfigurationParameterPossibleValueCreate,
 )
@@ -23,15 +23,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tr",
             wms_main_layer_name="tr",
             thredds_url_pattern="ensymbc/clipped/ecatr_20_avg_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=120,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -71,7 +70,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -89,15 +88,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tr",
             wms_main_layer_name="tr",
             thredds_url_pattern="EC-EARTH_CCLM4-8-17ymbc/clipped/ecatr_20_EC-EARTH_CCLM4-8-17_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=120,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -137,7 +135,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -155,15 +153,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tr",
             wms_main_layer_name="tr",
             thredds_url_pattern="EC-EARTH_RACMO22Eymbc/clipped/ecatr_20_EC-EARTH_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=120,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -203,7 +200,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -221,15 +218,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tr",
             wms_main_layer_name="tr",
             thredds_url_pattern="EC-EARTH_RCA4ymbc/clipped/ecatr_20_EC-EARTH_RCA4_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=120,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -269,7 +265,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -287,15 +283,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tr",
             wms_main_layer_name="tr",
             thredds_url_pattern="HadGEM2-ES_RACMO22Eymbc/clipped/ecatr_20_HadGEM2-ES_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=120,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -335,7 +330,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -353,15 +348,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tr",
             wms_main_layer_name="tr",
             thredds_url_pattern="MPI-ESM-LR_REMO2009ymbc/clipped/ecatr_20_MPI-ESM-LR_REMO2009_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=120,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -401,7 +395,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -419,15 +413,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tr_stdup",
             wms_main_layer_name="tr_stdup",
             thredds_url_pattern="ensymbc/std/clipped/ecatr_20_stdup_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=100,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -472,7 +465,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -486,15 +479,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tr_stddown",
             wms_main_layer_name="tr_stddown",
             thredds_url_pattern="ensymbc/std/clipped/ecatr_20_stddown_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=100,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -539,7 +531,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -554,15 +546,14 @@ def generate_configurations(
             wms_main_layer_name="tr-uncertainty_group",
             wms_secondary_layer_name="tr",
             thredds_url_pattern="ensembletwbc/std/clipped/ecatran_20_avgagree_{time_window}_{scenario}_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="uncert-stippled/seq-YlOrRd",
             color_scale_min=-5,
             color_scale_max=75,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -612,7 +603,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -626,15 +617,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tr",
             wms_main_layer_name="tr",
             thredds_url_pattern="indici5rcm/clipped/ecatran_20_EC-EARTH_CCLM4-8-17_{scenario}_{time_window}_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=-5,
             color_scale_max=75,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -684,7 +674,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -698,15 +688,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tr",
             wms_main_layer_name="tr",
             thredds_url_pattern="indici5rcm/clipped/ecatran_20_EC-EARTH_RACMO22E_{scenario}_{time_window}_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=-5,
             color_scale_max=75,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -756,7 +745,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -770,15 +759,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tr",
             wms_main_layer_name="tr",
             thredds_url_pattern="indici5rcm/clipped/ecatran_20_EC-EARTH_RCA4_{scenario}_{time_window}_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=-5,
             color_scale_max=75,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -828,7 +816,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -842,15 +830,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tr",
             wms_main_layer_name="tr",
             thredds_url_pattern="indici5rcm/clipped/ecatran_20_HadGEM2-ES_RACMO22E_{scenario}_{time_window}_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=-5,
             color_scale_max=75,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -900,7 +887,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -914,15 +901,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tr",
             wms_main_layer_name="tr",
             thredds_url_pattern="indici5rcm/clipped/ecatran_20_MPI-ESM-LR_REMO2009_{scenario}_{time_window}_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=-5,
             color_scale_max=75,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -972,7 +958,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],

@@ -1,4 +1,4 @@
-from ....schemas.coverages import (
+from ...schemas.coverages import (
     CoverageConfigurationCreate,
     ConfigurationParameterPossibleValueCreate,
 )
@@ -27,15 +27,14 @@ def generate_configurations(
             netcdf_main_dataset_name="snwdays",
             wms_main_layer_name="snwdays",
             thredds_url_pattern="ensymbc/clipped/snwdays_1mm_2oc_avg_ts19762100_{scenario}_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-BuYl-inv",
             color_scale_min=0,
             color_scale_max=100,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -75,7 +74,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -89,15 +88,14 @@ def generate_configurations(
             netcdf_main_dataset_name="snwdays",
             wms_main_layer_name="snwdays",
             thredds_url_pattern="EC-EARTH_CCLM4-8-17ymbc/clipped/snwdays_1mm_2oc_EC-EARTH_CCLM4-8-17_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-BuYl-inv",
             color_scale_min=0,
             color_scale_max=100,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -137,7 +135,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -151,15 +149,14 @@ def generate_configurations(
             netcdf_main_dataset_name="snwdays",
             wms_main_layer_name="snwdays",
             thredds_url_pattern="EC-EARTH_RACMO22Eymbc/clipped/snwdays_1mm_2oc_EC-EARTH_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-BuYl-inv",
             color_scale_min=0,
             color_scale_max=100,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -199,7 +196,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -213,15 +210,14 @@ def generate_configurations(
             netcdf_main_dataset_name="snwdays",
             wms_main_layer_name="snwdays",
             thredds_url_pattern="EC-EARTH_RCA4ymbc/clipped/snwdays_1mm_2oc_EC-EARTH_RCA4_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-BuYl-inv",
             color_scale_min=0,
             color_scale_max=100,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -261,7 +257,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -275,15 +271,14 @@ def generate_configurations(
             netcdf_main_dataset_name="snwdays",
             wms_main_layer_name="snwdays",
             thredds_url_pattern="HadGEM2-ES_RACMO22Eymbc/clipped/snwdays_1mm_2oc_HadGEM2-ES_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-BuYl-inv",
             color_scale_min=0,
             color_scale_max=100,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -323,7 +318,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -337,15 +332,14 @@ def generate_configurations(
             netcdf_main_dataset_name="snwdays",
             wms_main_layer_name="snwdays",
             thredds_url_pattern="MPI-ESM-LR_REMO2009ymbc/clipped/snwdays_1mm_2oc_MPI-ESM-LR_REMO2009_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-BuYl-inv",
             color_scale_min=0,
             color_scale_max=100,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -385,7 +379,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -399,15 +393,14 @@ def generate_configurations(
             netcdf_main_dataset_name="snwdays_stdup",
             wms_main_layer_name="snwdays_stdup",
             thredds_url_pattern="ensymbc/std/clipped/snwdays_1mm_2oc_stdup_ts19762100_{scenario}_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-BuYl-inv",
             color_scale_min=0,
             color_scale_max=100,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -452,7 +445,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -466,15 +459,14 @@ def generate_configurations(
             netcdf_main_dataset_name="snwdays_stddown",
             wms_main_layer_name="snwdays_stddown",
             thredds_url_pattern="ensymbc/std/clipped/snwdays_1mm_2oc_stddown_ts19762100_{scenario}_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-BuYl-inv",
             color_scale_min=0,
             color_scale_max=100,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -519,7 +511,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -535,15 +527,14 @@ def generate_configurations(
             wms_main_layer_name="snwdays-uncertainty_group",
             wms_secondary_layer_name="snwdays",
             thredds_url_pattern="ensembletwbc/std/clipped/snwdays_an_1mm_2oc_avgagree_{time_window}_{scenario}_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="uncert-stippled/seq-YlOrBr-inv",
             color_scale_min=-50,
             color_scale_max=0,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -593,7 +584,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -607,15 +598,14 @@ def generate_configurations(
             netcdf_main_dataset_name="snwdays",
             wms_main_layer_name="snwdays",
             thredds_url_pattern="indici5rcm/clipped/snwdays_an_1mm_2oc_EC-EARTH_CCLM4-8-17_{scenario}_{time_window}_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrBr-inv",
             color_scale_min=-50,
             color_scale_max=0,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -665,7 +655,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -679,15 +669,14 @@ def generate_configurations(
             netcdf_main_dataset_name="snwdays",
             wms_main_layer_name="snwdays",
             thredds_url_pattern="indici5rcm/clipped/snwdays_an_1mm_2oc_EC-EARTH_RACMO22E_{scenario}_{time_window}_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrBr-inv",
             color_scale_min=-50,
             color_scale_max=0,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -737,7 +726,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -751,15 +740,14 @@ def generate_configurations(
             netcdf_main_dataset_name="snwdays",
             wms_main_layer_name="snwdays",
             thredds_url_pattern="indici5rcm/clipped/snwdays_an_1mm_2oc_EC-EARTH_RCA4_{scenario}_{time_window}_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrBr-inv",
             color_scale_min=-50,
             color_scale_max=0,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -809,7 +797,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -823,15 +811,14 @@ def generate_configurations(
             netcdf_main_dataset_name="snwdays",
             wms_main_layer_name="snwdays",
             thredds_url_pattern="indici5rcm/clipped/snwdays_an_1mm_2oc_HadGEM2-ES_RACMO22E_{scenario}_{time_window}_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrBr-inv",
             color_scale_min=-50,
             color_scale_max=0,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -881,7 +868,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -895,15 +882,14 @@ def generate_configurations(
             netcdf_main_dataset_name="snwdays",
             wms_main_layer_name="snwdays",
             thredds_url_pattern="indici5rcm/clipped/snwdays_an_1mm_2oc_MPI-ESM-LR_REMO2009_{scenario}_{time_window}_ls_VFVG.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrBr-inv",
             color_scale_min=-50,
             color_scale_max=0,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -953,7 +939,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],

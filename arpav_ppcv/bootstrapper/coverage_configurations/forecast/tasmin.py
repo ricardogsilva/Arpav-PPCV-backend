@@ -1,5 +1,5 @@
-from ....schemas.base import ObservationAggregationType
-from ....schemas.coverages import (
+from ...schemas.base import ObservationAggregationType
+from ...schemas.coverages import (
     CoverageConfigurationCreate,
     ConfigurationParameterPossibleValueCreate,
 )
@@ -23,14 +23,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="ensymbc/clipped/tasmin_avg_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-3,
             color_scale_max=32,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -70,22 +70,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -103,14 +103,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="ensymbc/clipped/tasmin_avg_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-3,
             color_scale_max=32,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -150,7 +150,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -168,14 +168,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="EC-EARTH_CCLM4-8-17ymbc/clipped/tasmin_EC-EARTH_CCLM4-8-17_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-3,
             color_scale_max=32,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -215,22 +215,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -248,14 +248,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="EC-EARTH_CCLM4-8-17ymbc/clipped/tasmin_EC-EARTH_CCLM4-8-17_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-13,
             color_scale_max=27,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -295,7 +295,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -313,14 +313,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="EC-EARTH_RACMO22Eymbc/clipped/tasmin_EC-EARTH_RACMO22E_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-3,
             color_scale_max=32,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -360,22 +360,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -393,14 +393,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="EC-EARTH_RACMO22Eymbc/clipped/tasmin_EC-EARTH_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-13,
             color_scale_max=27,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -440,7 +440,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -458,14 +458,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="EC-EARTH_RCA4ymbc/clipped/tasmin_EC-EARTH_RCA4_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-3,
             color_scale_max=32,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -505,22 +505,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -538,14 +538,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="EC-EARTH_RCA4ymbc/clipped/tasmin_EC-EARTH_RCA4_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-13,
             color_scale_max=27,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -585,7 +585,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -603,14 +603,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="HadGEM2-ES_RACMO22Eymbc/clipped/tasmin_HadGEM2-ES_RACMO22E_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-3,
             color_scale_max=32,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -650,22 +650,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -683,14 +683,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="HadGEM2-ES_RACMO22Eymbc/clipped/tasmin_HadGEM2-ES_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-13,
             color_scale_max=27,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -730,7 +730,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -748,14 +748,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="MPI-ESM-LR_REMO2009ymbc/clipped/tasmin_MPI-ESM-LR_REMO2009_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-3,
             color_scale_max=32,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -795,22 +795,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -828,14 +828,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="MPI-ESM-LR_REMO2009ymbc/clipped/tasmin_MPI-ESM-LR_REMO2009_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-13,
             color_scale_max=27,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -875,7 +875,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -893,14 +893,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin_stdup",
             wms_main_layer_name="tasmin_stdup",
             thredds_url_pattern="ensymbc/std/clipped/tasmin_stdup_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-13,
             color_scale_max=27,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -945,22 +945,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -974,14 +974,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin_stddown",
             wms_main_layer_name="tasmin_stddown",
             thredds_url_pattern="ensymbc/std/clipped/tasmin_stddown_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-13,
             color_scale_max=27,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1026,22 +1026,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -1055,14 +1055,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin_stdup",
             wms_main_layer_name="tasmin_stdup",
             thredds_url_pattern="ensymbc/std/clipped/tasmin_stdup_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-13,
             color_scale_max=27,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1107,7 +1107,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -1121,14 +1121,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin_stddown",
             wms_main_layer_name="tasmin_stddown",
             thredds_url_pattern="ensymbc/std/clipped/tasmin_stddown_{scenario}_ts19762100_ls_VFVG.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=-13,
             color_scale_max=27,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1173,7 +1173,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -1188,14 +1188,14 @@ def generate_configurations(
             wms_main_layer_name="tasmin-uncertainty_group",
             wms_secondary_layer_name="tasmin",
             thredds_url_pattern="ensembletwbc/std/clipped/tasmin_avgagree_anom_{time_window}_{scenario}_{year_period}_VFVGTAA.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="uncert-stippled/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=6,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1250,22 +1250,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -1279,14 +1279,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="taspr5rcm/clipped/tasmin_EC-EARTH_CCLM4-8-17_{scenario}_seas_{time_window}{year_period}_VFVGTAA.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=6,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1336,22 +1336,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -1365,14 +1365,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="taspr5rcm/clipped/tasmin_EC-EARTH_RACMO22E_{scenario}_seas_{time_window}{year_period}_VFVGTAA.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=6,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1422,22 +1422,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -1451,14 +1451,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="taspr5rcm/clipped/tasmin_EC-EARTH_RCA4_{scenario}_seas_{time_window}{year_period}_VFVGTAA.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=6,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1508,22 +1508,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -1537,14 +1537,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="taspr5rcm/clipped/tasmin_HadGEM2-ES_RACMO22E_{scenario}_seas_{time_window}{year_period}_VFVGTAA.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=6,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1594,22 +1594,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -1623,14 +1623,14 @@ def generate_configurations(
             netcdf_main_dataset_name="tasmin",
             wms_main_layer_name="tasmin",
             thredds_url_pattern="taspr5rcm/clipped/tasmin_MPI-ESM-LR_REMO2009_{scenario}_seas_{time_window}{year_period}_VFVGTAA.nc",
-            unit_english="ºC",
+            unit="ºC",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=6,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1680,22 +1680,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],

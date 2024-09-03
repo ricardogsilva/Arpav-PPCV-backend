@@ -1,4 +1,4 @@
-from ....schemas.coverages import (
+from ...schemas.coverages import (
     CoverageConfigurationCreate,
     ConfigurationParameterPossibleValueCreate,
 )
@@ -29,15 +29,14 @@ def generate_configurations(
             wms_main_layer_name="heat_wave_duration_index_wrt_mean_of_reference_period-uncertainty_group",
             wms_secondary_layer_name="heat_wave_duration_index_wrt_mean_of_reference_period",
             thredds_url_pattern="ensembletwbc/std/clipped/heat_waves_anom_avgagree_55_{time_window}_{scenario}_{year_period}_VFVGTAA.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="uncert-stippled/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=50,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -87,7 +86,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
             ],
@@ -101,15 +100,14 @@ def generate_configurations(
             netcdf_main_dataset_name="heat_wave_duration_index_wrt_mean_of_reference_period",
             wms_main_layer_name="heat_wave_duration_index_wrt_mean_of_reference_period",
             thredds_url_pattern="indici5rcm/clipped/heat_waves_anom_EC-EARTH_CCLM4-8-17_{scenario}_{year_period}_55_{time_window}_VFVGTAA.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=50,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -159,7 +157,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
             ],
@@ -173,15 +171,14 @@ def generate_configurations(
             netcdf_main_dataset_name="heat_wave_duration_index_wrt_mean_of_reference_period",
             wms_main_layer_name="heat_wave_duration_index_wrt_mean_of_reference_period",
             thredds_url_pattern="indici5rcm/clipped/heat_waves_anom_EC-EARTH_RACMO22E_{scenario}_{year_period}_55_{time_window}_VFVGTAA.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=50,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -231,7 +228,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
             ],
@@ -245,15 +242,14 @@ def generate_configurations(
             netcdf_main_dataset_name="heat_wave_duration_index_wrt_mean_of_reference_period",
             wms_main_layer_name="heat_wave_duration_index_wrt_mean_of_reference_period",
             thredds_url_pattern="indici5rcm/clipped/heat_waves_anom_EC-EARTH_RCA4_{scenario}_{year_period}_55_{time_window}_VFVGTAA.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=50,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -303,7 +299,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
             ],
@@ -317,15 +313,14 @@ def generate_configurations(
             netcdf_main_dataset_name="heat_wave_duration_index_wrt_mean_of_reference_period",
             wms_main_layer_name="heat_wave_duration_index_wrt_mean_of_reference_period",
             thredds_url_pattern="indici5rcm/clipped/heat_waves_anom_HadGEM2-ES_RACMO22E_{scenario}_{year_period}_55_{time_window}_VFVGTAA.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=50,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -375,7 +370,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
             ],
@@ -389,15 +384,14 @@ def generate_configurations(
             netcdf_main_dataset_name="heat_wave_duration_index_wrt_mean_of_reference_period",
             wms_main_layer_name="heat_wave_duration_index_wrt_mean_of_reference_period",
             thredds_url_pattern="indici5rcm/clipped/heat_waves_anom_MPI-ESM-LR_REMO2009_{scenario}_{year_period}_55_{time_window}_VFVGTAA.nc",
-            unit_english="days",
-            unit_italian="gg",
+            unit="gg",
             palette="default/seq-YlOrRd",
             color_scale_min=0,
             color_scale_max=50,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -447,7 +441,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
             ],

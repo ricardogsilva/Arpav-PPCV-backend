@@ -1,4 +1,4 @@
-from ....schemas.coverages import (
+from ...schemas.coverages import (
     CoverageConfigurationCreate,
     ConfigurationParameterPossibleValueCreate,
 )
@@ -28,14 +28,14 @@ def generate_configurations(
             wms_main_layer_name="r95ptot-uncertainty_group",
             wms_secondary_layer_name="r95ptot",
             thredds_url_pattern="ensembletwbc/std/clipped/pr_change_cumulative_check_avgagree_{time_window}_{scenario}_{year_period}_VFVGTAA.nc",
-            unit_english="%",
+            unit="%",
             palette="uncert-stippled/div-BrBG",
             color_scale_min=-160,
             color_scale_max=160,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -85,22 +85,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -114,14 +114,14 @@ def generate_configurations(
             netcdf_main_dataset_name="r95ptot",
             wms_main_layer_name="r95ptot",
             thredds_url_pattern="indici5rcm/clipped/pr_change_cumulative_EC-EARTH_CCLM4-8-17_{year_period}_{scenario}_{time_window}_VFVGTAA.nc",
-            unit_english="%",
+            unit="%",
             palette="default/div-BrBG",
             color_scale_min=-160,
             color_scale_max=160,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -171,22 +171,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -200,14 +200,14 @@ def generate_configurations(
             netcdf_main_dataset_name="r95ptot",
             wms_main_layer_name="r95ptot",
             thredds_url_pattern="indici5rcm/clipped/pr_change_cumulative_EC-EARTH_RACMO22E_{year_period}_{scenario}_{time_window}_VFVGTAA.nc",
-            unit_english="%",
+            unit="%",
             palette="default/div-BrBG",
             color_scale_min=-160,
             color_scale_max=160,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -257,22 +257,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -286,14 +286,14 @@ def generate_configurations(
             netcdf_main_dataset_name="r95ptot",
             wms_main_layer_name="r95ptot",
             thredds_url_pattern="indici5rcm/clipped/pr_change_cumulative_EC-EARTH_RCA4_{year_period}_{scenario}_{time_window}_VFVGTAA.nc",
-            unit_english="%",
+            unit="%",
             palette="default/div-BrBG",
             color_scale_min=-160,
             color_scale_max=160,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -343,22 +343,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -372,14 +372,14 @@ def generate_configurations(
             netcdf_main_dataset_name="r95ptot",
             wms_main_layer_name="r95ptot",
             thredds_url_pattern="indici5rcm/clipped/pr_change_cumulative_HadGEM2-ES_RACMO22E_{year_period}_{scenario}_{time_window}_VFVGTAA.nc",
-            unit_english="%",
+            unit="%",
             palette="default/div-BrBG",
             color_scale_min=-160,
             color_scale_max=160,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -429,22 +429,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -458,14 +458,14 @@ def generate_configurations(
             netcdf_main_dataset_name="r95ptot",
             wms_main_layer_name="r95ptot",
             thredds_url_pattern="indici5rcm/clipped/pr_change_cumulative_MPI-ESM-LR_REMO2009_{year_period}_{scenario}_{time_window}_VFVGTAA.nc",
-            unit_english="%",
+            unit="%",
             palette="default/div-BrBG",
             color_scale_min=-160,
             color_scale_max=160,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -515,22 +515,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
