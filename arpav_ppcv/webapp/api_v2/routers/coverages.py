@@ -181,9 +181,6 @@ def get_coverage_configuration(
     )
 
 
-# PossibleValue: pydantic.StringConstraints(pattern="^[\w-_]+:[\w-_]+$")
-
-
 @router.get(
     "/coverage-identifiers",
     response_model=coverage_schemas.CoverageIdentifierList,
@@ -237,6 +234,32 @@ def list_coverage_identifiers(
         filtered_total=filtered_total,
         unfiltered_total=unfiltered_total,
     )
+
+
+@router.get(
+    "/coverage-identifiers/{coverage_identifier}",
+    response_model=coverage_schemas.CoverageIdentifierReadListItem,
+)
+def get_coverage_identifier(
+    request: Request,
+    settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
+    db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+    coverage_identifier: str,
+):
+    cov_conf = db.get_coverage_configuration_by_coverage_identifier(
+        db_session, coverage_identifier
+    )
+    if cov_conf is not None:
+        return coverage_schemas.CoverageIdentifierReadListItem.from_db_instance(
+            instance=CoverageInternal(
+                identifier=coverage_identifier,
+                configuration=cov_conf,
+            ),
+            settings=settings,
+            request=request,
+        )
+    else:
+        raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
 
 
 @router.get("/wms/{coverage_identifier}")

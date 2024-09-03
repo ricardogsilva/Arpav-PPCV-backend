@@ -65,6 +65,9 @@ class CoverageConfigurationRead(sqlmodel.SQLModel):
         "CoverageConfigurationReadListItem"
     ]
     related_coverages: list[RelatedCoverageConfigurationRead]
+    related_time_series_coverage_configuration: Optional[
+        "CoverageConfigurationReadListItem"
+    ]
 
 
 class ObservationVariableRead(sqlmodel.SQLModel):

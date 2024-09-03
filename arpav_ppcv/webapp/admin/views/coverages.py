@@ -317,6 +317,14 @@ class CoverageConfigurationView(ModelView):
                 "which have the upper uncertainty bounds values"
             ),
         ),
+        fields.RelatedCoverageconfigurationsField(
+            "related_time_series_coverage_configuration",
+            choices_loader=coverage_configurations_choices_loader,
+            help_text=(
+                "Coverage configuration to be used for time series values instead of "
+                "this one, if any"
+            ),
+        ),
         starlette_admin.ListField(
             field=fields.RelatedCoverageconfigurationsField(
                 "related_coverages",
@@ -349,6 +357,7 @@ class CoverageConfigurationView(ModelView):
         "uncertainty_lower_bounds_coverage_configuration",
         "uncertainty_upper_bounds_coverage_configuration",
         "related_coverages",
+        "related_time_series_coverage_configuration",
     )
     exclude_fields_from_edit = ("coverage_id_pattern",)
 
@@ -397,6 +406,18 @@ class CoverageConfigurationView(ModelView):
             )
         else:
             uncertainty_upper_bounds_coverage_configuration = None
+        related_time_series_cov_conf = (
+            instance.related_time_series_coverage_configuration
+        )
+        if related_time_series_cov_conf is not None:
+            related_time_series_coverage_configuration = (
+                read_schemas.CoverageConfigurationReadListItem(
+                    id=related_time_series_cov_conf.id,
+                    name=related_time_series_cov_conf.name,
+                )
+            )
+        else:
+            related_time_series_coverage_configuration = None
         return read_schemas.CoverageConfigurationRead(
             **instance.model_dump(exclude={"observation_variable_aggregation_type"}),
             observation_variable_aggregation_type=(
@@ -420,6 +441,7 @@ class CoverageConfigurationView(ModelView):
                 )
                 for rcc in instance.secondary_coverage_configurations
             ],
+            related_time_series_coverage_configuration=related_time_series_coverage_configuration,
         )
 
     async def find_by_pk(
@@ -498,6 +520,17 @@ class CoverageConfigurationView(ModelView):
                 uncertainty_upper_id = db_uncertainty_upper.id
             else:
                 uncertainty_upper_id = None
+            if (
+                related_ts_name := data.get(
+                    "related_time_series_coverage_configuration"
+                )
+            ) is not None:
+                db_ts_cov_conf = database.get_coverage_configuration_by_name(
+                    session, related_ts_name
+                )
+                related_ts_cov_conf_id = db_ts_cov_conf.id
+            else:
+                related_ts_cov_conf_id = None
             related_cov_conf_ids = []
             for related_cov_conf_name in data.get("related_coverages", []):
                 db_related_cov_conf = database.get_coverage_configuration_by_name(
@@ -527,6 +560,7 @@ class CoverageConfigurationView(ModelView):
                 ),
                 uncertainty_lower_bounds_coverage_configuration_id=uncertainty_lower_id,
                 uncertainty_upper_bounds_coverage_configuration_id=uncertainty_upper_id,
+                related_time_series_coverage_configuration_id=related_ts_cov_conf_id,
                 secondary_coverage_configurations_ids=related_cov_conf_ids,
             )
             db_cov_conf = await anyio.to_thread.run_sync(
@@ -581,6 +615,17 @@ class CoverageConfigurationView(ModelView):
                 uncertainty_upper_id = db_uncertainty_upper.id
             else:
                 uncertainty_upper_id = None
+            if (
+                related_ts_name := data.get(
+                    "related_time_series_coverage_configuration"
+                )
+            ) is not None:
+                db_related_ts_cov_conf = database.get_coverage_configuration_by_name(
+                    session, related_ts_name
+                )
+                related_ts_id = db_related_ts_cov_conf.id
+            else:
+                related_ts_id = None
             related_cov_conf_ids = []
             for related_cov_conf_name in data.get("related_coverages", []):
                 db_related_cov_conf = database.get_coverage_configuration_by_name(
@@ -610,6 +655,7 @@ class CoverageConfigurationView(ModelView):
                 ),
                 uncertainty_lower_bounds_coverage_configuration_id=uncertainty_lower_id,
                 uncertainty_upper_bounds_coverage_configuration_id=uncertainty_upper_id,
+                related_time_series_coverage_configuration_id=related_ts_id,
                 secondary_coverage_configurations_ids=related_cov_conf_ids,
             )
             db_coverage_configuration = await anyio.to_thread.run_sync(

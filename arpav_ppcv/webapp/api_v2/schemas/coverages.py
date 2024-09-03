@@ -169,6 +169,8 @@ class CoverageIdentifierReadListItem(pydantic.BaseModel):
     wms_base_url: str
     wms_main_layer_name: str | None = None
     wms_secondary_layer_name: str | None = None
+    time_series_base_url: str
+    uses_different_data_for_time_series: bool = False
     possible_values: list[ConfigurationParameterPossibleValueRead]
 
     @classmethod
@@ -188,11 +190,25 @@ class CoverageIdentifierReadListItem(pydantic.BaseModel):
                 thredds_url_fragment,
             )
         )
+        time_series_cov_conf = (
+            instance.configuration.related_time_series_coverage_configuration
+        )
+        if time_series_cov_conf is None:
+            time_series_id = instance.identifier
+            uses_different_data_for_time_series = False
+        else:
+            time_series_id = instance.identifier  # FIXME
+            uses_different_data_for_time_series = True
+
         return cls(
             identifier=instance.identifier,
             wms_base_url=wms_base_url,
             wms_main_layer_name=instance.configuration.wms_main_layer_name,
             wms_secondary_layer_name=instance.configuration.wms_secondary_layer_name,
+            time_series_base_url=str(
+                request.url_for("get_time_series", coverage_identifier=time_series_id)
+            ),
+            uses_different_data_for_time_series=uses_different_data_for_time_series,
             related_coverage_configuration_url=str(
                 request.url_for(
                     "get_coverage_configuration",

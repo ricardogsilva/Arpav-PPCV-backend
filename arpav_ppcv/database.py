@@ -1067,6 +1067,9 @@ def create_coverage_configuration(
         uncertainty_upper_bounds_coverage_configuration_id=(
             coverage_configuration_create.uncertainty_upper_bounds_coverage_configuration_id
         ),
+        related_time_series_coverage_configuration_id=(
+            coverage_configuration_create.related_time_series_coverage_configuration_id
+        ),
     )
     session.add(db_coverage_configuration)
     to_refresh.append(db_coverage_configuration)

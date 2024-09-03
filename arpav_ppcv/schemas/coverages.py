@@ -172,6 +172,9 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
     uncertainty_upper_bounds_coverage_configuration_id: Optional[
         uuid.UUID
     ] = sqlmodel.Field(default=None, foreign_key="coverageconfiguration.id")
+    related_time_series_coverage_configuration_id: Optional[uuid.UUID] = sqlmodel.Field(
+        default=None, foreign_key="coverageconfiguration.id"
+    )
 
     possible_values: list[
         "ConfigurationParameterPossibleValue"
@@ -242,6 +245,23 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         back_populates="uncertainty_upper_bounds_coverage_configuration",
         sa_relationship_kwargs={
             "foreign_keys": "CoverageConfiguration.uncertainty_upper_bounds_coverage_configuration_id",
+        },
+    )
+    related_time_series_coverage_configuration: Optional[
+        "CoverageConfiguration"
+    ] = sqlmodel.Relationship(
+        back_populates="is_used_for_time_series_of",
+        sa_relationship_kwargs={
+            "foreign_keys": "CoverageConfiguration.related_time_series_coverage_configuration_id",
+            "remote_side": "CoverageConfiguration.id",
+        },
+    )
+    is_used_for_time_series_of: Optional[
+        "CoverageConfiguration"
+    ] = sqlmodel.Relationship(
+        back_populates="related_time_series_coverage_configuration",
+        sa_relationship_kwargs={
+            "foreign_keys": "CoverageConfiguration.related_time_series_coverage_configuration_id",
         },
     )
 
@@ -386,6 +406,7 @@ class CoverageConfigurationCreate(sqlmodel.SQLModel):
     ] = None
     uncertainty_lower_bounds_coverage_configuration_id: Optional[uuid.UUID] = None
     uncertainty_upper_bounds_coverage_configuration_id: Optional[uuid.UUID] = None
+    related_time_series_coverage_configuration_id: Optional[uuid.UUID] = None
     secondary_coverage_configurations_ids: Annotated[
         Optional[list[uuid.UUID]], pydantic.Field(default_factory=list)
     ]
@@ -420,6 +441,7 @@ class CoverageConfigurationUpdate(sqlmodel.SQLModel):
     possible_values: list["ConfigurationParameterPossibleValueUpdate"]
     uncertainty_lower_bounds_coverage_configuration_id: Optional[uuid.UUID] = None
     uncertainty_upper_bounds_coverage_configuration_id: Optional[uuid.UUID] = None
+    related_time_series_coverage_configuration_id: Optional[uuid.UUID] = None
     secondary_coverage_configurations_ids: Optional[list[uuid.UUID]] = None
 
     @pydantic.field_validator("thredds_url_pattern")
