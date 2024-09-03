@@ -2342,15 +2342,15 @@ def get_related_map() -> dict[str, list[str]]:
 def get_uncertainty_map() -> dict[str, tuple[str, str]]:
     return {
         "pr_seasonal_anomaly_model_ensemble": (
-            "pr_seasonal_anomaly_model_ensemble_upper_uncertainty",
             "pr_seasonal_anomaly_model_ensemble_lower_uncertainty",
+            "pr_seasonal_anomaly_model_ensemble_upper_uncertainty",
         ),
         "pr_seasonal_absolute_model_ensemble": (
-            "pr_seasonal_absolute_model_ensemble_upper_uncertainty",
             "pr_seasonal_absolute_model_ensemble_lower_uncertainty",
+            "pr_seasonal_absolute_model_ensemble_upper_uncertainty",
         ),
         "pr_annual_absolute_model_ensemble": (
-            "pr_annual_absolute_model_ensemble_upper_uncertainty",
             "pr_annual_absolute_model_ensemble_lower_uncertainty",
+            "pr_annual_absolute_model_ensemble_upper_uncertainty",
         ),
     }
