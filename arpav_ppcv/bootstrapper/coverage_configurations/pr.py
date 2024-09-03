@@ -4,7 +4,7 @@ from ...schemas.coverages import (
     ConfigurationParameterPossibleValueCreate,
 )
 
-_DISPLAY_NAME_ENGLISH = "Rainfall"
+_DISPLAY_NAME_ENGLISH = "Precipiation"
 _DISPLAY_NAME_ITALIAN = "Precipitazione"
 _DESCRIPTION_ENGLISH = "Daily precipitation near the ground"
 _DESCRIPTION_ITALIAN = "Precipitazioni giornaliere in prossimità del suolo"
@@ -28,6 +28,11 @@ def generate_configurations(
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
@@ -101,6 +106,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
                     ].id
                 ),
@@ -170,6 +180,11 @@ def generate_configurations(
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
@@ -243,6 +258,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
                     ].id
                 ),
@@ -312,6 +332,11 @@ def generate_configurations(
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
@@ -385,6 +410,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
                     ].id
                 ),
@@ -454,6 +484,11 @@ def generate_configurations(
             color_scale_min=0,
             color_scale_max=0,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
@@ -532,6 +567,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
                     ].id
                 ),
@@ -606,6 +646,11 @@ def generate_configurations(
             color_scale_min=0,
             color_scale_max=800,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
@@ -683,6 +728,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
                     ].id
                 ),
@@ -741,6 +791,11 @@ def generate_configurations(
             color_scale_min=0,
             color_scale_max=800,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
@@ -818,6 +873,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
                     ].id
                 ),
@@ -876,6 +936,11 @@ def generate_configurations(
             color_scale_min=0,
             color_scale_max=800,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
@@ -953,6 +1018,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
                     ].id
                 ),
@@ -1011,6 +1081,11 @@ def generate_configurations(
             color_scale_min=0,
             color_scale_max=800,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
@@ -1088,6 +1163,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
                     ].id
                 ),
@@ -1146,6 +1226,11 @@ def generate_configurations(
             color_scale_min=0,
             color_scale_max=800,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
@@ -1223,6 +1308,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
                     ].id
                 ),
@@ -1281,6 +1371,11 @@ def generate_configurations(
             color_scale_min=0,
             color_scale_max=800,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
@@ -1358,6 +1453,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
                     ].id
                 ),
@@ -1416,6 +1516,11 @@ def generate_configurations(
             color_scale_min=0,
             color_scale_max=800,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
@@ -1494,6 +1599,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
                     ].id
                 ),
@@ -1570,6 +1680,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
                     ].id
                 ),
@@ -1629,6 +1744,11 @@ def generate_configurations(
             color_scale_min=0,
             color_scale_max=3200,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
@@ -1691,6 +1811,11 @@ def generate_configurations(
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
@@ -1774,6 +1899,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
                     ].id
                 ),
@@ -1853,6 +1983,11 @@ def generate_configurations(
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
@@ -1936,6 +2071,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
                     ].id
                 ),
@@ -2017,6 +2157,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")
                     ].id
                 ),
@@ -2096,6 +2241,11 @@ def generate_configurations(
             color_scale_min=-40,
             color_scale_max=40,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "pr")

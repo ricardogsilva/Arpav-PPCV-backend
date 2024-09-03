@@ -7,6 +7,102 @@ from ..schemas.coverages import (
 def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
     return [
         ConfigurationParameterCreate(
+            name="observation_variable",
+            display_name_english="Variable",
+            display_name_italian="Variabile",
+            description_english="Observation variable",
+            description_italian="Variabile di osservazione",
+            allowed_values=[
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="tdd",
+                    display_name_english="Average temperature",
+                    display_name_italian="Temperatura media",
+                    description_english="Average of average temperatures",
+                    description_italian="Media delle temperature medie",
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="tnd",
+                    display_name_english="Minimum temperature",
+                    display_name_italian="Temperatura minima",
+                    description_english="Average of minimum temperatures",
+                    description_italian="Media delle temperature minime",
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="txd",
+                    display_name_english="Maximum temperature",
+                    display_name_italian="Temperatura massima",
+                    description_english="Average of maximum temperatures",
+                    description_italian="Media delle temperature massime",
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="tr",
+                    display_name_english="Tropical nights",
+                    display_name_italian="Notti tropicali",
+                    description_english=(
+                        "Number of days with minimum temperature higher than 20°C"
+                    ),
+                    description_italian=(
+                        "Numero di giorni con temperatura minima maggiore di 20°C"
+                    ),
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="su30",
+                    display_name_english="Hot days",
+                    display_name_italian="Giorni caldi",
+                    description_english=(
+                        "Number of days with maximum temperature above 30°C"
+                    ),
+                    description_italian=(
+                        "Numero di giorni con temperatura massima maggiore di 30°C"
+                    ),
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="fd",
+                    display_name_english="Frosty days",
+                    display_name_italian="Giorni di gelo",
+                    description_english=(
+                        "Number of days with minimum temperature below 0°C"
+                    ),
+                    description_italian=(
+                        "Numero di giorni con temperatura minima minore di 0°C"
+                    ),
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="hdds",
+                    display_name_english="Heating degree days",
+                    display_name_italian="Gradi giorno di riscaldamento",
+                    description_english=(
+                        "Sum of 20°C minus the average daily temperature if the "
+                        "average daily temperature is less than 20°C."
+                    ),
+                    description_italian=(
+                        "Somma di 20°C meno la temperatura media giornaliera se la "
+                        "temperatura media giornaliera è minore di 20°C."
+                    ),
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="cdds",
+                    display_name_english="Cooling degree days",
+                    display_name_italian="Gradi giorno di raffrescamento",
+                    description_english=(
+                        "Sum of the average daily temperature minus 21°C if the average "
+                        "daily temperature is greater than 24°C."
+                    ),
+                    description_italian=(
+                        "Somma della temperatura media giornaliera meno 21°C se la "
+                        "temperatura media giornaliera è maggiore di 24°C."
+                    ),
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="prcptot",
+                    display_name_english="Precipitation",
+                    display_name_italian="Precipitazione",
+                    description_english=("Daily precipitation near the ground"),
+                    description_italian=("Precipitazione giornaliera vicino al suolo"),
+                ),
+            ],
+        ),
+        ConfigurationParameterCreate(
             name="climatological_variable",
             display_name_english="Variable",
             display_name_italian="Variabile",
@@ -410,6 +506,29 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                         "Il set di dati contiene valori relativi all'incertezza del "
                         "limite inferiore"
                     ),
+                ),
+            ],
+        ),
+        ConfigurationParameterCreate(
+            name="collection",
+            display_name_english="Dataset collection",
+            display_name_italian="Raccolta di set di dati",
+            description_english="The collection that the dataset belongs to",
+            description_italian="La raccolta a cui appartiene il set di dati",
+            allowed_values=[
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="historical",
+                    display_name_english="Historical data",
+                    display_name_italian="Dati storici",
+                    description_english=("Datasets obtained from historical data"),
+                    description_italian=("Set di dati ottenuti da dati storici"),
+                ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    name="forecast",
+                    display_name_english="Forecast data",
+                    display_name_italian="Dati di previsione",
+                    description_english=("Datasets obtained from forecasts"),
+                    description_italian=("Set di dati ottenuti dalle previsioni"),
                 ),
             ],
         ),

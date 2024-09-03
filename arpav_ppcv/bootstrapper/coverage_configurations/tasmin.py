@@ -30,6 +30,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
                     ].id
                 ),
@@ -105,6 +110,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
                     ].id
                 ),
@@ -163,6 +173,11 @@ def generate_configurations(
             color_scale_min=-3,
             color_scale_max=32,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
@@ -240,6 +255,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
                     ].id
                 ),
@@ -298,6 +318,11 @@ def generate_configurations(
             color_scale_min=-3,
             color_scale_max=32,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
@@ -375,6 +400,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
                     ].id
                 ),
@@ -433,6 +463,11 @@ def generate_configurations(
             color_scale_min=-3,
             color_scale_max=32,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
@@ -510,6 +545,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
                     ].id
                 ),
@@ -568,6 +608,11 @@ def generate_configurations(
             color_scale_min=-3,
             color_scale_max=32,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
@@ -645,6 +690,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
                     ].id
                 ),
@@ -703,6 +753,11 @@ def generate_configurations(
             color_scale_min=-3,
             color_scale_max=32,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
@@ -780,6 +835,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
                     ].id
                 ),
@@ -838,6 +898,11 @@ def generate_configurations(
             color_scale_min=-13,
             color_scale_max=27,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
@@ -916,6 +981,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
                     ].id
                 ),
@@ -992,6 +1062,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
                     ].id
                 ),
@@ -1051,6 +1126,11 @@ def generate_configurations(
             color_scale_min=-13,
             color_scale_max=27,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
@@ -1113,6 +1193,11 @@ def generate_configurations(
             color_scale_min=0,
             color_scale_max=6,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
@@ -1201,6 +1286,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
                     ].id
                 ),
@@ -1280,6 +1370,11 @@ def generate_configurations(
             color_scale_min=0,
             color_scale_max=6,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
@@ -1363,6 +1458,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
                     ].id
                 ),
@@ -1444,6 +1544,11 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
                     ].id
                 ),
@@ -1523,6 +1628,11 @@ def generate_configurations(
             color_scale_min=0,
             color_scale_max=6,
             possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tasmin")
