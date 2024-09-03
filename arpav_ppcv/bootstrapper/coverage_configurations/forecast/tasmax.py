@@ -1,5 +1,5 @@
-from ....schemas.base import ObservationAggregationType
-from ....schemas.coverages import (
+from ...schemas.base import ObservationAggregationType
+from ...schemas.coverages import (
     CoverageConfigurationCreate,
     ConfigurationParameterPossibleValueCreate,
 )
@@ -30,7 +30,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -70,22 +70,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -110,7 +110,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -150,7 +150,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -175,7 +175,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -215,22 +215,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -255,7 +255,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -295,7 +295,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -320,7 +320,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -360,22 +360,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -400,7 +400,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -440,7 +440,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -465,7 +465,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -505,22 +505,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -545,7 +545,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -585,7 +585,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -610,7 +610,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -650,22 +650,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -690,7 +690,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -730,7 +730,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -755,7 +755,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -795,22 +795,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -835,7 +835,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -875,7 +875,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -900,7 +900,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -945,22 +945,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -981,7 +981,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1026,22 +1026,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -1062,7 +1062,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1107,7 +1107,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -1128,7 +1128,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1173,7 +1173,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -1195,7 +1195,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1245,22 +1245,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -1281,7 +1281,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1331,22 +1331,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -1367,7 +1367,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1417,22 +1417,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -1453,7 +1453,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1503,22 +1503,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -1539,7 +1539,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1589,22 +1589,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
@@ -1625,7 +1625,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1675,22 +1675,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        ("year_period", "DJF")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        ("year_period", "MAM")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        ("year_period", "JJA")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        ("year_period", "SON")
                     ].id
                 ),
             ],
