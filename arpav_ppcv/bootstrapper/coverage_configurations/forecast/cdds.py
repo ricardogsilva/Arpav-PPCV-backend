@@ -1,4 +1,4 @@
-from ....schemas.coverages import (
+from ...schemas.coverages import (
     CoverageConfigurationCreate,
     ConfigurationParameterPossibleValueCreate,
 )
@@ -35,7 +35,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -75,7 +75,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -96,7 +96,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -136,7 +136,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -157,7 +157,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -197,7 +197,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -218,7 +218,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -258,7 +258,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -279,7 +279,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -319,7 +319,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -340,7 +340,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -380,7 +380,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -401,7 +401,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -446,7 +446,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -467,7 +467,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -512,7 +512,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -535,7 +535,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -585,7 +585,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -606,7 +606,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -656,7 +656,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -677,7 +677,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -727,7 +727,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -748,7 +748,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -798,7 +798,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -819,7 +819,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -869,7 +869,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
@@ -890,7 +890,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("collection", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -940,7 +940,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "all_year")
+                        ("year_period", "year")
                     ].id
                 ),
             ],
