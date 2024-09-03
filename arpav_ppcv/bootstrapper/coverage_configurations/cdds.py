@@ -970,7 +970,7 @@ def get_related_map() -> dict[str, list[str]]:
 def get_uncertainty_map() -> dict[str, tuple[str, str]]:
     return {
         "cdds_annual_absolute_model_ensemble": (
-            "cdds_annual_absolute_model_ensemble_upper_uncertainty",
             "cdds_annual_absolute_model_ensemble_lower_uncertainty",
+            "cdds_annual_absolute_model_ensemble_upper_uncertainty",
         ),
     }

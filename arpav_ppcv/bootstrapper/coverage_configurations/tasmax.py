@@ -1722,11 +1722,11 @@ def get_related_map() -> dict[str, list[str]]:
 def get_uncertainty_map() -> dict[str, tuple[str, str]]:
     return {
         "tasmax_seasonal_absolute_model_ensemble": (
-            "tasmax_seasonal_absolute_model_ensemble_upper_uncertainty",
             "tasmax_seasonal_absolute_model_ensemble_lower_uncertainty",
+            "tasmax_seasonal_absolute_model_ensemble_upper_uncertainty",
         ),
         "tasmax_annual_absolute_model_ensemble": (
-            "tasmax_annual_absolute_model_ensemble_upper_uncertainty",
             "tasmax_annual_absolute_model_ensemble_lower_uncertainty",
+            "tasmax_annual_absolute_model_ensemble_upper_uncertainty",
         ),
     }
