@@ -1,5 +1,6 @@
 import uuid
 import typing
+from typing import Optional
 
 import pydantic
 from fastapi import Request
@@ -178,6 +179,7 @@ class CoverageIdentifierReadListItem(pydantic.BaseModel):
         cls,
         instance: app_models.CoverageInternal,
         settings: ArpavPpcvSettings,
+        related_time_series_coverage: Optional[app_models.CoverageInternal],
         request: Request,
     ) -> "CoverageIdentifierReadListItem":
         thredds_url_fragment = instance.configuration.get_thredds_url_fragment(
@@ -190,15 +192,12 @@ class CoverageIdentifierReadListItem(pydantic.BaseModel):
                 thredds_url_fragment,
             )
         )
-        time_series_cov_conf = (
-            instance.configuration.related_time_series_coverage_configuration
-        )
-        if time_series_cov_conf is None:
+        if related_time_series_coverage is not None:
+            time_series_id = related_time_series_coverage.identifier
+            uses_different_data_for_time_series = True
+        else:
             time_series_id = instance.identifier
             uses_different_data_for_time_series = False
-        else:
-            time_series_id = instance.identifier  # FIXME
-            uses_different_data_for_time_series = True
 
         return cls(
             identifier=instance.identifier,

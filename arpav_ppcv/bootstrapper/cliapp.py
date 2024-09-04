@@ -255,7 +255,11 @@ def bootstrap_coverage_configurations(
         to_update[name] = {
             "related": related_names,
         }
-
+    for name, related_time_series in {
+        **tas.get_related_time_series_map(),
+    }.items():
+        info = to_update.setdefault(name, {})
+        info["related_time_series"] = related_time_series
     for name, uncertainties in {
         **cdd.get_uncertainty_map(),
         **cdds.get_uncertainty_map(),
@@ -278,6 +282,7 @@ def bootstrap_coverage_configurations(
         main_cov_conf = all_cov_confs[name]
         secondaries = info.get("related")
         uncertainties = info.get("uncertainties")
+        related_time_series = info.get("related_time_series")
         update_kwargs = {}
         if secondaries is not None:
             secondary_cov_confs = [
@@ -298,6 +303,15 @@ def bootstrap_coverage_configurations(
             update_kwargs.update(
                 uncertainty_lower_bounds_coverage_configuration_id=lower_uncert_id,
                 uncertainty_upper_bounds_coverage_configuration_id=upper_uncert_id,
+            )
+        if related_time_series is not None:
+            related_time_series_id = [
+                cc.id
+                for name, cc in all_cov_confs.items()
+                if name == related_time_series
+            ][0]
+            update_kwargs.update(
+                related_time_series_coverage_configuration_id=related_time_series_id
             )
         cov_update = CoverageConfigurationUpdate(
             **main_cov_conf.model_dump(

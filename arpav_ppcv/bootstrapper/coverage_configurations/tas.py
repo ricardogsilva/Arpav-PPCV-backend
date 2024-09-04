@@ -2491,3 +2491,9 @@ def get_uncertainty_map() -> dict[str, tuple[str, str]]:
             "tas_barometro_climatico_upper_uncertainty",
         ),
     }
+
+
+def get_related_time_series_map() -> dict[str, str]:
+    return {
+        "tas_30yr_anomaly_seasonal_agree_model_ensemble": "tas_annual_absolute_model_ensemble",
+    }

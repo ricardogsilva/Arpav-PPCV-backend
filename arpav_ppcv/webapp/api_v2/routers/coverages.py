@@ -250,12 +250,15 @@ def get_coverage_identifier(
         db_session, coverage_identifier
     )
     if cov_conf is not None:
+        cov = CoverageInternal(
+            identifier=coverage_identifier,
+            configuration=cov_conf,
+        )
+        related_time_series_cov = operations.get_time_series_related_coverage(cov)
         return coverage_schemas.CoverageIdentifierReadListItem.from_db_instance(
-            instance=CoverageInternal(
-                identifier=coverage_identifier,
-                configuration=cov_conf,
-            ),
+            instance=cov,
             settings=settings,
+            related_time_series_coverage=related_time_series_cov,
             request=request,
         )
     else:

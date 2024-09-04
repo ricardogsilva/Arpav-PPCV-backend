@@ -529,6 +529,61 @@ def get_related_uncertainty_coverage_configurations(
     return lower_cov, upper_cov
 
 
+def get_time_series_related_coverage(
+    coverage: coverages.CoverageInternal,
+) -> Optional[coverages.CoverageInternal]:
+    if (
+        related_cov_conf
+        := coverage.configuration.related_time_series_coverage_configuration
+    ) is not None:
+        used_values = coverage.configuration.retrieve_used_values(coverage.identifier)
+        possible_used = [
+            pv.configuration_parameter_value
+            for pv in coverage.configuration.related_time_series_coverage_configuration.possible_values
+        ]
+        possible_used_ids = [
+            (
+                uv.configuration_parameter.id,
+                uv.id,
+            )
+            for uv in possible_used
+        ]
+        values_to_use = []
+        for used_value in used_values:
+            used_value_ids = (
+                used_value.configuration_parameter_value.configuration_parameter_id,
+                used_value.configuration_parameter_value.id,
+            )
+            if used_value_ids in possible_used_ids:
+                values_to_use.append(used_value.configuration_parameter_value)
+            else:
+                used_param_id = (
+                    used_value.configuration_parameter_value.configuration_parameter_id
+                )
+                try:
+                    first_used_value_with_same_config_parameter = [
+                        cp
+                        for cp in possible_used
+                        if cp.configuration_parameter_id == used_param_id
+                    ][0]
+                    values_to_use.append(first_used_value_with_same_config_parameter)
+                except IndexError:
+                    logger.warning(
+                        f"Could not find a usable value for "
+                        f"{used_value.configuration_parameter_value.configuration_parameter.name}"
+                        f"- "
+                        f"{used_value.configuration_parameter_value.name} "
+                    )
+        related_id = related_cov_conf.build_coverage_identifier(values_to_use)
+        result = coverages.CoverageInternal(
+            identifier=related_id,
+            configuration=related_cov_conf,
+        )
+    else:
+        result = None
+    return result
+
+
 def get_related_coverages(
     coverage: coverages.CoverageInternal,
 ) -> list[coverages.CoverageInternal]:
