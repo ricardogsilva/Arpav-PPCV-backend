@@ -239,9 +239,11 @@ class CoverageIdentifierList(WebResourceList):
     path_operation_name = "list_coverage_identifiers"
 
     @classmethod
-    def from_items(
+    def from_items(  # noqa
         cls,
-        items: typing.Sequence[app_models.CoverageInternal],
+        items: typing.Sequence[
+            tuple[app_models.CoverageInternal, Optional[app_models.CoverageInternal]]
+        ],
         request: Request,
         *,
         settings: ArpavPpcvSettings,
@@ -250,15 +252,22 @@ class CoverageIdentifierList(WebResourceList):
         filtered_total: int,
         unfiltered_total: int,
     ):
+        items_to_list = []
+        for cov, related_time_series_cov in items:
+            items_to_list.append(
+                CoverageIdentifierReadListItem.from_db_instance(
+                    cov,
+                    settings,
+                    related_time_series_coverage=related_time_series_cov,
+                    request=request,
+                )
+            )
         return cls(
-            meta=cls._get_meta(len(items), unfiltered_total, filtered_total),
+            meta=cls._get_meta(len(items_to_list), unfiltered_total, filtered_total),
             links=cls._get_list_links(
-                request, limit, offset, filtered_total, len(items)
+                request, limit, offset, filtered_total, len(items_to_list)
             ),
-            items=[
-                CoverageIdentifierReadListItem.from_db_instance(i, settings, request)
-                for i in items
-            ],
+            items=items_to_list,
         )
 
 

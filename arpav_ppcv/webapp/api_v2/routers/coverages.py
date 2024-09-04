@@ -224,9 +224,13 @@ def list_coverage_identifiers(
     _, unfiltered_total = db.list_coverage_identifiers(
         db_session, limit=1, offset=0, include_total=True
     )
+    items = []
+    for cov in cov_internals:
+        related_time_series_cov = operations.get_time_series_related_coverage(cov)
+        items.append((cov, related_time_series_cov))
 
     return coverage_schemas.CoverageIdentifierList.from_items(
-        cov_internals,
+        items,
         request,
         settings=settings,
         limit=list_params.limit,
