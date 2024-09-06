@@ -454,10 +454,10 @@ def _parse_ncss_dataset(
 def _simplify_date(raw_date: str) -> str:
     """Simplify a date by loosing its day and time information.
 
-    This will reset a date to the first day of the underlying month.
+    This will reset a date to the 15th day of the underlying month.
     """
     raw_year, raw_month = raw_date.split("-")[:2]
-    return f"{raw_year}-{raw_month}-01T00:00:00+00:00"
+    return f"{raw_year}-{raw_month}-15T00:00:00+00:00"
 
 
 def process_coverage_smoothing_strategy(
