@@ -257,12 +257,22 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         return "-".join(f"{{{part}}}" for part in all_parts)
 
     def get_thredds_url_fragment(self, coverage_identifier: str) -> str:
+        return self._render_templated_value(
+            coverage_identifier, self.thredds_url_pattern
+        )
+
+    def get_main_netcdf_dataset_name(self, coverage_identifier: str) -> str:
+        return self._render_templated_value(
+            coverage_identifier, self.netcdf_main_dataset_name
+        )
+
+    def _render_templated_value(self, coverage_identifier: str, template: str) -> str:
         try:
             used_values = self.retrieve_used_values(coverage_identifier)
         except IndexError as err:
             logger.exception("Could not retrieve used values")
             raise exceptions.InvalidCoverageIdentifierException() from err
-        rendered = self.thredds_url_pattern
+        rendered = template
         for used_value in used_values:
             param_name = (
                 used_value.configuration_parameter_value.configuration_parameter.name
