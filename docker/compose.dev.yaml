@@ -41,6 +41,8 @@ services:
     ports:
       - target: 80
         published: 8877
+      - target: 81
+        published: 8899
       - target: 8080
         published: 8878
     command: --configFile /traefik.toml
@@ -51,12 +53,16 @@ services:
 
   frontend:
     image: "ghcr.io/geobeyond/arpav-ppcv/arpav-ppcv:${FRONTEND_GIT_BRANCH:-latest}"
+    labels:
+      - "traefik.http.routers.arpav-frontend-router.entrypoints=web"
     ports:
       - target: 80
         published: 5003
 
   webapp:
     image: *webapp-image
+    labels:
+      - "traefik.http.routers.arpav-backend-router.entrypoints=web"
     environment:
       <<: *common-env
       ARPAV_PPCV__CORS_ORIGINS: '["*"]'
@@ -147,6 +153,8 @@ services:
         target: /additional
 
   martin:
+    labels:
+      - "traefik.http.routers.martin-router.entrypoints=web"
     ports:
       - target: 3000
         published: 3000
@@ -160,6 +168,8 @@ services:
         target: /martin-config.yaml
 
   prefect-server:
+    labels:
+      - "traefik.http.routers.prefect-router.entrypoints=web"
     environment:
       PREFECT_API_DATABASE_CONNECTION_URL: "postgresql+asyncpg://prefect:prefectpassword@prefect-db/prefect"
       PREFECT_API_URL: "http://0.0.0.0:4200/api"
@@ -210,7 +220,8 @@ services:
     command: ["-f", "/mnt/locust/locustfile.py"]
 
   tolgee-app:
-    image: tolgee/tolgee
+    labels:
+      - "traefik.http.routers.tolgee-app-router.entrypoints=webDifferentPort"
     environment:
       SERVER_PORT: "8080"
       SPRING_DATASOURCE_URL: "jdbc:postgresql://tolgee-db:5432/tolgee"
@@ -219,20 +230,16 @@ services:
       TOLGEE_AUTHENTICATION_ENABLED: "false"
       TOLGEE_AUTHENTICATION_JWT_SECRET: "dxpw5w66th5sa53m2hbgazmxaases92nqwifjigi3j9owznoyuq6frbnppc7bo9tjmgm5e"
       TOLGEE_FILE_STORAGE_FS_DATA_PATH: "/data"
-      TOLGEE_FRONTEND_URL: "http://localhost:6003"
+      TOLGEE_FRONTEND_URL: "http://localhost:8899"
       TOLGEE_POSTGRES_AUTOSTART_ENABLED: "false"
       TOLGEE_TELEMETRY_ENABLED: "false"
     volumes:
       - tolgee-app-data:/data
-    depends_on:
-      tolgee-db:
-        condition: service_healthy
-    ports:
-      - target: 8080
-        published: 6003
+#    ports:
+#      - target: 8080
+#        published: 6003
 
   tolgee-db:
-    image: "postgis/postgis:16-3.4"
     environment:
       POSTGRES_USER: "tolgee_user"
       POSTGRES_PASSWORD: "tolgeepass"

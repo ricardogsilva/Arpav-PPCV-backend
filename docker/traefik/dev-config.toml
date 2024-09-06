@@ -15,6 +15,9 @@
 [entryPoints.web]
 address = ":80"
 
+[entryPoints.webDifferentPort]
+address = ":81"
+
 [providers]
 
 [providers.docker]
