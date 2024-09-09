@@ -138,3 +138,19 @@ services:
     environment:
       PG_DATA: /var/lib/postgresql/data/pgdata
     healthcheck: *postgres-db-healthcheck
+
+  tolgee-app:
+    image: "tolgee/tolgee:v3.71.4"
+    depends_on:
+      tolgee-db:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tolgee-app-router.rule=PathPrefix(`/`)"
+      - "traefik.http.services.tolgee-app-service.loadbalancer.server.port=8080"
+
+  tolgee-db:
+    image: "postgis/postgis:16-3.4"
+    environment:
+      PG_DATA: /var/lib/postgresql/data/pgdata
+    healthcheck: *postgres-db-healthcheck

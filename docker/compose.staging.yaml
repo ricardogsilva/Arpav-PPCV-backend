@@ -22,6 +22,8 @@ x-env-file-frontend: &env-file-frontend ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_FRONTEN
 x-env-file-prefect-db: &env-file-prefect-db ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_PREFECT_DB_SERVICE:-/home/arpav/environment-files/prefect-db-service.env}
 x-env-file-prefect-server: &env-file-prefect-server ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_PREFECT_SERVER_SERVICE:-/home/arpav/environment-files/prefect-server-service.env}
 x-env-file-prefect-static-worker: &env-file-prefect-static-worker ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_PREFECT_STATIC_WORKER_SERVICE:-/home/arpav/environment-files/prefect-static-worker-service.env}
+x-env-file-tolgee-db: &env-file-tolgee-db ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_TOLGEE_DB_SERVICE:-/home/arpav/environment-files/tolgee-db-service.env}
+x-env-file-tolgee-app: &env-file-tolgee-app ${ARPAV_PPCV_DEPLOYMENT_ENV_FILE_TOLGEE_APP_SERVICE:-/home/arpav/environment-files/tolgee-app-service.env}
 
 name: arpav-ppcv-staging
 
@@ -42,7 +44,7 @@ services:
       - "traefik.http.routers.outside-router-arpav-backend.entrypoints=webSecure"
       - "traefik.http.routers.outside-router-arpav-backend.tls=true"
       - "traefik.http.routers.outside-router-arpav-backend.tls.certResolver=letsEncryptResolver"
-      - "traefik.http.routers.outside-router-arpav-backend.rule=Host(`arpav.geobeyond.dev`)"
+      - "traefik.http.routers.outside-router-arpav-backend.rule=Host(`arpav.geobeyond.dev`) || Host(`tolgee.arpav.geobeyond.dev`)"
       - "exposed.outside=true"
     networks:
       - front
@@ -137,6 +139,7 @@ services:
       - "exposed.inside=true"
     env_file:
       - *env-file-prefect-server
+    restart: unless-stopped
 
   prefect-static-worker:
     networks:
@@ -154,6 +157,26 @@ services:
       - prefect-db-data:/var/lib/postgresql/data
     restart: unless-stopped
 
+  tolgee-app:
+    labels:
+      - "exposed.inside=true"
+      - "traefik.http.routers.tolgee-app-router.rule=Host(`tolgee.arpav.geobeyond.dev`)"
+    networks:
+      - back
+    env_file:
+      - *env-file-tolgee-app
+    restart: unless-stopped
+
+  tolgee-db:
+    networks:
+      - back
+    env_file:
+      - *env-file-tolgee-db
+    volumes:
+      - tolgee-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
 volumes:
   db-data:
   prefect-db-data:
+  tolgee-db-data:
