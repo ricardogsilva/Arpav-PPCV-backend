@@ -1,8 +1,10 @@
+import fnmatch
 import logging
 import traceback
 import typing
 from itertools import islice
 from pathlib import Path
+from xml.etree import ElementTree as etree
 
 import anyio
 import exceptiongroup
@@ -20,6 +22,60 @@ _NAMESPACES: typing.Final = {
 }
 
 _THREDDS_FILE_SERVER_URL_FRAGMENT = "fileServer"
+
+
+async def find_thredds_dataset_url(
+    http_client: httpx.AsyncClient,
+    coverage: coverages.CoverageInternal,
+    base_thredds_url: str,
+) -> typing.Optional[str]:
+    """Contact remote THREDDS server and discover concrete dataset URL.
+
+    Some coverages may use fnmatch-style patterns, in order to indicate
+    that the exact name of the THREDDS dataset is not known by the
+    configuration. This function lists the available datasets at the
+    THREDDS server and then keeps the first one whose name matches
+    the fnmatch pattern.
+    """
+    full_fragment = coverage.configuration.get_thredds_url_fragment(coverage.identifier)
+    catalog_fragment, name_fragment = full_fragment.rpartition("/")[::2]
+    catalog_url = f"{base_thredds_url}/catalog/{catalog_fragment}/catalog.xml"
+    response = await http_client.get(catalog_url)
+    result = None
+    if response.status_code == httpx.codes.OK:
+        try:
+            root = etree.fromstring(response.content)
+        except etree.ParseError:
+            logger.error(
+                f"Could not parse THREDDS server response as XML: {response.content}"
+            )
+        else:
+            found_names = fnmatch.filter(
+                (
+                    ds_el.get("name", "")
+                    for ds_el in root.findall(f".//{{{_NAMESPACES['thredds']}}}dataset")
+                ),
+                name_fragment,
+            )
+            if (num_names := len(found_names)) > 0:
+                if num_names > 1:
+                    logger.warning(
+                        f"Found multiple possible thredds dataset URLs {found_names!r}, "
+                        f"kept the first one and ignored the others"
+                    )
+                keeper = found_names[0]
+                result = "/".join((catalog_fragment, keeper))
+            else:
+                logger.warning(
+                    f"did not find any datasets with a name that matches the input "
+                    f"fnmatch pattern: {name_fragment!r}"
+                )
+    else:
+        logger.error(
+            f"Request for {catalog_url!r} received invalid response from THREDDS "
+            f"catalog service {response.status_code!r} - {response.content!r}"
+        )
+    return result
 
 
 def get_coverage_configuration_urls(
