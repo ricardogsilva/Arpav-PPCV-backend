@@ -90,6 +90,9 @@ def _get_climate_barometer_data(
         )
     )
     ds = netCDF4.Dataset(opendap_url)
+    netcdf_variable_name = coverage.configuration.get_main_netcdf_variable_name(
+        coverage.identifier
+    )
     df = pd.DataFrame(
         {
             "time": pd.Series(
@@ -100,9 +103,7 @@ def _get_climate_barometer_data(
                 )
             ),
             coverage.identifier: pd.Series(
-                ds.variables[coverage.configuration.netcdf_main_dataset_name][
-                    :
-                ].ravel(),
+                ds.variables[netcdf_variable_name][:].ravel(),
             ),
         }
     )
@@ -384,7 +385,9 @@ async def async_retrieve_data_via_ncss(
     raw_coverage_data = await ncss.async_query_dataset(
         http_client,
         thredds_ncss_url=ncss_url,
-        netcdf_variable_name=coverage.configuration.netcdf_main_dataset_name,
+        netcdf_variable_name=coverage.configuration.get_main_netcdf_variable_name(
+            coverage.identifier
+        ),
         longitude=point_geom.x,
         latitude=point_geom.y,
         time_start=time_start,
@@ -630,9 +633,10 @@ def get_coverage_time_series(
     ]
 
     for cov, data_ in raw_data.items():
+        cov: coverages.CoverageInternal
         df = _parse_ncss_dataset(
             data_,
-            cov.configuration.netcdf_main_dataset_name,
+            cov.configuration.get_main_netcdf_variable_name(cov.identifier),
             start,
             end,
             cov.identifier,
