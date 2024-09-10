@@ -1,4 +1,4 @@
-from ...schemas.coverages import (
+from ....schemas.coverages import (
     CoverageConfigurationCreate,
     ConfigurationParameterPossibleValueCreate,
 )

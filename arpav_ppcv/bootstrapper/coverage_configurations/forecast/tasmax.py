@@ -1,5 +1,5 @@
-from ...schemas.base import ObservationAggregationType
-from ...schemas.coverages import (
+from ....schemas.base import ObservationAggregationType
+from ....schemas.coverages import (
     CoverageConfigurationCreate,
     ConfigurationParameterPossibleValueCreate,
 )
