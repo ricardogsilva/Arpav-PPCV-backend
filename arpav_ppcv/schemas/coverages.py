@@ -261,7 +261,7 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
             coverage_identifier, self.thredds_url_pattern
         )
 
-    def get_main_netcdf_dataset_name(self, coverage_identifier: str) -> str:
+    def get_main_netcdf_variable_name(self, coverage_identifier: str) -> str:
         return self._render_templated_value(
             coverage_identifier, self.netcdf_main_dataset_name
         )
