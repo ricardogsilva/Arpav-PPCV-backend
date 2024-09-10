@@ -29,8 +29,8 @@ from arpav_ppcv.webapp.api_v2.app import create_app as create_v2_app
 from arpav_ppcv.bootstrapper.configurationparameters import (
     generate_configuration_parameters as bootstrappable_configuration_parameters,
 )
-from arpav_ppcv.bootstrapper.coverage_configurations import (
-    tas as tas_bootstrappable_configurations,
+from arpav_ppcv.bootstrapper.coverage_configurations.forecast import (
+    tas as tas_forecast_bootstrappable_configurations,
 )
 from arpav_ppcv.bootstrapper.variables import (
     generate_variable_configurations as bootstrappable_variables,
@@ -303,12 +303,14 @@ def sample_real_coverage_configurations(
     all_conf_param_values = database.collect_all_configuration_parameter_values(
         arpav_db_session
     )
-    cov_confs_to_create = tas_bootstrappable_configurations.generate_configurations(
-        conf_param_values={
-            (pv.configuration_parameter.name, pv.name): pv
-            for pv in all_conf_param_values
-        },
-        variables={v.name: v for v in all_vars},
+    cov_confs_to_create = (
+        tas_forecast_bootstrappable_configurations.generate_configurations(
+            conf_param_values={
+                (pv.configuration_parameter.name, pv.name): pv
+                for pv in all_conf_param_values
+            },
+            variables={v.name: v for v in all_vars},
+        )
     )
     created_cov_confs = {}
     for cov_conf_to_create in cov_confs_to_create:
@@ -319,14 +321,14 @@ def sample_real_coverage_configurations(
 
     to_update = {}
     for name, related_names in {
-        **tas_bootstrappable_configurations.get_related_map(),
+        **tas_forecast_bootstrappable_configurations.get_related_map(),
     }.items():
         to_update[name] = {
             "related": related_names,
         }
 
     for name, uncertainties in {
-        **tas_bootstrappable_configurations.get_uncertainty_map(),
+        **tas_forecast_bootstrappable_configurations.get_uncertainty_map(),
     }.items():
         info = to_update.setdefault(name, {})
         info["uncertainties"] = uncertainties

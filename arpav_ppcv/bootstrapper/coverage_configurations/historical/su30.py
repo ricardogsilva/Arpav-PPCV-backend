@@ -4,16 +4,16 @@ from ....schemas.coverages import (
     ConfigurationParameterPossibleValueCreate,
 )
 
-_DISPLAY_NAME_ENGLISH = "Average temperature"
-_DISPLAY_NAME_ITALIAN = "Temperatura media"
-_DESCRIPTION_ENGLISH = "Average of average temperatures"
-_DESCRIPTION_ITALIAN = "Media delle temperature medie"
+_DISPLAY_NAME_ENGLISH = "Hot days"
+_DISPLAY_NAME_ITALIAN = "Giorni caldi"
+_DESCRIPTION_ENGLISH = "Number of days with maximum temperature above 30°C"
+_DESCRIPTION_ITALIAN = "Numero di giorni con temperatura massima maggiore di 30°C"
 _HISTORICAL_COLLECTION = "historical"
-_OBSERVATION_VARIABLE = "tdd"
-_UNIT = "ºC"
-_COLOR_SCALE_MIN = -5
-_COLOR_SCALE_MAX = 20
-_RELATED_OBSERVATION_VARIABLE_NAME = "TDd"
+_OBSERVATION_VARIABLE = "su30"
+_UNIT = "gg"
+_COLOR_SCALE_MIN = 0
+_COLOR_SCALE_MAX = 80
+_RELATED_OBSERVATION_VARIABLE_NAME = "SU30"
 
 
 def generate_configurations(
@@ -21,14 +21,14 @@ def generate_configurations(
 ) -> list[CoverageConfigurationCreate]:
     cov_confs = [
         CoverageConfigurationCreate(
-            name="tdd_30yr_yearly",
+            name="su30_30yr_yearly",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="{observation_year_period}_avg",
             wms_main_layer_name="{observation_year_period}_avg",
-            thredds_url_pattern="cline_30yr/TDd_1991-2020.nc",
+            thredds_url_pattern="cline_30yr/SU30_1991-2020.nc",
             unit=_UNIT,
             palette="default/seq-YlOrRd",
             color_scale_min=_COLOR_SCALE_MIN,
@@ -62,14 +62,14 @@ def generate_configurations(
             ],
         ),
         CoverageConfigurationCreate(
-            name="tdd_annual_yearly",
+            name="su30_annual_yearly",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="TDd",
-            wms_main_layer_name="TDd",
-            thredds_url_pattern="cline_yr/TDd_{observation_year_period}_1992-2023_py85.nc",
+            netcdf_main_dataset_name="SU30",
+            wms_main_layer_name="SU30",
+            thredds_url_pattern="cline_yr/SU30_{observation_year_period}_1992-2023_py85.nc",
             unit=_UNIT,
             palette="default/seq-YlOrRd",
             color_scale_min=_COLOR_SCALE_MIN,
@@ -109,23 +109,18 @@ def generate_configurations(
             observation_variable_aggregation_type=ObservationAggregationType.YEARLY,
         ),
     ]
-    for season_name, season_id, duration in (
-        ("winter", "S01", "1992-2024"),
-        ("spring", "S02", "1992-2024"),
-        ("summer", "S03", "1992-2023"),
-        ("autumn", "S04", "1992-2023"),
-    ):
+    for season_name, season_id, duration in (("summer", "S03", "1992-2023"),):
         cov_confs.extend(
             [
                 CoverageConfigurationCreate(
-                    name=f"tdd_30yr_{season_name}",
+                    name=f"su30_30yr_{season_name}",
                     display_name_english=_DISPLAY_NAME_ENGLISH,
                     display_name_italian=_DISPLAY_NAME_ITALIAN,
                     description_english=_DESCRIPTION_ENGLISH,
                     description_italian=_DESCRIPTION_ITALIAN,
                     netcdf_main_dataset_name="{observation_year_period}_avg",
                     wms_main_layer_name="{observation_year_period}_avg",
-                    thredds_url_pattern="cline_30yr/TDd_1991-2020.nc",
+                    thredds_url_pattern="cline_30yr/SU30_1991-2020.nc",
                     unit=_UNIT,
                     palette="default/seq-YlOrRd",
                     color_scale_min=_COLOR_SCALE_MIN,
@@ -159,15 +154,15 @@ def generate_configurations(
                     ],
                 ),
                 CoverageConfigurationCreate(
-                    name=f"tdd_annual_{season_name}",
+                    name=f"su30_annual_{season_name}",
                     display_name_english=_DISPLAY_NAME_ENGLISH,
                     display_name_italian=_DISPLAY_NAME_ITALIAN,
                     description_english=_DESCRIPTION_ENGLISH,
                     description_italian=_DESCRIPTION_ITALIAN,
-                    netcdf_main_dataset_name="TDd",
-                    wms_main_layer_name="TDd",
+                    netcdf_main_dataset_name="SU30",
+                    wms_main_layer_name="SU30",
                     thredds_url_pattern=(
-                        f"cline_yr/TDd_{{observation_year_period}}_{duration}_py85.nc"
+                        f"cline_yr/SU30_{{observation_year_period}}_{duration}_py85.nc"
                     ),
                     unit=_UNIT,
                     palette="default/seq-YlOrRd",
@@ -211,30 +206,23 @@ def generate_configurations(
             ]
         )
     for month_name, month_id, duration in (
-        ("january", "M01", "1992-2024"),
-        ("february", "M02", "1992-2024"),
-        ("march", "M03", "1992-2024"),
-        ("april", "M04", "1992-2024"),
         ("may", "M05", "1992-2024"),
         ("june", "M06", "1992-2024"),
         ("july", "M07", "1992-2024"),
         ("august", "M08", "1992-2023"),
         ("september", "M09", "1992-2023"),
-        ("october", "M10", "1992-2023"),
-        ("november", "M11", "1992-2023"),
-        ("december", "M12", "1992-2023"),
     ):
         cov_confs.extend(
             [
                 CoverageConfigurationCreate(
-                    name=f"tdd_30yr_{month_name}",
+                    name=f"su30_30yr_{month_name}",
                     display_name_english=_DISPLAY_NAME_ENGLISH,
                     display_name_italian=_DISPLAY_NAME_ITALIAN,
                     description_english=_DESCRIPTION_ENGLISH,
                     description_italian=_DESCRIPTION_ITALIAN,
                     netcdf_main_dataset_name="{observation_year_period}_avg",
                     wms_main_layer_name="{observation_year_period}_avg",
-                    thredds_url_pattern="cline_30yr/TDd_1991-2020.nc",
+                    thredds_url_pattern="cline_30yr/SU30_1991-2020.nc",
                     unit=_UNIT,
                     palette="default/seq-YlOrRd",
                     color_scale_min=_COLOR_SCALE_MIN,
@@ -268,15 +256,15 @@ def generate_configurations(
                     ],
                 ),
                 CoverageConfigurationCreate(
-                    name=f"tdd_annual_{month_name}",
+                    name=f"su30_annual_{month_name}",
                     display_name_english=_DISPLAY_NAME_ENGLISH,
                     display_name_italian=_DISPLAY_NAME_ITALIAN,
                     description_english=_DESCRIPTION_ENGLISH,
                     description_italian=_DESCRIPTION_ITALIAN,
-                    netcdf_main_dataset_name="TDd",
-                    wms_main_layer_name="TDd",
+                    netcdf_main_dataset_name="SU30",
+                    wms_main_layer_name="SU30",
                     thredds_url_pattern=(
-                        f"cline_yr/TDd_{{observation_year_period}}_{duration}_py85.nc"
+                        f"cline_yr/SU30_{{observation_year_period}}_{duration}_py85.nc"
                     ),
                     unit=_UNIT,
                     palette="default/seq-YlOrRd",

@@ -1,13 +1,13 @@
-from ...schemas.base import ObservationAggregationType
-from ...schemas.coverages import (
+from ....schemas.base import ObservationAggregationType
+from ....schemas.coverages import (
     CoverageConfigurationCreate,
     ConfigurationParameterPossibleValueCreate,
 )
 
-_DISPLAY_NAME_ENGLISH = "Minimum temperature"
-_DISPLAY_NAME_ITALIAN = "Temperatura minima"
-_DESCRIPTION_ENGLISH = "Minimum daily air temperature near the ground"
-_DESCRIPTION_ITALIAN = "Temperatura minima giornaliera dell'aria vicino al suolo"
+_DISPLAY_NAME_ENGLISH = "Precipiation"
+_DISPLAY_NAME_ITALIAN = "Precipitazione"
+_DESCRIPTION_ENGLISH = "Daily precipitation near the ground"
+_DESCRIPTION_ITALIAN = "Precipitazioni giornaliere in prossimità del suolo"
 
 
 def generate_configurations(
@@ -15,18 +15,18 @@ def generate_configurations(
 ) -> list[CoverageConfigurationCreate]:
     return [
         CoverageConfigurationCreate(
-            name="tasmin_seasonal_absolute_model_ensemble",
+            name="pr_seasonal_anomaly_model_ensemble",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="ensymbc/clipped/tasmin_avg_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-3,
-            color_scale_max=32,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="ens5ym/clipped/pr_anom_pp_ts_{scenario}_{year_period}_VFVGTAA.nc",
+            unit="%",
+            palette="default/div-BrBG",
+            color_scale_min=-40,
+            color_scale_max=40,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -35,7 +35,625 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "annual")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "anomaly")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "model_ensemble")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp26")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp45")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp85")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "DJF")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "MAM")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "JJA")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "SON")
+                    ].id
+                ),
+            ],
+        ),
+        CoverageConfigurationCreate(
+            name="pr_seasonal_anomaly_model_ec_earth_cclm4_8_17",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="EC-EARTH_CCLM4-8-17ym/clipped/pr_EC-EARTH_CCLM4-8-17_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
+            unit="%",
+            palette="default/div-BrBG",
+            color_scale_min=-40,
+            color_scale_max=40,
+            possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "pr")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "annual")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "anomaly")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "ec_earth_cclm_4_8_17")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp26")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp45")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp85")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "DJF")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "MAM")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "JJA")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "SON")
+                    ].id
+                ),
+            ],
+        ),
+        CoverageConfigurationCreate(
+            name="pr_seasonal_anomaly_model_ec_earth_racmo22e",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="EC-EARTH_RACMO22Eym/clipped/pr_EC-EARTH_RACMO22E_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
+            unit="%",
+            palette="default/div-BrBG",
+            color_scale_min=-40,
+            color_scale_max=40,
+            possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "pr")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "annual")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "anomaly")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "ec_earth_racmo22e")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp26")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp45")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp85")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "DJF")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "MAM")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "JJA")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "SON")
+                    ].id
+                ),
+            ],
+        ),
+        CoverageConfigurationCreate(
+            name="pr_seasonal_anomaly_model_ec_earth_rca4",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="EC-EARTH_RCA4ym/clipped/pr_EC-EARTH_RCA4_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
+            unit="%",
+            palette="default/div-BrBG",
+            color_scale_min=-40,
+            color_scale_max=40,
+            possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "pr")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "annual")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "anomaly")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "ec_earth_rca4")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp26")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp45")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp85")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "DJF")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "MAM")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "JJA")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "SON")
+                    ].id
+                ),
+            ],
+        ),
+        CoverageConfigurationCreate(
+            name="pr_seasonal_anomaly_model_hadgem2_es_racmo22e",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="HadGEM2-ES_RACMO22Eym/clipped/pr_HadGEM2-ES_RACMO22E_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
+            unit="%",
+            palette="default/div-BrBG",
+            color_scale_min=-40,
+            color_scale_max=40,
+            possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "pr")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "annual")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "anomaly")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "hadgem2_racmo22e")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp26")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp45")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp85")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "DJF")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "MAM")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "JJA")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "SON")
+                    ].id
+                ),
+            ],
+        ),
+        CoverageConfigurationCreate(
+            name="pr_seasonal_anomaly_model_mpi_esm_lr_remo2009",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="MPI-ESM-LR_REMO2009ym/clipped/pr_MPI-ESM-LR_REMO2009_{scenario}_{year_period}_anomaly_pp_percentage_VFVGTAA.nc",
+            unit="%",
+            palette="default/div-BrBG",
+            color_scale_min=-40,
+            color_scale_max=40,
+            possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "pr")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "annual")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "anomaly")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "mpi_esm_lr_remo2009")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp26")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp45")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp85")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "DJF")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "MAM")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "JJA")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "SON")
+                    ].id
+                ),
+            ],
+        ),
+        CoverageConfigurationCreate(
+            name="pr_seasonal_anomaly_model_ensemble_upper_uncertainty",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
+            netcdf_main_dataset_name="pr_stdup",
+            wms_main_layer_name="pr_stdup",
+            thredds_url_pattern="ens5ym/std/clipped/pr_anom_stdup_pp_ts_{scenario}_{year_period}_VFVGTAA.nc",
+            unit="%",
+            palette="default/seq-YlOrRd",
+            color_scale_min=0,
+            color_scale_max=0,
+            possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "pr")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "annual")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "anomaly")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "model_ensemble")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("uncertainty_type", "upper_bound")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp26")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp45")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp85")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "DJF")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "MAM")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "JJA")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "SON")
+                    ].id
+                ),
+            ],
+        ),
+        CoverageConfigurationCreate(
+            name="pr_seasonal_anomaly_model_ensemble_lower_uncertainty",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
+            netcdf_main_dataset_name="pr_stddown",
+            wms_main_layer_name="pr_stddown",
+            thredds_url_pattern="ens5ym/std/clipped/pr_anom_stddown_pp_ts_{scenario}_{year_period}_VFVGTAA.nc",
+            unit="%",
+            palette="default/seq-YlOrRd",
+            color_scale_min=0,
+            color_scale_max=0,
+            possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "pr")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("aggregation_period", "annual")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("measure", "anomaly")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_model", "model_ensemble")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("uncertainty_type", "lower_bound")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp26")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp45")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("scenario", "rcp85")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "DJF")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "MAM")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "JJA")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("year_period", "SON")
+                    ].id
+                ),
+            ],
+        ),
+        CoverageConfigurationCreate(
+            name="pr_seasonal_absolute_model_ensemble",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="ensymbc/clipped/pr_avg_{scenario}_{year_period}_ts19762100_ls_VFVGTAA.nc",
+            unit="mm",
+            palette="default/seq-BuYl-inv",
+            color_scale_min=0,
+            color_scale_max=800,
+            possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("collection", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -90,23 +708,23 @@ def generate_configurations(
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TNd")) is not None else None
+                v.id if (v := variables.get("PRCPTOT")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.SEASONAL,
         ),
         CoverageConfigurationCreate(
-            name="tasmin_annual_absolute_model_ensemble",
+            name="pr_annual_absolute_model_ensemble",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="ensymbc/clipped/tasmin_avg_{scenario}_ts19762100_ls_VFVG.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-3,
-            color_scale_max=32,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="ensymbc/clipped/pr_avg_{scenario}_ts19762100_ls_VFVGTAA.nc",
+            unit="mm",
+            palette="default/seq-BuYl-inv",
+            color_scale_min=0,
+            color_scale_max=3200,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -115,7 +733,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -155,23 +773,23 @@ def generate_configurations(
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TNd")) is not None else None
+                v.id if (v := variables.get("PRCPTOT")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.YEARLY,
         ),
         CoverageConfigurationCreate(
-            name="tasmin_seasonal_absolute_model_ec_earth_cclm4_8_17",
+            name="pr_seasonal_absolute_model_ec_earth_cclm4_8_17",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="EC-EARTH_CCLM4-8-17ymbc/clipped/tasmin_EC-EARTH_CCLM4-8-17_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-3,
-            color_scale_max=32,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="EC-EARTH_CCLM4-8-17ymbc/clipped/pr_EC-EARTH_CCLM4-8-17_{scenario}_{year_period}_ts_ls_VFVGTAA.nc",
+            unit="%",
+            palette="default/seq-BuYl-inv",
+            color_scale_min=0,
+            color_scale_max=800,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -180,7 +798,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -235,23 +853,23 @@ def generate_configurations(
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TNd")) is not None else None
+                v.id if (v := variables.get("PRCPTOT")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.SEASONAL,
         ),
         CoverageConfigurationCreate(
-            name="tasmin_annual_absolute_model_ec_earth_cclm4_8_17",
+            name="pr_annual_absolute_model_ec_earth_cclm4_8_17",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="EC-EARTH_CCLM4-8-17ymbc/clipped/tasmin_EC-EARTH_CCLM4-8-17_{scenario}_ts19762100_ls_VFVG.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-13,
-            color_scale_max=27,
+            wms_main_layer_name="pr",
+            netcdf_main_dataset_name="pr",
+            thredds_url_pattern="EC-EARTH_CCLM4-8-17ymbc/clipped/pr_EC-EARTH_CCLM4-8-17_{scenario}_ts_ls_VFVGTAA.nc",
+            unit="%",
+            palette="default/seq-BuYl-inv",
+            color_scale_min=0,
+            color_scale_max=800,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -260,7 +878,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -300,23 +918,23 @@ def generate_configurations(
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TNd")) is not None else None
+                v.id if (v := variables.get("PRCPTOT")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.YEARLY,
         ),
         CoverageConfigurationCreate(
-            name="tasmin_seasonal_absolute_model_ec_earth_racmo22e",
+            name="pr_seasonal_absolute_model_ec_earth_racmo22e",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="EC-EARTH_RACMO22Eymbc/clipped/tasmin_EC-EARTH_RACMO22E_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-3,
-            color_scale_max=32,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="EC-EARTH_RACMO22Eymbc/clipped/pr_EC-EARTH_RACMO22E_{scenario}_{year_period}_ts_ls_VFVGTAA.nc",
+            unit="%",
+            palette="default/seq-BuYl-inv",
+            color_scale_min=0,
+            color_scale_max=800,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -325,7 +943,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -380,23 +998,23 @@ def generate_configurations(
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TNd")) is not None else None
+                v.id if (v := variables.get("PRCPTOT")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.SEASONAL,
         ),
         CoverageConfigurationCreate(
-            name="tasmin_annual_absolute_model_ec_earth_racmo22e",
+            name="pr_annual_absolute_model_ec_earth_racmo22e",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="EC-EARTH_RACMO22Eymbc/clipped/tasmin_EC-EARTH_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-13,
-            color_scale_max=27,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="EC-EARTH_RACMO22Eymbc/clipped/pr_EC-EARTH_RACMO22E_{scenario}_ts_ls_VFVGTAA.nc",
+            unit="%",
+            palette="default/seq-BuYl-inv",
+            color_scale_min=0,
+            color_scale_max=3200,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -405,7 +1023,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -445,23 +1063,23 @@ def generate_configurations(
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TNd")) is not None else None
+                v.id if (v := variables.get("PRCPTOT")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.YEARLY,
         ),
         CoverageConfigurationCreate(
-            name="tasmin_seasonal_absolute_model_ec_earth_rca4",
+            name="pr_seasonal_absolute_model_ec_earth_rca4",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="EC-EARTH_RCA4ymbc/clipped/tasmin_EC-EARTH_RCA4_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-3,
-            color_scale_max=32,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="EC-EARTH_RCA4ymbc/clipped/pr_EC-EARTH_RCA4_{scenario}_{year_period}_ts_ls_VFVGTAA.nc",
+            unit="%",
+            palette="default/seq-BuYl-inv",
+            color_scale_min=0,
+            color_scale_max=800,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -470,7 +1088,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -525,23 +1143,23 @@ def generate_configurations(
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TNd")) is not None else None
+                v.id if (v := variables.get("PRCPTOT")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.SEASONAL,
         ),
         CoverageConfigurationCreate(
-            name="tasmin_annual_absolute_model_ec_earth_rca4",
+            name="pr_annual_absolute_model_ec_earth_rca4",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="EC-EARTH_RCA4ymbc/clipped/tasmin_EC-EARTH_RCA4_{scenario}_ts19762100_ls_VFVG.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-13,
-            color_scale_max=27,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="EC-EARTH_RCA4ymbc/clipped/pr_EC-EARTH_RCA4_{scenario}_ts_ls_VFVGTAA.nc",
+            unit="%",
+            palette="default/seq-BuYl-inv",
+            color_scale_min=0,
+            color_scale_max=3200,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -550,7 +1168,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -590,23 +1208,23 @@ def generate_configurations(
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TNd")) is not None else None
+                v.id if (v := variables.get("PRCPTOT")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.YEARLY,
         ),
         CoverageConfigurationCreate(
-            name="tasmin_seasonal_absolute_model_hadgem2_es_racmo22e",
+            name="pr_seasonal_absolute_model_hadgem2_es_racmo22e",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="HadGEM2-ES_RACMO22Eymbc/clipped/tasmin_HadGEM2-ES_RACMO22E_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-3,
-            color_scale_max=32,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="HadGEM2-ES_RACMO22Eymbc/clipped/pr_HadGEM2-ES_RACMO22E_{scenario}_{year_period}_ts_ls_VFVGTAA.nc",
+            unit="%",
+            palette="default/seq-BuYl-inv",
+            color_scale_min=0,
+            color_scale_max=800,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -615,7 +1233,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -670,23 +1288,23 @@ def generate_configurations(
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TNd")) is not None else None
+                v.id if (v := variables.get("PRCPTOT")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.SEASONAL,
         ),
         CoverageConfigurationCreate(
-            name="tasmin_annual_absolute_model_hadgem2_es_racmo22e",
+            name="pr_annual_absolute_model_hadgem2_es_racmo22e",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="HadGEM2-ES_RACMO22Eymbc/clipped/tasmin_HadGEM2-ES_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-13,
-            color_scale_max=27,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="HadGEM2-ES_RACMO22Eymbc/clipped/pr_HadGEM2-ES_RACMO22E_{scenario}_ts_ls_VFVGTAA.nc",
+            unit="%",
+            palette="default/seq-BuYl-inv",
+            color_scale_min=0,
+            color_scale_max=3200,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -695,7 +1313,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -735,23 +1353,23 @@ def generate_configurations(
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TNd")) is not None else None
+                v.id if (v := variables.get("PRCPTOT")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.YEARLY,
         ),
         CoverageConfigurationCreate(
-            name="tasmin_seasonal_absolute_model_mpi_esm_lr_remo2009",
+            name="pr_seasonal_absolute_model_mpi_esm_lr_remo2009",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="MPI-ESM-LR_REMO2009ymbc/clipped/tasmin_MPI-ESM-LR_REMO2009_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-3,
-            color_scale_max=32,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="MPI-ESM-LR_REMO2009ymbc/clipped/pr_MPI-ESM-LR_REMO2009_{scenario}_{year_period}_ts_ls_VFVGTAA.nc",
+            unit="%",
+            palette="default/seq-BuYl-inv",
+            color_scale_min=0,
+            color_scale_max=800,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -760,7 +1378,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -815,23 +1433,23 @@ def generate_configurations(
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TNd")) is not None else None
+                v.id if (v := variables.get("PRCPTOT")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.SEASONAL,
         ),
         CoverageConfigurationCreate(
-            name="tasmin_annual_absolute_model_mpi_esm_lr_remo2009",
+            name="pr_annual_absolute_model_mpi_esm_lr_remo2009",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="MPI-ESM-LR_REMO2009ymbc/clipped/tasmin_MPI-ESM-LR_REMO2009_{scenario}_ts19762100_ls_VFVG.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-13,
-            color_scale_max=27,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="MPI-ESM-LR_REMO2009ymbc/clipped/pr_MPI-ESM-LR_REMO2009_{scenario}_ts_ls_VFVGTAA.nc",
+            unit="%",
+            palette="default/seq-BuYl-inv",
+            color_scale_min=0,
+            color_scale_max=3200,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -840,7 +1458,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -880,23 +1498,23 @@ def generate_configurations(
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TNd")) is not None else None
+                v.id if (v := variables.get("PRCPTOT")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.YEARLY,
         ),
         CoverageConfigurationCreate(
-            name="tasmin_seasonal_absolute_model_ensemble_upper_uncertainty",
+            name="pr_seasonal_absolute_model_ensemble_upper_uncertainty",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin_stdup",
-            wms_main_layer_name="tasmin_stdup",
-            thredds_url_pattern="ensymbc/std/clipped/tasmin_stdup_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-13,
-            color_scale_max=27,
+            netcdf_main_dataset_name="pr_stdup",
+            wms_main_layer_name="pr_stdup",
+            thredds_url_pattern="ensymbc/std/clipped/pr_stdup_{scenario}_{year_period}_ts19762100_ls_VFVGTAA.nc",
+            unit="mm",
+            palette="default/seq-BuYl-inv",
+            color_scale_min=0,
+            color_scale_max=800,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -905,7 +1523,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -966,18 +1584,18 @@ def generate_configurations(
             ],
         ),
         CoverageConfigurationCreate(
-            name="tasmin_seasonal_absolute_model_ensemble_lower_uncertainty",
+            name="pr_seasonal_absolute_model_ensemble_lower_uncertainty",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin_stddown",
-            wms_main_layer_name="tasmin_stddown",
-            thredds_url_pattern="ensymbc/std/clipped/tasmin_stddown_{scenario}_{year_period}_ts19762100_ls_VFVG.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-13,
-            color_scale_max=27,
+            netcdf_main_dataset_name="pr_stddown",
+            wms_main_layer_name="pr_stddown",
+            thredds_url_pattern="ensymbc/std/clipped/pr_stddown_{scenario}_{year_period}_ts19762100_ls_VFVGTAA.nc",
+            unit="mm",
+            palette="default/seq-BuYl-inv",
+            color_scale_min=0,
+            color_scale_max=800,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -986,7 +1604,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1047,18 +1665,18 @@ def generate_configurations(
             ],
         ),
         CoverageConfigurationCreate(
-            name="tasmin_annual_absolute_model_ensemble_upper_uncertainty",
+            name="pr_annual_absolute_model_ensemble_upper_uncertainty",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin_stdup",
-            wms_main_layer_name="tasmin_stdup",
-            thredds_url_pattern="ensymbc/std/clipped/tasmin_stdup_{scenario}_ts19762100_ls_VFVG.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-13,
-            color_scale_max=27,
+            netcdf_main_dataset_name="pr_stdup",
+            wms_main_layer_name="pr_stdup",
+            thredds_url_pattern="ensymbc/std/clipped/pr_stdup_{scenario}_ts19762100_ls_VFVGTAA.nc",
+            unit="mm",
+            palette="default/seq-BuYl-inv",
+            color_scale_min=0,
+            color_scale_max=3200,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -1067,7 +1685,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1113,18 +1731,18 @@ def generate_configurations(
             ],
         ),
         CoverageConfigurationCreate(
-            name="tasmin_annual_absolute_model_ensemble_lower_uncertainty",
+            name="pr_annual_absolute_model_ensemble_lower_uncertainty",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin_stddown",
-            wms_main_layer_name="tasmin_stddown",
-            thredds_url_pattern="ensymbc/std/clipped/tasmin_stddown_{scenario}_ts19762100_ls_VFVG.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-13,
-            color_scale_max=27,
+            netcdf_main_dataset_name="pr_stddown",
+            wms_main_layer_name="pr_stddown",
+            thredds_url_pattern="ensymbc/std/clipped/pr_stddown_{scenario}_ts19762100_ls_VFVGTAA.nc",
+            unit="mm",
+            palette="default/seq-BuYl-inv",
+            color_scale_min=0,
+            color_scale_max=3200,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -1133,7 +1751,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1179,19 +1797,19 @@ def generate_configurations(
             ],
         ),
         CoverageConfigurationCreate(
-            name="tasmin_30yr_anomaly_seasonal_agree_model_ensemble",
+            name="pr_30yr_anomaly_seasonal_agree_model_ensemble",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin-uncertainty_group",
-            wms_secondary_layer_name="tasmin",
-            thredds_url_pattern="ensembletwbc/std/clipped/tasmin_avgagree_anom_{time_window}_{scenario}_{year_period}_VFVGTAA.nc",
-            unit="ºC",
-            palette="uncert-stippled/seq-YlOrRd",
-            color_scale_min=0,
-            color_scale_max=6,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr-uncertainty_group",
+            wms_secondary_layer_name="pr",
+            thredds_url_pattern="ensembletwbc/std/clipped/pr_avgagree_percentage_{time_window}_{scenario}_{year_period}_VFVGTAA.nc",
+            unit="%",
+            palette="uncert-stippled/div-BrBG",
+            color_scale_min=-40,
+            color_scale_max=40,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -1200,7 +1818,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1216,11 +1834,6 @@ def generate_configurations(
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_model", "model_ensemble")
-                    ].id
-                ),
-                ConfigurationParameterPossibleValueCreate(
-                    configuration_parameter_value_id=conf_param_values[
-                        ("uncertainty_type", "lower_bound")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1271,18 +1884,18 @@ def generate_configurations(
             ],
         ),
         CoverageConfigurationCreate(
-            name="tasmin_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
+            name="pr_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="taspr5rcm/clipped/tasmin_EC-EARTH_CCLM4-8-17_{scenario}_seas_{time_window}{year_period}_VFVGTAA.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=0,
-            color_scale_max=6,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="taspr5rcm/clipped/pr_EC-EARTH_CCLM4-8-17_{scenario}_seas_{time_window}_percentage_{year_period}_VFVGTAA.nc",
+            unit="%",
+            palette="default/div-BrBG",
+            color_scale_min=-40,
+            color_scale_max=40,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -1291,7 +1904,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1357,18 +1970,18 @@ def generate_configurations(
             ],
         ),
         CoverageConfigurationCreate(
-            name="tasmin_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
+            name="pr_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="taspr5rcm/clipped/tasmin_EC-EARTH_RACMO22E_{scenario}_seas_{time_window}{year_period}_VFVGTAA.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=0,
-            color_scale_max=6,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="taspr5rcm/clipped/pr_EC-EARTH_RACMO22E_{scenario}_seas_{time_window}_percentage_{year_period}_VFVGTAA.nc",
+            unit="%",
+            palette="default/div-BrBG",
+            color_scale_min=-40,
+            color_scale_max=40,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -1377,7 +1990,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1443,18 +2056,18 @@ def generate_configurations(
             ],
         ),
         CoverageConfigurationCreate(
-            name="tasmin_30yr_anomaly_seasonal_model_ec_earth_rca4",
+            name="pr_30yr_anomaly_seasonal_model_ec_earth_rca4",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="taspr5rcm/clipped/tasmin_EC-EARTH_RCA4_{scenario}_seas_{time_window}{year_period}_VFVGTAA.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=0,
-            color_scale_max=6,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="taspr5rcm/clipped/pr_EC-EARTH_RCA4_{scenario}_seas_{time_window}_percentage_{year_period}_VFVGTAA.nc",
+            unit="%",
+            palette="default/div-BrBG",
+            color_scale_min=-40,
+            color_scale_max=40,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -1463,7 +2076,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1529,18 +2142,18 @@ def generate_configurations(
             ],
         ),
         CoverageConfigurationCreate(
-            name="tasmin_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
+            name="pr_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="taspr5rcm/clipped/tasmin_HadGEM2-ES_RACMO22E_{scenario}_seas_{time_window}{year_period}_VFVGTAA.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=0,
-            color_scale_max=6,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="taspr5rcm/clipped/pr_HadGEM2-ES_RACMO22E_{scenario}_seas_{time_window}_percentage_{year_period}_VFVGTAA.nc",
+            unit="%",
+            palette="default/div-BrBG",
+            color_scale_min=-40,
+            color_scale_max=40,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -1549,7 +2162,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1615,18 +2228,18 @@ def generate_configurations(
             ],
         ),
         CoverageConfigurationCreate(
-            name="tasmin_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
+            name="pr_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tasmin",
-            wms_main_layer_name="tasmin",
-            thredds_url_pattern="taspr5rcm/clipped/tasmin_MPI-ESM-LR_REMO2009_{scenario}_seas_{time_window}{year_period}_VFVGTAA.nc",
-            unit="ºC",
-            palette="default/seq-YlOrRd",
-            color_scale_min=0,
-            color_scale_max=6,
+            netcdf_main_dataset_name="pr",
+            wms_main_layer_name="pr",
+            thredds_url_pattern="taspr5rcm/clipped/pr_MPI-ESM-LR_REMO2009_{scenario}_seas_{time_window}_percentage_{year_period}_VFVGTAA.nc",
+            unit="%",
+            palette="default/div-BrBG",
+            color_scale_min=-40,
+            color_scale_max=40,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
@@ -1635,7 +2248,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tasmin")
+                        ("climatological_variable", "pr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -1705,143 +2318,189 @@ def generate_configurations(
 
 def get_related_map() -> dict[str, list[str]]:
     return {
-        "tasmin_seasonal_absolute_model_ensemble": [
-            "tasmin_seasonal_absolute_model_ec_earth_cclm4_8_17",
-            "tasmin_seasonal_absolute_model_ec_earth_racmo22e",
-            "tasmin_seasonal_absolute_model_ec_earth_rca4",
-            "tasmin_seasonal_absolute_model_hadgem2_es_racmo22e",
-            "tasmin_seasonal_absolute_model_mpi_esm_lr_remo2009",
+        "pr_seasonal_anomaly_model_ensemble": [
+            "pr_seasonal_anomaly_model_ec_earth_cclm4_8_17",
+            "pr_seasonal_anomaly_model_ec_earth_racmo22e",
+            "pr_seasonal_anomaly_model_ec_earth_rca4",
+            "pr_seasonal_anomaly_model_hadgem2_es_racmo22e",
+            "pr_seasonal_anomaly_model_mpi_esm_lr_remo2009",
         ],
-        "tasmin_seasonal_absolute_model_ec_earth_cclm4_8_17": [
-            "tasmin_seasonal_absolute_model_ensemble",
-            "tasmin_seasonal_absolute_model_ec_earth_racmo22e",
-            "tasmin_seasonal_absolute_model_ec_earth_rca4",
-            "tasmin_seasonal_absolute_model_hadgem2_es_racmo22e",
-            "tasmin_seasonal_absolute_model_mpi_esm_lr_remo2009",
+        "pr_seasonal_anomaly_model_ec_earth_cclm4_8_17": [
+            "pr_seasonal_anomaly_model_ensemble",
+            "pr_seasonal_anomaly_model_ec_earth_racmo22e",
+            "pr_seasonal_anomaly_model_ec_earth_rca4",
+            "pr_seasonal_anomaly_model_hadgem2_es_racmo22e",
+            "pr_seasonal_anomaly_model_mpi_esm_lr_remo2009",
         ],
-        "tasmin_seasonal_absolute_model_ec_earth_racmo22e": [
-            "tasmin_seasonal_absolute_model_ensemble",
-            "tasmin_seasonal_absolute_model_ec_earth_cclm4_8_17",
-            "tasmin_seasonal_absolute_model_ec_earth_rca4",
-            "tasmin_seasonal_absolute_model_hadgem2_es_racmo22e",
-            "tasmin_seasonal_absolute_model_mpi_esm_lr_remo2009",
+        "pr_seasonal_anomaly_model_ec_earth_racmo22e": [
+            "pr_seasonal_anomaly_model_ensemble",
+            "pr_seasonal_anomaly_model_ec_earth_cclm4_8_17",
+            "pr_seasonal_anomaly_model_ec_earth_rca4",
+            "pr_seasonal_anomaly_model_hadgem2_es_racmo22e",
+            "pr_seasonal_anomaly_model_mpi_esm_lr_remo2009",
         ],
-        "tasmin_seasonal_absolute_model_ec_earth_rca4": [
-            "tasmin_seasonal_absolute_model_ensemble",
-            "tasmin_seasonal_absolute_model_ec_earth_cclm4_8_17",
-            "tasmin_seasonal_absolute_model_ec_earth_racmo22e",
-            "tasmin_seasonal_absolute_model_hadgem2_es_racmo22e",
-            "tasmin_seasonal_absolute_model_mpi_esm_lr_remo2009",
+        "pr_seasonal_anomaly_model_ec_earth_rca4": [
+            "pr_seasonal_anomaly_model_ensemble",
+            "pr_seasonal_anomaly_model_ec_earth_cclm4_8_17",
+            "pr_seasonal_anomaly_model_ec_earth_racmo22e",
+            "pr_seasonal_anomaly_model_hadgem2_es_racmo22e",
+            "pr_seasonal_anomaly_model_mpi_esm_lr_remo2009",
         ],
-        "tasmin_seasonal_absolute_model_hadgem2_es_racmo22e": [
-            "tasmin_seasonal_absolute_model_ensemble",
-            "tasmin_seasonal_absolute_model_ec_earth_cclm4_8_17",
-            "tasmin_seasonal_absolute_model_ec_earth_racmo22e",
-            "tasmin_seasonal_absolute_model_ec_earth_rca4",
-            "tasmin_seasonal_absolute_model_mpi_esm_lr_remo2009",
+        "pr_seasonal_anomaly_model_hadgem2_es_racmo22e": [
+            "pr_seasonal_anomaly_model_ensemble",
+            "pr_seasonal_anomaly_model_ec_earth_cclm4_8_17",
+            "pr_seasonal_anomaly_model_ec_earth_racmo22e",
+            "pr_seasonal_anomaly_model_ec_earth_rca4",
+            "pr_seasonal_anomaly_model_mpi_esm_lr_remo2009",
         ],
-        "tasmin_seasonal_absolute_model_mpi_esm_lr_remo2009": [
-            "tasmin_seasonal_absolute_model_ensemble",
-            "tasmin_seasonal_absolute_model_ec_earth_cclm4_8_17",
-            "tasmin_seasonal_absolute_model_ec_earth_racmo22e",
-            "tasmin_seasonal_absolute_model_ec_earth_rca4",
-            "tasmin_seasonal_absolute_model_hadgem2_es_racmo22e",
+        "pr_seasonal_anomaly_model_mpi_esm_lr_remo2009": [
+            "pr_seasonal_anomaly_model_ensemble",
+            "pr_seasonal_anomaly_model_ec_earth_cclm4_8_17",
+            "pr_seasonal_anomaly_model_ec_earth_racmo22e",
+            "pr_seasonal_anomaly_model_ec_earth_rca4",
+            "pr_seasonal_anomaly_model_hadgem2_es_racmo22e",
         ],
-        "tasmin_annual_absolute_model_ensemble": [
-            "tasmin_annual_absolute_model_ec_earth_cclm4_8_17",
-            "tasmin_annual_absolute_model_ec_earth_racmo22e",
-            "tasmin_annual_absolute_model_ec_earth_rca4",
-            "tasmin_annual_absolute_model_hadgem2_es_racmo22e",
-            "tasmin_annual_absolute_model_mpi_esm_lr_remo2009",
+        "pr_seasonal_absolute_model_ensemble": [
+            "pr_seasonal_absolute_model_ec_earth_cclm4_8_17",
+            "pr_seasonal_absolute_model_ec_earth_racmo22e",
+            "pr_seasonal_absolute_model_ec_earth_rca4",
+            "pr_seasonal_absolute_model_hadgem2_es_racmo22e",
+            "pr_seasonal_absolute_model_mpi_esm_lr_remo2009",
         ],
-        "tasmin_annual_absolute_model_ec_earth_cclm4_8_17": [
-            "tasmin_annual_absolute_model_ensemble",
-            "tasmin_annual_absolute_model_ec_earth_racmo22e",
-            "tasmin_annual_absolute_model_ec_earth_rca4",
-            "tasmin_annual_absolute_model_hadgem2_es_racmo22e",
-            "tasmin_annual_absolute_model_mpi_esm_lr_remo2009",
+        "pr_seasonal_absolute_model_ec_earth_cclm4_8_17": [
+            "pr_seasonal_absolute_model_ensemble",
+            "pr_seasonal_absolute_model_ec_earth_racmo22e",
+            "pr_seasonal_absolute_model_ec_earth_rca4",
+            "pr_seasonal_absolute_model_hadgem2_es_racmo22e",
+            "pr_seasonal_absolute_model_mpi_esm_lr_remo2009",
         ],
-        "tasmin_annual_absolute_model_ec_earth_racmo22e": [
-            "tasmin_annual_absolute_model_ensemble",
-            "tasmin_annual_absolute_model_ec_earth_cclm4_8_17",
-            "tasmin_annual_absolute_model_ec_earth_rca4",
-            "tasmin_annual_absolute_model_hadgem2_es_racmo22e",
-            "tasmin_annual_absolute_model_mpi_esm_lr_remo2009",
+        "pr_seasonal_absolute_model_ec_earth_racmo22e": [
+            "pr_seasonal_absolute_model_ensemble",
+            "pr_seasonal_absolute_model_ec_earth_cclm4_8_17",
+            "pr_seasonal_absolute_model_ec_earth_rca4",
+            "pr_seasonal_absolute_model_hadgem2_es_racmo22e",
+            "pr_seasonal_absolute_model_mpi_esm_lr_remo2009",
         ],
-        "tasmin_annual_absolute_model_ec_earth_rca4": [
-            "tasmin_annual_absolute_model_ensemble",
-            "tasmin_annual_absolute_model_ec_earth_cclm4_8_17",
-            "tasmin_annual_absolute_model_ec_earth_racmo22e",
-            "tasmin_annual_absolute_model_hadgem2_es_racmo22e",
-            "tasmin_annual_absolute_model_mpi_esm_lr_remo2009",
+        "pr_seasonal_absolute_model_ec_earth_rca4": [
+            "pr_seasonal_absolute_model_ensemble",
+            "pr_seasonal_absolute_model_ec_earth_cclm4_8_17",
+            "pr_seasonal_absolute_model_ec_earth_racmo22e",
+            "pr_seasonal_absolute_model_hadgem2_es_racmo22e",
+            "pr_seasonal_absolute_model_mpi_esm_lr_remo2009",
         ],
-        "tasmin_annual_absolute_model_hadgem2_es_racmo22e": [
-            "tasmin_annual_absolute_model_ensemble",
-            "tasmin_annual_absolute_model_ec_earth_cclm4_8_17",
-            "tasmin_annual_absolute_model_ec_earth_racmo22e",
-            "tasmin_annual_absolute_model_ec_earth_rca4",
-            "tasmin_annual_absolute_model_mpi_esm_lr_remo2009",
+        "pr_seasonal_absolute_model_hadgem2_es_racmo22e": [
+            "pr_seasonal_absolute_model_ensemble",
+            "pr_seasonal_absolute_model_ec_earth_cclm4_8_17",
+            "pr_seasonal_absolute_model_ec_earth_racmo22e",
+            "pr_seasonal_absolute_model_ec_earth_rca4",
+            "pr_seasonal_absolute_model_mpi_esm_lr_remo2009",
         ],
-        "tasmin_annual_absolute_model_mpi_esm_lr_remo2009": [
-            "tasmin_annual_absolute_model_ensemble",
-            "tasmin_annual_absolute_model_ec_earth_cclm4_8_17",
-            "tasmin_annual_absolute_model_ec_earth_racmo22e",
-            "tasmin_annual_absolute_model_ec_earth_rca4",
-            "tasmin_annual_absolute_model_hadgem2_es_racmo22e",
+        "pr_seasonal_absolute_model_mpi_esm_lr_remo2009": [
+            "pr_seasonal_absolute_model_ensemble",
+            "pr_seasonal_absolute_model_ec_earth_cclm4_8_17",
+            "pr_seasonal_absolute_model_ec_earth_racmo22e",
+            "pr_seasonal_absolute_model_ec_earth_rca4",
+            "pr_seasonal_absolute_model_hadgem2_es_racmo22e",
         ],
-        "tasmin_30yr_anomaly_seasonal_agree_model_ensemble": [
-            "tasmin_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
-            "tasmin_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
-            "tasmin_30yr_anomaly_seasonal_model_ec_earth_rca4",
-            "tasmin_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
-            "tasmin_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
+        "pr_annual_absolute_model_ensemble": [
+            "pr_annual_absolute_model_ec_earth_cclm4_8_17",
+            "pr_annual_absolute_model_ec_earth_racmo22e",
+            "pr_annual_absolute_model_ec_earth_rca4",
+            "pr_annual_absolute_model_hadgem2_es_racmo22e",
+            "pr_annual_absolute_model_mpi_esm_lr_remo2009",
         ],
-        "tasmin_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17": [
-            "tasmin_30yr_anomaly_seasonal_agree_model_ensemble",
-            "tasmin_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
-            "tasmin_30yr_anomaly_seasonal_model_ec_earth_rca4",
-            "tasmin_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
-            "tasmin_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
+        "pr_annual_absolute_model_ec_earth_cclm4_8_17": [
+            "pr_annual_absolute_model_ensemble",
+            "pr_annual_absolute_model_ec_earth_racmo22e",
+            "pr_annual_absolute_model_ec_earth_rca4",
+            "pr_annual_absolute_model_hadgem2_es_racmo22e",
+            "pr_annual_absolute_model_mpi_esm_lr_remo2009",
         ],
-        "tasmin_30yr_anomaly_seasonal_model_ec_earth_racmo22e": [
-            "tasmin_30yr_anomaly_seasonal_agree_model_ensemble",
-            "tasmin_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
-            "tasmin_30yr_anomaly_seasonal_model_ec_earth_rca4",
-            "tasmin_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
-            "tasmin_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
+        "pr_annual_absolute_model_ec_earth_racmo22e": [
+            "pr_annual_absolute_model_ensemble",
+            "pr_annual_absolute_model_ec_earth_cclm4_8_17",
+            "pr_annual_absolute_model_ec_earth_rca4",
+            "pr_annual_absolute_model_hadgem2_es_racmo22e",
+            "pr_annual_absolute_model_mpi_esm_lr_remo2009",
         ],
-        "tasmin_30yr_anomaly_seasonal_model_ec_earth_rca4": [
-            "tasmin_30yr_anomaly_seasonal_agree_model_ensemble",
-            "tasmin_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
-            "tasmin_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
-            "tasmin_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
-            "tasmin_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
+        "pr_annual_absolute_model_ec_earth_rca4": [
+            "pr_annual_absolute_model_ensemble",
+            "pr_annual_absolute_model_ec_earth_cclm4_8_17",
+            "pr_annual_absolute_model_ec_earth_racmo22e",
+            "pr_annual_absolute_model_hadgem2_es_racmo22e",
+            "pr_annual_absolute_model_mpi_esm_lr_remo2009",
         ],
-        "tasmin_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e": [
-            "tasmin_30yr_anomaly_seasonal_agree_model_ensemble",
-            "tasmin_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
-            "tasmin_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
-            "tasmin_30yr_anomaly_seasonal_model_ec_earth_rca4",
-            "tasmin_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
+        "pr_annual_absolute_model_hadgem2_es_racmo22e": [
+            "pr_annual_absolute_model_ensemble",
+            "pr_annual_absolute_model_ec_earth_cclm4_8_17",
+            "pr_annual_absolute_model_ec_earth_racmo22e",
+            "pr_annual_absolute_model_ec_earth_rca4",
+            "pr_annual_absolute_model_mpi_esm_lr_remo2009",
         ],
-        "tasmin_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009": [
-            "tasmin_30yr_anomaly_seasonal_agree_model_ensemble",
-            "tasmin_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
-            "tasmin_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
-            "tasmin_30yr_anomaly_seasonal_model_ec_earth_rca4",
-            "tasmin_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
+        "pr_annual_absolute_model_mpi_esm_lr_remo2009": [
+            "pr_annual_absolute_model_ensemble",
+            "pr_annual_absolute_model_ec_earth_cclm4_8_17",
+            "pr_annual_absolute_model_ec_earth_racmo22e",
+            "pr_annual_absolute_model_ec_earth_rca4",
+            "pr_annual_absolute_model_hadgem2_es_racmo22e",
+        ],
+        "pr_30yr_anomaly_seasonal_agree_model_ensemble": [
+            "pr_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
+            "pr_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
+            "pr_30yr_anomaly_seasonal_model_ec_earth_rca4",
+            "pr_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
+            "pr_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
+        ],
+        "pr_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17": [
+            "pr_30yr_anomaly_seasonal_agree_model_ensemble",
+            "pr_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
+            "pr_30yr_anomaly_seasonal_model_ec_earth_rca4",
+            "pr_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
+            "pr_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
+        ],
+        "pr_30yr_anomaly_seasonal_model_ec_earth_racmo22e": [
+            "pr_30yr_anomaly_seasonal_agree_model_ensemble",
+            "pr_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
+            "pr_30yr_anomaly_seasonal_model_ec_earth_rca4",
+            "pr_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
+            "pr_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
+        ],
+        "pr_30yr_anomaly_seasonal_model_ec_earth_rca4": [
+            "pr_30yr_anomaly_seasonal_agree_model_ensemble",
+            "pr_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
+            "pr_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
+            "pr_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
+            "pr_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
+        ],
+        "pr_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e": [
+            "pr_30yr_anomaly_seasonal_agree_model_ensemble",
+            "pr_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
+            "pr_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
+            "pr_30yr_anomaly_seasonal_model_ec_earth_rca4",
+            "pr_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009",
+        ],
+        "pr_30yr_anomaly_seasonal_model_mpi_esm_lr_remo2009": [
+            "pr_30yr_anomaly_seasonal_agree_model_ensemble",
+            "pr_30yr_anomaly_seasonal_model_ec_earth_cclm4_8_17",
+            "pr_30yr_anomaly_seasonal_model_ec_earth_racmo22e",
+            "pr_30yr_anomaly_seasonal_model_ec_earth_rca4",
+            "pr_30yr_anomaly_seasonal_model_hadgem2_es_racmo22e",
         ],
     }
 
 
 def get_uncertainty_map() -> dict[str, tuple[str, str]]:
     return {
-        "tasmin_seasonal_absolute_model_ensemble": (
-            "tasmin_seasonal_absolute_model_ensemble_lower_uncertainty",
-            "tasmin_seasonal_absolute_model_ensemble_upper_uncertainty",
+        "pr_seasonal_anomaly_model_ensemble": (
+            "pr_seasonal_anomaly_model_ensemble_lower_uncertainty",
+            "pr_seasonal_anomaly_model_ensemble_upper_uncertainty",
         ),
-        "tasmin_annual_absolute_model_ensemble": (
-            "tasmin_annual_absolute_model_ensemble_lower_uncertainty",
-            "tasmin_annual_absolute_model_ensemble_upper_uncertainty",
+        "pr_seasonal_absolute_model_ensemble": (
+            "pr_seasonal_absolute_model_ensemble_lower_uncertainty",
+            "pr_seasonal_absolute_model_ensemble_upper_uncertainty",
+        ),
+        "pr_annual_absolute_model_ensemble": (
+            "pr_annual_absolute_model_ensemble_lower_uncertainty",
+            "pr_annual_absolute_model_ensemble_upper_uncertainty",
         ),
     }
