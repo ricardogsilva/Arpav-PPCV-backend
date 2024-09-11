@@ -27,7 +27,10 @@ from .... import (
     operations,
 )
 from ....config import ArpavPpcvSettings
-from ....thredds import utils as thredds_utils
+from ....thredds import (
+    crawler as thredds_crawler,
+    utils as thredds_utils,
+)
 from ....schemas.base import (
     CoverageDataSmoothingStrategy,
     ObservationDataSmoothingStrategy,
@@ -259,17 +262,33 @@ async def wms_endpoint(
     )
     if db_coverage_configuration is not None:
         try:
-            thredds_url_fragment = db_coverage_configuration.get_thredds_url_fragment(
+            dataset_url_fragment = db_coverage_configuration.get_thredds_url_fragment(
                 coverage_identifier
             )
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
         else:
+            if any(
+                c in dataset_url_fragment for c in thredds_crawler.FNMATCH_SPECIAL_CHARS
+            ):
+                logger.debug(
+                    f"THREDDS dataset url ({dataset_url_fragment}) is an "
+                    f"fnmatch pattern, retrieving the actual URL from the server..."
+                )
+                ds_fragment = await anyio.to_thread.run_sync(
+                    thredds_crawler.find_thredds_dataset_url_fragment,
+                    dataset_url_fragment,
+                    settings.thredds_server.base_url,
+                )
+                if ds_fragment is None:
+                    thredds_crawler.find_thredds_dataset_url_fragment.cache_clear()
+            else:
+                ds_fragment = dataset_url_fragment
             base_wms_url = "/".join(
                 (
                     settings.thredds_server.base_url,
                     settings.thredds_server.wms_service_url_fragment,
-                    thredds_url_fragment,
+                    ds_fragment,
                 )
             )
             parsed_url = urllib.parse.urlparse(base_wms_url)

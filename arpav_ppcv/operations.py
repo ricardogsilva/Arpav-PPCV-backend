@@ -6,6 +6,7 @@ import warnings
 from typing import Optional
 
 import anyio
+import anyio.to_thread
 import cftime
 import httpx
 import netCDF4
@@ -31,7 +32,10 @@ from .schemas import (
     coverages,
     observations,
 )
-from .thredds import ncss
+from .thredds import (
+    crawler,
+    ncss,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -375,11 +379,26 @@ async def async_retrieve_data_via_ncss(
     result_gatherer: dict,
 ) -> None:
     time_start, time_end = temporal_range
+    dataset_url_fragment = coverage.configuration.get_thredds_url_fragment(
+        coverage.identifier
+    )
+    if any(c in dataset_url_fragment for c in crawler.FNMATCH_SPECIAL_CHARS):
+        logger.debug(
+            f"THREDDS dataset url ({dataset_url_fragment}) is an "
+            f"fnmatch pattern, retrieving the actual URL from the server..."
+        )
+        ds_fragment = anyio.to_thread.run_sync(
+            crawler.find_thredds_dataset_url_fragment,
+            dataset_url_fragment,
+            settings.thredds_server.base_url,
+        )
+    else:
+        ds_fragment = dataset_url_fragment
     ncss_url = "/".join(
         (
             settings.thredds_server.base_url,
             settings.thredds_server.netcdf_subset_service_url_fragment,
-            coverage.configuration.get_thredds_url_fragment(coverage.identifier),
+            ds_fragment,
         )
     )
     raw_coverage_data = await ncss.async_query_dataset(
