@@ -256,6 +256,19 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         all_parts = ["name"] + sorted(list(other_parts))
         return "-".join(f"{{{part}}}" for part in all_parts)
 
+    @pydantic.computed_field()
+    @property
+    def collection(self) -> Optional[str]:
+        result = None
+        for pv in self.possible_values:
+            if (
+                pv.configuration_parameter_value.configuration_parameter.name
+                == "collection"
+            ):
+                result = pv.configuration_parameter_value.name
+                break
+        return result
+
     def get_thredds_url_fragment(self, coverage_identifier: str) -> str:
         return self._render_templated_value(
             coverage_identifier, self.thredds_url_pattern

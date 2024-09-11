@@ -35,6 +35,7 @@ from ....schemas.base import (
     CoverageDataSmoothingStrategy,
     ObservationDataSmoothingStrategy,
 )
+from ....schemas.coverages import CoverageInternal
 from ... import dependencies
 from ..schemas import coverages as coverage_schemas
 from ..schemas.base import (
@@ -45,8 +46,6 @@ from ..schemas.base import (
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-
-_INVALID_COVERAGE_IDENTIFIER_ERROR_DETAIL = "Invalid coverage identifier"
 
 
 @router.get(
@@ -235,28 +234,12 @@ def list_coverage_identifiers(
     return coverage_schemas.CoverageIdentifierList.from_items(
         cov_internals,
         request,
+        settings=settings,
         limit=list_params.limit,
         offset=list_params.offset,
         filtered_total=filtered_total,
         unfiltered_total=unfiltered_total,
     )
-
-
-@router.get(
-    "/coverage-identifiers/{coverage_identifier}",
-    response_model=coverage_schemas.CoverageIdentifierReadListItem,
-)
-def get_coverage_identifier(
-    request: Request,
-    db_session: Annotated[Session, Depends(dependencies.get_db_session)],
-    coverage_identifier: str,
-):
-    if (coverage := db.get_coverage(db_session, coverage_identifier)) is not None:
-        return coverage_schemas.CoverageIdentifierReadListItem.from_db_instance(
-            coverage, request
-        )
-    else:
-        raise HTTPException(400, detail=_INVALID_COVERAGE_IDENTIFIER_ERROR_DETAIL)
 
 
 @router.get("/wms/{coverage_identifier}")
@@ -272,80 +255,98 @@ async def wms_endpoint(
 
     Pass additional relevant WMS query parameters directly to this endpoint.
     """
-
-    cov = await anyio.to_thread.run_sync(
-        db.get_coverage, db_session, coverage_identifier
+    db_coverage_configuration = await anyio.to_thread.run_sync(
+        db.get_coverage_configuration_by_coverage_identifier,
+        db_session,
+        coverage_identifier,
     )
-    if cov is not None:
-        ds_fragment = thredds_crawler.get_thredds_url_fragment(
-            cov, settings.thredds_server.base_url
-        )
-
-        base_wms_url = "/".join(
-            (
-                settings.thredds_server.base_url,
-                settings.thredds_server.wms_service_url_fragment,
-                ds_fragment,
-            )
-        )
-        parsed_url = urllib.parse.urlparse(base_wms_url)
-        logger.info(f"{base_wms_url=}")
-        query_params = {k.lower(): v for k, v in request.query_params.items()}
-        logger.debug(f"original query params: {query_params=}")
-        if query_params.get("request") in ("GetMap", "GetLegendGraphic"):
-            query_params = thredds_utils.tweak_wms_get_map_request(
-                query_params,
-                ncwms_palette=cov.configuration.palette,
-                ncwms_color_scale_range=(
-                    cov.configuration.color_scale_min,
-                    cov.configuration.color_scale_max,
-                ),
-                uncertainty_visualization_scale_range=(
-                    settings.thredds_server.uncertainty_visualization_scale_range
-                ),
-            )
-        logger.debug(f"{query_params=}")
-        wms_url = parsed_url._replace(
-            query=urllib.parse.urlencode(
-                {
-                    **query_params,
-                    "service": "WMS",
-                    "version": version,
-                }
-            )
-        ).geturl()
-        logger.info(f"{wms_url=}")
+    if db_coverage_configuration is not None:
         try:
-            wms_response = await thredds_utils.proxy_request(wms_url, http_client)
-        except httpx.HTTPStatusError as err:
-            logger.exception(
-                msg=f"THREDDS server replied with an error: {err.response.text}"
+            dataset_url_fragment = db_coverage_configuration.get_thredds_url_fragment(
+                coverage_identifier
             )
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY, detail=err.response.text
-            )
-        except httpx.HTTPError as err:
-            logger.exception(msg="THREDDS server replied with an error")
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY,
-            ) from err
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
         else:
-            if query_params.get("request") == "GetCapabilities":
-                response_content = _modify_capabilities_response(
-                    wms_response.text, str(request.url).partition("?")[0]
+            if any(
+                c in dataset_url_fragment for c in thredds_crawler.FNMATCH_SPECIAL_CHARS
+            ):
+                logger.debug(
+                    f"THREDDS dataset url ({dataset_url_fragment}) is an "
+                    f"fnmatch pattern, retrieving the actual URL from the server..."
                 )
+                ds_fragment = await anyio.to_thread.run_sync(
+                    thredds_crawler.find_thredds_dataset_url_fragment,
+                    dataset_url_fragment,
+                    settings.thredds_server.base_url,
+                )
+                if ds_fragment is None:
+                    thredds_crawler.find_thredds_dataset_url_fragment.cache_clear()
             else:
-                response_content = wms_response.content
-            response = Response(
-                content=response_content,
-                status_code=wms_response.status_code,
-                headers=dict(wms_response.headers),
+                ds_fragment = dataset_url_fragment
+            base_wms_url = "/".join(
+                (
+                    settings.thredds_server.base_url,
+                    settings.thredds_server.wms_service_url_fragment,
+                    ds_fragment,
+                )
             )
-        return response
+            parsed_url = urllib.parse.urlparse(base_wms_url)
+            logger.info(f"{base_wms_url=}")
+            query_params = {k.lower(): v for k, v in request.query_params.items()}
+            logger.debug(f"original query params: {query_params=}")
+            if query_params.get("request") in ("GetMap", "GetLegendGraphic"):
+                query_params = thredds_utils.tweak_wms_get_map_request(
+                    query_params,
+                    ncwms_palette=db_coverage_configuration.palette,
+                    ncwms_color_scale_range=(
+                        db_coverage_configuration.color_scale_min,
+                        db_coverage_configuration.color_scale_max,
+                    ),
+                    uncertainty_visualization_scale_range=(
+                        settings.thredds_server.uncertainty_visualization_scale_range
+                    ),
+                )
+            logger.debug(f"{query_params=}")
+            wms_url = parsed_url._replace(
+                query=urllib.parse.urlencode(
+                    {
+                        **query_params,
+                        "service": "WMS",
+                        "version": version,
+                    }
+                )
+            ).geturl()
+            logger.info(f"{wms_url=}")
+            try:
+                wms_response = await thredds_utils.proxy_request(wms_url, http_client)
+            except httpx.HTTPStatusError as err:
+                logger.exception(
+                    msg=f"THREDDS server replied with an error: {err.response.text}"
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY, detail=err.response.text
+                )
+            except httpx.HTTPError as err:
+                logger.exception(msg="THREDDS server replied with an error")
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                ) from err
+            else:
+                if query_params.get("request") == "GetCapabilities":
+                    response_content = _modify_capabilities_response(
+                        wms_response.text, str(request.url).partition("?")[0]
+                    )
+                else:
+                    response_content = wms_response.content
+                response = Response(
+                    content=response_content,
+                    status_code=wms_response.status_code,
+                    headers=dict(wms_response.headers),
+                )
+            return response
     else:
-        raise HTTPException(
-            status_code=400, detail=_INVALID_COVERAGE_IDENTIFIER_ERROR_DETAIL
-        )
+        raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
 
 
 def _modify_capabilities_response(
@@ -423,32 +424,45 @@ def get_climate_barometer_time_series(
     include_uncertainty: bool = False,
 ):
     """Get climate barometer time series."""
-    if (coverage := db.get_coverage(db_session, coverage_identifier)) is not None:
-        try:
-            time_series = operations.get_climate_barometer_time_series(
-                settings,
-                db_session,
-                coverage,
-                smoothing_strategies=data_smoothing,
-                include_uncertainty=include_uncertainty,
-            )
-        except exceptions.CoverageDataRetrievalError as err:
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="Could not retrieve data",
-            ) from err
-        else:
-            series = []
-            for coverage_info, pd_series in time_series.items():
-                cov, smoothing_strategy = coverage_info
-                series.append(
-                    TimeSeries.from_coverage_series(pd_series, cov, smoothing_strategy)
-                )
-            return TimeSeriesList(series=series)
-    else:
-        raise HTTPException(
-            status_code=400, detail=_INVALID_COVERAGE_IDENTIFIER_ERROR_DETAIL
+    if (
+        db_cov_conf := db.get_coverage_configuration_by_coverage_identifier(
+            db_session, coverage_identifier
         )
+    ) is not None:
+        allowed_cov_ids = db.generate_coverage_identifiers(
+            coverage_configuration=db_cov_conf
+        )
+        if coverage_identifier in allowed_cov_ids:
+            coverage = CoverageInternal(
+                configuration=db_cov_conf, identifier=coverage_identifier
+            )
+            try:
+                time_series = operations.get_climate_barometer_time_series(
+                    settings,
+                    db_session,
+                    coverage,
+                    smoothing_strategies=data_smoothing,
+                    include_uncertainty=include_uncertainty,
+                )
+            except exceptions.CoverageDataRetrievalError as err:
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail="Could not retrieve data",
+                ) from err
+            else:
+                series = []
+                for coverage_info, pd_series in time_series.items():
+                    cov, smoothing_strategy = coverage_info
+                    series.append(
+                        TimeSeries.from_coverage_series(
+                            pd_series, cov, smoothing_strategy
+                        )
+                    )
+                return TimeSeriesList(series=series)
+        else:
+            raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
+    else:
+        raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
 
 
 @router.get("/time-series/{coverage_identifier}", response_model=TimeSeriesList)
@@ -484,105 +498,97 @@ def get_time_series(
     forecast model, this endpoint will return a representation of the various temporal
     series of data related to this forecast.
     """
-    if (coverage := db.get_coverage(db_session, coverage_identifier)) is not None:
-        # TODO: catch errors with invalid geom
-        geom = shapely.io.from_wkt(coords)
-        if geom.geom_type == "MultiPoint":
-            logger.warning(
-                f"Expected coords parameter to be a WKT Point but "
-                f"got {geom.geom_type!r} instead - Using the first point"
+    if (
+        db_cov_conf := db.get_coverage_configuration_by_coverage_identifier(
+            db_session, coverage_identifier
+        )
+    ) is not None:
+        allowed_cov_ids = db.generate_coverage_identifiers(
+            coverage_configuration=db_cov_conf
+        )
+        if coverage_identifier in allowed_cov_ids:
+            coverage = CoverageInternal(
+                configuration=db_cov_conf, identifier=coverage_identifier
             )
-            point_geom = geom.geoms[0]
-        elif geom.geom_type == "Point":
-            point_geom = geom
-        else:
-            logger.warning(
-                f"Expected coords parameter to be a WKT Point but "
-                f"got {geom.geom_type!r} instead - Using the centroid instead"
-            )
-            point_geom = geom.centroid
-        try:
-            (
-                coverage_series,
-                observations_series,
-            ) = operations.get_coverage_time_series(
-                settings,
-                db_session,
-                http_client,
-                coverage,
-                point_geom,
-                datetime,
-                coverage_data_smoothing,
-                observation_data_smoothing,
-                include_coverage_data,
-                include_observation_data,
-                include_coverage_uncertainty,
-                include_coverage_related_data,
-            )
-        except exceptions.CoverageDataRetrievalError as err:
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="Could not retrieve data",
-            ) from err
-        else:
-            series = []
-            for coverage_info, pd_series in coverage_series.items():
-                cov, smoothing_strategy = coverage_info
-                series.append(
-                    TimeSeries.from_coverage_series(pd_series, cov, smoothing_strategy)
+            # TODO: catch errors with invalid geom
+            geom = shapely.io.from_wkt(coords)
+            if geom.geom_type == "MultiPoint":
+                logger.warning(
+                    f"Expected coords parameter to be a WKT Point but "
+                    f"got {geom.geom_type!r} instead - Using the first point"
                 )
-            if observations_series is not None:
-                for observation_info, pd_series in observations_series.items():
-                    variable, smoothing_strategy = observation_info
+                point_geom = geom.geoms[0]
+            elif geom.geom_type == "Point":
+                point_geom = geom
+            else:
+                logger.warning(
+                    f"Expected coords parameter to be a WKT Point but "
+                    f"got {geom.geom_type!r} instead - Using the centroid instead"
+                )
+                point_geom = geom.centroid
+            try:
+                (
+                    coverage_series,
+                    observations_series,
+                ) = operations.get_coverage_time_series(
+                    settings,
+                    db_session,
+                    http_client,
+                    coverage,
+                    point_geom,
+                    datetime,
+                    coverage_data_smoothing,
+                    observation_data_smoothing,
+                    include_coverage_data,
+                    include_observation_data,
+                    include_coverage_uncertainty,
+                    include_coverage_related_data,
+                )
+            except exceptions.CoverageDataRetrievalError as err:
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail="Could not retrieve data",
+                ) from err
+            else:
+                series = []
+                for coverage_info, pd_series in coverage_series.items():
+                    cov, smoothing_strategy = coverage_info
                     series.append(
-                        TimeSeries.from_observation_series(
-                            pd_series, variable, smoothing_strategy
+                        TimeSeries.from_coverage_series(
+                            pd_series, cov, smoothing_strategy
                         )
                     )
-            return TimeSeriesList(series=series)
+                if observations_series is not None:
+                    for observation_info, pd_series in observations_series.items():
+                        variable, smoothing_strategy = observation_info
+                        series.append(
+                            TimeSeries.from_observation_series(
+                                pd_series, variable, smoothing_strategy
+                            )
+                        )
+                return TimeSeriesList(series=series)
+        else:
+            raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
     else:
-        raise HTTPException(
-            status_code=400, detail=_INVALID_COVERAGE_IDENTIFIER_ERROR_DETAIL
-        )
+        raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
 
 
 @router.get(
-    "/forecast-variable-combinations",
+    "/variable-combinations",
     response_model=coverage_schemas.ForecastVariableCombinationsList,
 )
-def get_forecast_variable_combinations(
+def get_variable_combinations(
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
 ):
     variable_combinations = operations.get_forecast_variable_parameters(db_session)
     var_combinations = []
     for var_name, var_menu in variable_combinations.items():
         var_combinations.append(
-            coverage_schemas.ForecastVariableCombinations.from_items(var_menu)
+            coverage_schemas.VariableCombinations.from_items(var_menu)
         )
     return coverage_schemas.ForecastVariableCombinationsList(
         combinations=var_combinations,
         translations=coverage_schemas.ForecastMenuTranslations.from_items(
-            list(variable_combinations.values())
-        ),
-    )
-
-
-@router.get(
-    "/historical-variable-combinations",
-    response_model=coverage_schemas.HistoricalVariableCombinationsList,
-)
-def get_historical_variable_combinations(
-    db_session: Annotated[Session, Depends(dependencies.get_db_session)],
-):
-    variable_combinations = operations.get_historical_variable_parameters(db_session)
-    var_combinations = []
-    for var_name, var_menu in variable_combinations.items():
-        var_combinations.append(
-            coverage_schemas.HistoricalVariableCombinations.from_items(var_menu)
-        )
-    return coverage_schemas.HistoricalVariableCombinationsList(
-        combinations=var_combinations,
-        translations=coverage_schemas.HistoricalMenuTranslations.from_items(
             list(variable_combinations.values())
         ),
     )
