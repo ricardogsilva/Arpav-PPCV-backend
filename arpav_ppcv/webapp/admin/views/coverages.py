@@ -80,7 +80,6 @@ class ConfigurationParameterView(ModelView):
 
     exclude_fields_from_list = (
         "id",
-        "allowed_values",
         "display_name_english",
         "display_name_italian",
         "description_english",
@@ -116,8 +115,7 @@ class ConfigurationParameterView(ModelView):
                         exclude_from_create=True,
                         exclude_from_edit=False,
                     ),
-                    starlette_admin.StringField("internal_value", required=True),
-                    starlette_admin.StringField("name"),
+                    starlette_admin.StringField("name", required=True),
                     starlette_admin.StringField("display_name_english", required=True),
                     starlette_admin.StringField("display_name_italian", required=True),
                     starlette_admin.StringField("description_english"),
@@ -151,8 +149,7 @@ class ConfigurationParameterView(ModelView):
                 description_italian=data.get("description_italian"),
                 allowed_values=[
                     coverages.ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
-                        internal_value=av["internal_value"],
-                        name=av.get("name") or av["internal_value"].replace("-", "_"),
+                        name=av["name"],
                         display_name_english=av["display_name_english"],
                         display_name_italian=av["display_name_italian"],
                         description_english=av.get("description_english"),
@@ -192,8 +189,7 @@ class ConfigurationParameterView(ModelView):
                 allowed_values=[
                     coverages.ConfigurationParameterValueUpdateEmbeddedInConfigurationParameterEdit(
                         id=av["id"] or None,
-                        internal_value=av["internal_value"],
-                        name=av.get("name") or av["internal_value"].replace("-", "_"),
+                        name=av.get("name"),
                         display_name_english=av["display_name_english"],
                         display_name_italian=av["display_name_italian"],
                         description_english=av.get("description_english"),
@@ -287,7 +283,7 @@ class CoverageConfigurationView(ModelView):
             required=True,
             help_text=(
                 "Name of the main variable inside this dataset's NetCDF file. This can "
-                "be a templated value, such as '{historical_year_period}_avg'."
+                "be a templated value, such as '{observation_year_period}_avg'."
             ),
         ),
         starlette_admin.StringField("wms_main_layer_name", required=True),
@@ -301,8 +297,8 @@ class CoverageConfigurationView(ModelView):
                 "to the coverage. This can also be given a shell-like pattern, which "
                 "can be useful when the dataset filename differs by additional "
                 "characters than just those that are used for configuration parameters. "
-                "Example: 'cline_yr/TDd_{historical_year_period}_1992-202[34]_py85.nc' "
-                "- this example features the '{historical_year_period}' template, which "
+                "Example: 'cline_yr/TDd_{observation_year_period}_1992-202[34]_py85.nc' "
+                "- this example features the '{observation_year_period}' template, which "
                 "gets replaced by the concrete value of the parameter, and it also "
                 "features the shell-like style expressed in '202[34]', which means "
                 "to look for files that have either '2023' or '2024' in that "
@@ -310,8 +306,7 @@ class CoverageConfigurationView(ModelView):
             ),
         ),
         starlette_admin.StringField("coverage_id_pattern", disabled=True),
-        starlette_admin.StringField("unit_english", required=True),
-        starlette_admin.StringField("unit_italian", required=True),
+        starlette_admin.StringField("unit", required=True),
         starlette_admin.StringField("palette", required=True),
         starlette_admin.FloatField("color_scale_min", required=True),
         starlette_admin.FloatField("color_scale_max", required=True),
@@ -368,8 +363,7 @@ class CoverageConfigurationView(ModelView):
         "wms_secondary_layer_name",
         "coverage_id_pattern",
         "possible_values",
-        "unit_english",
-        "unit_italian",
+        "unit",
         "palette",
         "color_scale_min",
         "color_scale_max",
@@ -543,8 +537,7 @@ class CoverageConfigurationView(ModelView):
                 wms_main_layer_name=data.get("wms_main_layer_name"),
                 wms_secondary_layer_name=data.get("wms_secondary_layer_name"),
                 thredds_url_pattern=data["thredds_url_pattern"],
-                unit_english=data["unit_english"],
-                unit_italian=data["unit_italian"],
+                unit=data["unit"],
                 palette=data["palette"],
                 color_scale_min=data["color_scale_min"],
                 color_scale_max=data["color_scale_max"],
@@ -627,8 +620,7 @@ class CoverageConfigurationView(ModelView):
                 wms_main_layer_name=data.get("wms_main_layer_name"),
                 wms_secondary_layer_name=data.get("wms_secondary_layer_name"),
                 thredds_url_pattern=data.get("thredds_url_pattern"),
-                unit_english=data.get("unit_english"),
-                unit_italian=data.get("unit_italian"),
+                unit=data.get("data"),
                 palette=data.get("palette"),
                 color_scale_min=data.get("color_scale_min"),
                 color_scale_max=data.get("color_scale_max"),
