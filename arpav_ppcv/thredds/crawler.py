@@ -1,4 +1,5 @@
 import fnmatch
+import functools
 import logging
 import traceback
 import typing
@@ -15,6 +16,7 @@ from .. import database
 
 logger = logging.getLogger(__name__)
 
+FNMATCH_SPECIAL_CHARS = ("*", "?", "[", "]", "[!")
 
 _NAMESPACES: typing.Final = {
     "thredds": "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0",
@@ -24,9 +26,9 @@ _NAMESPACES: typing.Final = {
 _THREDDS_FILE_SERVER_URL_FRAGMENT = "fileServer"
 
 
-async def find_thredds_dataset_url(
-    http_client: httpx.AsyncClient,
-    coverage: coverages.CoverageInternal,
+@functools.cache
+def find_thredds_dataset_url_fragment(
+    rendered_url_fragment: str,
     base_thredds_url: str,
 ) -> typing.Optional[str]:
     """Contact remote THREDDS server and discover concrete dataset URL.
@@ -37,10 +39,12 @@ async def find_thredds_dataset_url(
     THREDDS server and then keeps the first one whose name matches
     the fnmatch pattern.
     """
-    full_fragment = coverage.configuration.get_thredds_url_fragment(coverage.identifier)
-    catalog_fragment, name_fragment = full_fragment.rpartition("/")[::2]
+    logger.debug(
+        "contacting THREDDS server in order to look for dataset URL fragment..."
+    )
+    catalog_fragment, name_fragment = rendered_url_fragment.rpartition("/")[::2]
     catalog_url = f"{base_thredds_url}/catalog/{catalog_fragment}/catalog.xml"
-    response = await http_client.get(catalog_url)
+    response = httpx.get(catalog_url)
     result = None
     if response.status_code == httpx.codes.OK:
         try:
@@ -87,12 +91,27 @@ def get_coverage_configuration_urls(
     )
     result = []
     for cov_identifier in coverage_identifiers:
+        possible_fragment = coverage_configuration.get_thredds_url_fragment(
+            cov_identifier
+        )
+        if any(c in possible_fragment for c in FNMATCH_SPECIAL_CHARS):
+            logger.debug(
+                f"THREDDS dataset url ({possible_fragment}) is an "
+                f"fnmatch pattern, retrieving the actual URL from the server..."
+            )
+            ds_fragment = find_thredds_dataset_url_fragment(
+                possible_fragment, base_thredds_url
+            )
+        else:
+            ds_fragment = coverage_configuration.get_thredds_url_fragment(
+                cov_identifier
+            )
         result.append(
             "/".join(
                 (
                     base_thredds_url,
                     _THREDDS_FILE_SERVER_URL_FRAGMENT,
-                    coverage_configuration.get_thredds_url_fragment(cov_identifier),
+                    ds_fragment,
                 )
             )
         )
