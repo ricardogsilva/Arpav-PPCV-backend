@@ -278,10 +278,33 @@ class CoverageConfigurationView(ModelView):
         starlette_admin.StringField("display_name_italian", required=True),
         starlette_admin.StringField("description_english"),
         starlette_admin.StringField("description_italian"),
-        starlette_admin.StringField("netcdf_main_dataset_name", required=True),
+        starlette_admin.StringField(
+            "netcdf_main_dataset_name",
+            required=True,
+            help_text=(
+                "Name of the main variable inside this dataset's NetCDF file. This can "
+                "be a templated value, such as '{observation_year_period}_avg'."
+            ),
+        ),
         starlette_admin.StringField("wms_main_layer_name", required=True),
         starlette_admin.StringField("wms_secondary_layer_name", required=False),
-        starlette_admin.StringField("thredds_url_pattern", required=True),
+        starlette_admin.StringField(
+            "thredds_url_pattern",
+            required=True,
+            help_text=(
+                "Path pattern to the dataset's URL in THREDDS. This can be "
+                "templated with the name of any configuration parameter that belongs "
+                "to the coverage. This can also be given a shell-like pattern, which "
+                "can be useful when the dataset filename differs by additional "
+                "characters than just those that are used for configuration parameters. "
+                "Example: 'cline_yr/TDd_{observation_year_period}_1992-202[34]_py85.nc' "
+                "- this example features the '{observation_year_period}' template, which "
+                "gets replaced by the concrete value of the parameter, and it also "
+                "features the shell-like style expressed in '202[34]', which means "
+                "to look for files that have either '2023' or '2024' in that "
+                "part of their name."
+            ),
+        ),
         starlette_admin.StringField("coverage_id_pattern", disabled=True),
         starlette_admin.StringField("unit", required=True),
         starlette_admin.StringField("palette", required=True),
