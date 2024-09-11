@@ -15,7 +15,7 @@ _DESCRIPTION_ITALIAN = (
 )
 _HISTORICAL_COLLECTION = "historical"
 _OBSERVATION_VARIABLE = "hdds"
-_UNIT = "HDD ºC"
+_UNIT = "ºC"
 _COLOR_SCALE_MIN = 2130
 _COLOR_SCALE_MAX = 7800
 
@@ -25,7 +25,7 @@ def generate_configurations(
 ) -> list[CoverageConfigurationCreate]:
     cov_confs = [
         CoverageConfigurationCreate(
-            name="hdds_30yr_yearly",
+            name="hdds_30yr",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
