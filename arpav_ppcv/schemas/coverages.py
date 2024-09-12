@@ -258,12 +258,12 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
 
     @pydantic.computed_field()
     @property
-    def collection(self) -> Optional[str]:
+    def archive(self) -> Optional[str]:
         result = None
         for pv in self.possible_values:
             if (
                 pv.configuration_parameter_value.configuration_parameter.name
-                == "collection"
+                == "archive"
             ):
                 result = pv.configuration_parameter_value.name
                 break

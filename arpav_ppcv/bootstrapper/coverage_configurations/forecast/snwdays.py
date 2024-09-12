@@ -34,7 +34,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", "forecast")
+                        ("archive", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -95,7 +95,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", "forecast")
+                        ("archive", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -156,7 +156,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", "forecast")
+                        ("archive", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -217,7 +217,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", "forecast")
+                        ("archive", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -278,7 +278,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", "forecast")
+                        ("archive", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -339,7 +339,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", "forecast")
+                        ("archive", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -400,7 +400,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", "forecast")
+                        ("archive", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -466,7 +466,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", "forecast")
+                        ("archive", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -534,7 +534,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", "forecast")
+                        ("archive", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -605,7 +605,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", "forecast")
+                        ("archive", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -676,7 +676,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", "forecast")
+                        ("archive", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -747,7 +747,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", "forecast")
+                        ("archive", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -818,7 +818,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", "forecast")
+                        ("archive", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -889,7 +889,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", "forecast")
+                        ("archive", "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(

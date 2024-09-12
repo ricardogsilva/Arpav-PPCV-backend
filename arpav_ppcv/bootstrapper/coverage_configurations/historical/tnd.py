@@ -8,7 +8,7 @@ _DISPLAY_NAME_ENGLISH = "Minimum temperature"
 _DISPLAY_NAME_ITALIAN = "Temperatura minima"
 _DESCRIPTION_ENGLISH = "Average of minimum temperatures"
 _DESCRIPTION_ITALIAN = "Media delle temperature minime"
-_HISTORICAL_COLLECTION = "historical"
+_ARCHIVE = "historical"
 _OBSERVATION_VARIABLE = "tnd"
 _UNIT = "ºC"
 _COLOR_SCALE_MIN = -5
@@ -36,7 +36,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", _HISTORICAL_COLLECTION)
+                        ("archive", _ARCHIVE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -157,7 +157,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", _HISTORICAL_COLLECTION)
+                        ("archive", _ARCHIVE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -204,7 +204,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", _HISTORICAL_COLLECTION)
+                        ("archive", _ARCHIVE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -266,7 +266,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", _HISTORICAL_COLLECTION)
+                        ("archive", _ARCHIVE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
