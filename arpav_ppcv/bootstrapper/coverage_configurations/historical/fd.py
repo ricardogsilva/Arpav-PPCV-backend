@@ -9,7 +9,7 @@ _DISPLAY_NAME_ITALIAN = "Giorni di gelo"
 _DESCRIPTION_ENGLISH = "Number of days with minimum temperature below 0°C"
 _DESCRIPTION_ITALIAN = "Numero di giorni con temperatura minima minore di 0°C"
 _ARCHIVE = "historical"
-_OBSERVATION_VARIABLE = "fd"
+_VARIABLE = "fd"
 _UNIT = "gg"
 _COLOR_SCALE_MIN = 0
 _COLOR_SCALE_MAX = 260
@@ -41,7 +41,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_variable", _OBSERVATION_VARIABLE)
+                        ("historical_variable", _VARIABLE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -82,7 +82,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_variable", _OBSERVATION_VARIABLE)
+                        ("historical_variable", _VARIABLE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(

@@ -9,7 +9,7 @@ _DISPLAY_NAME_ITALIAN = "Giorni caldi"
 _DESCRIPTION_ENGLISH = "Number of days with maximum temperature above 30°C"
 _DESCRIPTION_ITALIAN = "Numero di giorni con temperatura massima maggiore di 30°C"
 _ARCHIVE = "historical"
-_OBSERVATION_VARIABLE = "su30"
+_VARIABLE = "su30"
 _UNIT = "gg"
 _COLOR_SCALE_MIN = 0
 _COLOR_SCALE_MAX = 80
@@ -41,7 +41,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_variable", _OBSERVATION_VARIABLE)
+                        ("historical_variable", _VARIABLE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -82,7 +82,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_variable", _OBSERVATION_VARIABLE)
+                        ("historical_variable", _VARIABLE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(

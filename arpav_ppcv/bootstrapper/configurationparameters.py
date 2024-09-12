@@ -7,11 +7,11 @@ from ..schemas.coverages import (
 def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
     return [
         ConfigurationParameterCreate(
-            name="observation_variable",
+            name="historical_variable",
             display_name_english="Variable",
             display_name_italian="Variabile",
-            description_english="Observation variable",
-            description_italian="Variabile di osservazione",
+            description_english="Historical variable",
+            description_italian="Variabile storica",
             allowed_values=[
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     name="tdd",
