@@ -47,6 +47,8 @@ from ..schemas.base import (
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+_INVALID_COVERAGE_IDENTIFIER_ERROR_DETAIL = "Invalid coverage identifier"
+
 
 @router.get(
     "/configuration-parameters",
@@ -242,6 +244,29 @@ def list_coverage_identifiers(
     )
 
 
+@router.get(
+    "/coverage-identifiers/{coverage_identifier}",
+    response_model=coverage_schemas.CoverageIdentifierReadListItem,
+)
+def get_coverage_identifier(
+    request: Request,
+    db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+    coverage_identifier: str,
+):
+    db_coverage_configuration = db.get_coverage_configuration_by_coverage_identifier(
+        db_session, coverage_identifier
+    )
+    coverage = CoverageInternal(
+        configuration=db_coverage_configuration, identifier=coverage_identifier
+    )
+    if db_coverage_configuration is not None:
+        return coverage_schemas.CoverageIdentifierReadListItem.from_db_instance(
+            coverage, request
+        )
+    else:
+        raise HTTPException(400, detail=_INVALID_COVERAGE_IDENTIFIER_ERROR_DETAIL)
+
+
 @router.get("/wms/{coverage_identifier}")
 async def wms_endpoint(
     request: Request,
@@ -266,7 +291,9 @@ async def wms_endpoint(
                 coverage_identifier
             )
         except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
+            raise HTTPException(
+                status_code=400, detail=_INVALID_COVERAGE_IDENTIFIER_ERROR_DETAIL
+            )
         else:
             if any(
                 c in dataset_url_fragment for c in thredds_crawler.FNMATCH_SPECIAL_CHARS
@@ -346,7 +373,9 @@ async def wms_endpoint(
                 )
             return response
     else:
-        raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
+        raise HTTPException(
+            status_code=400, detail=_INVALID_COVERAGE_IDENTIFIER_ERROR_DETAIL
+        )
 
 
 def _modify_capabilities_response(
@@ -460,9 +489,13 @@ def get_climate_barometer_time_series(
                     )
                 return TimeSeriesList(series=series)
         else:
-            raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
+            raise HTTPException(
+                status_code=400, detail=_INVALID_COVERAGE_IDENTIFIER_ERROR_DETAIL
+            )
     else:
-        raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
+        raise HTTPException(
+            status_code=400, detail=_INVALID_COVERAGE_IDENTIFIER_ERROR_DETAIL
+        )
 
 
 @router.get("/time-series/{coverage_identifier}", response_model=TimeSeriesList)
@@ -568,9 +601,13 @@ def get_time_series(
                         )
                 return TimeSeriesList(series=series)
         else:
-            raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
+            raise HTTPException(
+                status_code=400, detail=_INVALID_COVERAGE_IDENTIFIER_ERROR_DETAIL
+            )
     else:
-        raise HTTPException(status_code=400, detail="Invalid coverage_identifier")
+        raise HTTPException(
+            status_code=400, detail=_INVALID_COVERAGE_IDENTIFIER_ERROR_DETAIL
+        )
 
 
 @router.get(
