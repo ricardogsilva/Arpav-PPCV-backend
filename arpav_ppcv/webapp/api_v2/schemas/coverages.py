@@ -5,7 +5,6 @@ import pydantic
 from fastapi import Request
 
 from ....config import (
-    ArpavPpcvSettings,
     LOCALE_EN,
     LOCALE_IT,
 )
@@ -175,24 +174,24 @@ class CoverageIdentifierReadListItem(pydantic.BaseModel):
     def from_db_instance(
         cls,
         instance: app_models.CoverageInternal,
-        settings: ArpavPpcvSettings,
         request: Request,
     ) -> "CoverageIdentifierReadListItem":
-        thredds_url_fragment = instance.configuration.get_thredds_url_fragment(
-            instance.identifier
-        )
-        wms_base_url = "/".join(
-            (
-                settings.thredds_server.base_url,
-                settings.thredds_server.wms_service_url_fragment,
-                thredds_url_fragment,
-            )
+        wms_base_url = request.url_for(
+            "wms_endpoint", coverage_identifier=instance.identifier
         )
         return cls(
             identifier=instance.identifier,
-            wms_base_url=wms_base_url,
-            wms_main_layer_name=instance.configuration.wms_main_layer_name,
-            wms_secondary_layer_name=instance.configuration.wms_secondary_layer_name,
+            wms_base_url=str(wms_base_url),
+            wms_main_layer_name=(
+                instance.configuration.get_wms_main_layer_name(instance.identifier)
+                if instance.configuration.wms_main_layer_name is not None
+                else None
+            ),
+            wms_secondary_layer_name=(
+                instance.configuration.get_wms_secondary_layer_name(instance.identifier)
+                if instance.configuration.wms_secondary_layer_name is not None
+                else None
+            ),
             related_coverage_configuration_url=str(
                 request.url_for(
                     "get_coverage_configuration",
@@ -229,7 +228,6 @@ class CoverageIdentifierList(WebResourceList):
         items: typing.Sequence[app_models.CoverageInternal],
         request: Request,
         *,
-        settings: ArpavPpcvSettings,
         limit: int,
         offset: int,
         filtered_total: int,
@@ -241,7 +239,7 @@ class CoverageIdentifierList(WebResourceList):
                 request, limit, offset, filtered_total, len(items)
             ),
             items=[
-                CoverageIdentifierReadListItem.from_db_instance(i, settings, request)
+                CoverageIdentifierReadListItem.from_db_instance(i, request)
                 for i in items
             ],
         )
