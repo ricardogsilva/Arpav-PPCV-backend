@@ -249,7 +249,6 @@ def list_coverage_identifiers(
     return coverage_schemas.CoverageIdentifierList.from_items(
         cov_internals,
         request,
-        settings=settings,
         limit=list_params.limit,
         offset=list_params.offset,
         filtered_total=filtered_total,
