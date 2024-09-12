@@ -561,7 +561,7 @@ class CoverageInternal:
         return hash(self.identifier)
 
 
-class ForecastVariableMenuTreeCombination(TypedDict):
+class VariableMenuTreeCombination(TypedDict):
     configuration_parameter: ConfigurationParameter
     values: list[ConfigurationParameterValue]
 
@@ -570,4 +570,10 @@ class ForecastVariableMenuTree(TypedDict):
     climatological_variable: ConfigurationParameterValue
     aggregation_period: ConfigurationParameterValue
     measure: ConfigurationParameterValue
-    combinations: dict[str, ForecastVariableMenuTreeCombination]
+    combinations: dict[str, VariableMenuTreeCombination]
+
+
+class HistoricalVariableMenuTree(TypedDict):
+    historical_variable: ConfigurationParameterValue
+    aggregation_period: ConfigurationParameterValue
+    combinations: dict[str, VariableMenuTreeCombination]
