@@ -279,6 +279,16 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
             coverage_identifier, self.netcdf_main_dataset_name
         )
 
+    def get_wms_main_layer_name(self, coverage_identifier: str) -> str:
+        return self._render_templated_value(
+            coverage_identifier, self.wms_main_layer_name
+        )
+
+    def get_wms_secondary_layer_name(self, coverage_identifier: str) -> str:
+        return self._render_templated_value(
+            coverage_identifier, self.wms_secondary_layer_name
+        )
+
     def _render_templated_value(self, coverage_identifier: str, template: str) -> str:
         try:
             used_values = self.retrieve_used_values(coverage_identifier)
