@@ -14,7 +14,7 @@ _DESCRIPTION_ITALIAN = (
     "temperatura media giornaliera è maggiore di 24°C."
 )
 _ARCHIVE = "historical"
-_OBSERVATION_VARIABLE = "cdds"
+_VARIABLE = "cdds"
 _UNIT = "ºC"
 _COLOR_SCALE_MIN = 0
 _COLOR_SCALE_MAX = 320
@@ -45,7 +45,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_variable", _OBSERVATION_VARIABLE)
+                        ("historical_variable", _VARIABLE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -86,7 +86,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_variable", _OBSERVATION_VARIABLE)
+                        ("historical_variable", _VARIABLE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
