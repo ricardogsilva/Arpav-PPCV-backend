@@ -9,7 +9,7 @@ _DISPLAY_NAME_ITALIAN = "Notti tropicali"
 _DESCRIPTION_ENGLISH = "Number of days with minimum temperature higher than 20°C"
 _DESCRIPTION_ITALIAN = "Numero di giorni con temperatura minima maggiore di 20°C"
 _ARCHIVE = "historical"
-_OBSERVATION_VARIABLE = "tr"
+_VARIABLE = "tr"
 _UNIT = "gg"
 _COLOR_SCALE_MIN = 0
 _COLOR_SCALE_MAX = 50
@@ -41,7 +41,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_variable", _OBSERVATION_VARIABLE)
+                        ("historical_variable", _VARIABLE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -82,7 +82,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_variable", _OBSERVATION_VARIABLE)
+                        ("historical_variable", _VARIABLE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
