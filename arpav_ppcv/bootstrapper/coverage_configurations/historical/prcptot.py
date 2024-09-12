@@ -8,7 +8,7 @@ _DISPLAY_NAME_ENGLISH = "Precipitation"
 _DISPLAY_NAME_ITALIAN = "Precipitazione"
 _DESCRIPTION_ENGLISH = "Daily precipitation near the ground"
 _DESCRIPTION_ITALIAN = "Precipitazione giornaliera vicino al suolo"
-_HISTORICAL_COLLECTION = "historical"
+_ARCHIVE = "historical"
 _OBSERVATION_VARIABLE = "prcptot"
 _UNIT = "mm"
 _COLOR_SCALE_MIN = 300
@@ -36,7 +36,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", _HISTORICAL_COLLECTION)
+                        ("archive", _ARCHIVE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -157,7 +157,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", _HISTORICAL_COLLECTION)
+                        ("archive", _ARCHIVE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -204,7 +204,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", _HISTORICAL_COLLECTION)
+                        ("archive", _ARCHIVE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -266,7 +266,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", _HISTORICAL_COLLECTION)
+                        ("archive", _ARCHIVE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(

@@ -640,11 +640,11 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
             ],
         ),
         ConfigurationParameterCreate(
-            name="collection",
-            display_name_english="Dataset collection",
-            display_name_italian="Raccolta di set di dati",
-            description_english="The collection that the dataset belongs to",
-            description_italian="La raccolta a cui appartiene il set di dati",
+            name="archive",
+            display_name_english="Dataset archive",
+            display_name_italian="archivio di dataset",
+            description_english="The archive that the dataset belongs to",
+            description_italian="L'archivio a cui appartiene il set di dati",
             allowed_values=[
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     name="historical",

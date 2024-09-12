@@ -13,7 +13,7 @@ _DESCRIPTION_ITALIAN = (
     "Somma della temperatura media giornaliera meno 21°C se la "
     "temperatura media giornaliera è maggiore di 24°C."
 )
-_HISTORICAL_COLLECTION = "historical"
+_ARCHIVE = "historical"
 _OBSERVATION_VARIABLE = "cdds"
 _UNIT = "ºC"
 _COLOR_SCALE_MIN = 0
@@ -40,7 +40,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", _HISTORICAL_COLLECTION)
+                        ("archive", _ARCHIVE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -81,7 +81,7 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("collection", _HISTORICAL_COLLECTION)
+                        ("archive", _ARCHIVE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
