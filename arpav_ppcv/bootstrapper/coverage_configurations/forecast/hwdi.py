@@ -86,7 +86,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "JJA")
+                        ("year_period", "summer")
                     ].id
                 ),
             ],
@@ -157,7 +157,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "JJA")
+                        ("year_period", "summer")
                     ].id
                 ),
             ],
@@ -228,7 +228,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "JJA")
+                        ("year_period", "summer")
                     ].id
                 ),
             ],
@@ -299,7 +299,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "JJA")
+                        ("year_period", "summer")
                     ].id
                 ),
             ],
@@ -370,7 +370,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "JJA")
+                        ("year_period", "summer")
                     ].id
                 ),
             ],
@@ -441,7 +441,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "JJA")
+                        ("year_period", "summer")
                     ].id
                 ),
             ],

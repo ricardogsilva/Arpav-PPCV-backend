@@ -39,6 +39,7 @@ class ConfigurationParameterValue(sqlmodel.SQLModel, table=True):
     )
     id: uuid.UUID = sqlmodel.Field(default_factory=uuid.uuid4, primary_key=True)
     name: str
+    internal_value: str
     display_name_english: Optional[str] = None
     display_name_italian: Optional[str] = None
     description_english: Optional[str] = None
@@ -59,7 +60,17 @@ class ConfigurationParameterValue(sqlmodel.SQLModel, table=True):
 
 
 class ConfigurationParameterValueCreate(sqlmodel.SQLModel):
-    name: str
+    internal_value: str
+    name: Annotated[
+        str,
+        pydantic.Field(
+            pattern=_NAME_PATTERN,
+            help=(
+                "Parameter value name. Only alphanumeric characters and the underscore "
+                "are allowed. Example: my_param_value"
+            ),
+        ),
+    ] = None
     configuration_parameter_id: uuid.UUID
     display_name_english: Optional[str] = None
     display_name_italian: Optional[str] = None
@@ -88,7 +99,17 @@ class ConfigurationParameter(sqlmodel.SQLModel, table=True):
 class ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
     sqlmodel.SQLModel
 ):
-    name: str
+    internal_value: str
+    name: Annotated[
+        str,
+        pydantic.Field(
+            pattern=_NAME_PATTERN,
+            help=(
+                "Parameter value name. Only alphanumeric characters and the underscore "
+                "are allowed. Example: my_param_value"
+            ),
+        ),
+    ] = None
     display_name_english: Optional[str] = None
     display_name_italian: Optional[str] = None
     description_english: Optional[str] = None
@@ -120,7 +141,8 @@ class ConfigurationParameterValueUpdateEmbeddedInConfigurationParameterEdit(
     sqlmodel.SQLModel
 ):
     id: Optional[uuid.UUID] = None
-    name: Optional[str] = None
+    internal_value: Optional[str] = None
+    name: Annotated[Optional[str], pydantic.Field(pattern=_NAME_PATTERN)] = None
     display_name_english: Optional[str] = None
     display_name_italian: Optional[str] = None
     description_english: Optional[str] = None
@@ -300,9 +322,10 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
             param_name = (
                 used_value.configuration_parameter_value.configuration_parameter.name
             )
-            rendered = rendered.replace(
-                f"{{{param_name}}}", used_value.configuration_parameter_value.name
+            param_internal_value = (
+                used_value.configuration_parameter_value.internal_value
             )
+            rendered = rendered.replace(f"{{{param_name}}}", param_internal_value)
         return rendered
 
     def build_coverage_identifier(
@@ -362,24 +385,27 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         self, coverage_identifier: str
     ) -> Optional[base.Season]:
         used_values = self.retrieve_used_values(coverage_identifier)
+        result = None
         for used_value in used_values:
             is_temporal_aggregation = (
                 used_value.configuration_parameter_value.configuration_parameter.name
-                in ("year_period",)
+                in (
+                    "year_period",
+                    "historical_year_period",
+                )
             )
             if is_temporal_aggregation:
                 value = used_value.configuration_parameter_value.name.lower()
-                if value in ("djf",):
+                if value in ("winter",):
                     result = base.Season.WINTER
-                elif value in ("mam",):
+                elif value in ("spring",):
                     result = base.Season.SPRING
-                elif value in ("jja",):
+                elif value in ("summer",):
                     result = base.Season.SUMMER
-                elif value in ("son",):
+                elif value in ("autumn",):
                     result = base.Season.AUTUMN
                 break
         else:
-            result = None
             logger.warning(
                 f"Could not determine appropriate season for coverage "
                 f"identifier {coverage_identifier!r}"
