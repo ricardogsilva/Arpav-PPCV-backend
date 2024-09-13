@@ -48,12 +48,12 @@ def test_coverage_identifiers_list(
                 "archive": "forecast",
                 "measure": "absolute",
                 "scenario": "rcp26",
-                "year_period": "DJF",
+                "year_period": "winter",
             },
             [
-                "tas_seasonal_absolute_model_ensemble-annual-forecast-model_ensemble-tas-absolute-rcp26-DJF",
-                "tas_seasonal_absolute_model_ensemble_lower_uncertainty-annual-forecast-model_ensemble-tas-absolute-rcp26-lower_bound-DJF",
-                "tas_seasonal_absolute_model_ensemble_upper_uncertainty-annual-forecast-model_ensemble-tas-absolute-rcp26-upper_bound-DJF",
+                "tas_seasonal_absolute_model_ensemble-annual-forecast-model_ensemble-tas-absolute-rcp26-winter",
+                "tas_seasonal_absolute_model_ensemble_lower_uncertainty-annual-forecast-model_ensemble-tas-absolute-rcp26-lower_bound-winter",
+                "tas_seasonal_absolute_model_ensemble_upper_uncertainty-annual-forecast-model_ensemble-tas-absolute-rcp26-upper_bound-winter",
             ],
         )
     ],
@@ -323,7 +323,7 @@ def test_real_get_time_series(
     include_coverage_related_data: bool,
     expected_italian_parameter_values: list[set[tuple[str, str]]],
 ):
-    coverage_identifier = "tas_seasonal_absolute_model_ensemble-annual-forecast-model_ensemble-tas-absolute-rcp45-DJF"
+    coverage_identifier = "tas_seasonal_absolute_model_ensemble-annual-forecast-model_ensemble-tas-absolute-rcp45-winter"
     tas_thredds_url_pattern = "tas_avg_"
     tas_stddown_thredds_url_pattern = "tas_stddown_.*"
     tas_stdup_thredds_url_pattern = "tas_stdup_.*"

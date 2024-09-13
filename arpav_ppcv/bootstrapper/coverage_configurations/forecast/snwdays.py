@@ -74,7 +74,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
@@ -135,7 +135,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
@@ -196,7 +196,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
@@ -257,7 +257,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
@@ -318,7 +318,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
@@ -379,7 +379,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
@@ -445,7 +445,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
@@ -511,7 +511,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
@@ -584,7 +584,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
@@ -655,7 +655,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
@@ -726,7 +726,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
@@ -797,7 +797,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
@@ -868,7 +868,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
@@ -939,7 +939,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
