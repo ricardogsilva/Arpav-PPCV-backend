@@ -12,6 +12,7 @@ from ...schemas.base import (
 
 class ConfigurationParameterValueRead(sqlmodel.SQLModel):
     id: uuid.UUID
+    internal_value: str
     name: str
     display_name_english: Optional[str]
     display_name_italian: Optional[str]

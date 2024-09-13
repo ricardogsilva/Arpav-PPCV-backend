@@ -79,7 +79,8 @@ def test_generate_coverage_identifiers(
         params[p] = coverages.ConfigurationParameter(
             name=p,
             allowed_values=[
-                coverages.ConfigurationParameterValue(name=v) for v in values
+                coverages.ConfigurationParameterValue(internal_value=v, name=v)
+                for v in values
             ],
         )
     for param_to_create in params.values():

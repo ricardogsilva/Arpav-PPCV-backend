@@ -239,14 +239,15 @@ def sample_configuration_parameters(arpav_db_session):
         for j in range(4):
             allowed_values.append(
                 coverages.ConfigurationParameterValue(
+                    internal_value=f"fake-param{j}",
                     name=f"fake_parameter_value{j}",
-                    description=f"Description for fake param value {j}",
+                    description_english=f"Description for fake param value {j}",
                 )
             )
         db_conf_params.append(
             coverages.ConfigurationParameter(
                 name=f"fake_parameter_{i}",
-                description=f"Description for fake param {i}",
+                description_english=f"Description for fake param {i}",
                 allowed_values=allowed_values,
             )
         )
