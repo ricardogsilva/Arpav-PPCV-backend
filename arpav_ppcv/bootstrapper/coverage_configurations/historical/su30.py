@@ -26,9 +26,9 @@ def generate_configurations(
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="{observation_year_period}_avg",
-            wms_main_layer_name="{observation_year_period}_avg",
-            thredds_url_pattern="cline_30yr/SU30_1991-2020.nc",
+            netcdf_main_dataset_name="{historical_year_period}_avg",
+            wms_main_layer_name="{historical_year_period}_avg",
+            thredds_url_pattern="cline_30yr/SU30_{climatological_standard_normal}.nc",
             unit=_UNIT,
             palette="default/seq-YlOrRd",
             color_scale_min=_COLOR_SCALE_MIN,
@@ -51,12 +51,17 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("climatological_standard_normal", "1991_2020")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("measure", "absolute")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "A00")
+                        ("historical_year_period", "all_year")
                     ].id
                 ),
             ],
@@ -69,7 +74,7 @@ def generate_configurations(
             description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="SU30",
             wms_main_layer_name="SU30",
-            thredds_url_pattern="cline_yr/SU30_{observation_year_period}_1992-2023_py85.nc",
+            thredds_url_pattern="cline_yr/SU30_{historical_year_period}_*.nc",
             unit=_UNIT,
             palette="default/seq-YlOrRd",
             color_scale_min=_COLOR_SCALE_MIN,
@@ -97,7 +102,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "A00")
+                        ("historical_year_period", "all_year")
                     ].id
                 ),
             ],

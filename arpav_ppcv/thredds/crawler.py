@@ -7,6 +7,7 @@ from pathlib import Path
 from xml.etree import ElementTree as etree
 
 import anyio
+import anyio.to_thread
 import exceptiongroup
 import httpx
 
@@ -24,6 +25,27 @@ _NAMESPACES: typing.Final = {
 }
 
 _THREDDS_FILE_SERVER_URL_FRAGMENT = "fileServer"
+
+
+def get_thredds_url_fragment(
+    coverage: coverages.CoverageInternal, thredds_base_url: str
+) -> str:
+    dataset_url_fragment = coverage.configuration.get_thredds_url_fragment(
+        coverage.identifier
+    )
+    if any(c in dataset_url_fragment for c in FNMATCH_SPECIAL_CHARS):
+        logger.debug(
+            f"THREDDS dataset url ({dataset_url_fragment}) is an "
+            f"fnmatch pattern, retrieving the actual URL from the server..."
+        )
+        ds_fragment = anyio.to_thread.run_sync(
+            find_thredds_dataset_url_fragment,
+            dataset_url_fragment,
+            thredds_base_url,
+        )
+    else:
+        ds_fragment = dataset_url_fragment
+    return ds_fragment
 
 
 @functools.cache
@@ -91,21 +113,27 @@ def get_coverage_configuration_urls(
     )
     result = []
     for cov_identifier in coverage_identifiers:
-        possible_fragment = coverage_configuration.get_thredds_url_fragment(
-            cov_identifier
+        ds_fragment = get_thredds_url_fragment(
+            coverages.CoverageInternal(
+                identifier=cov_identifier, configuration=coverage_configuration
+            ),
+            base_thredds_url,
         )
-        if any(c in possible_fragment for c in FNMATCH_SPECIAL_CHARS):
-            logger.debug(
-                f"THREDDS dataset url ({possible_fragment}) is an "
-                f"fnmatch pattern, retrieving the actual URL from the server..."
-            )
-            ds_fragment = find_thredds_dataset_url_fragment(
-                possible_fragment, base_thredds_url
-            )
-        else:
-            ds_fragment = coverage_configuration.get_thredds_url_fragment(
-                cov_identifier
-            )
+        # possible_fragment = coverage_configuration.get_thredds_url_fragment(
+        #     cov_identifier
+        # )
+        # if any(c in possible_fragment for c in FNMATCH_SPECIAL_CHARS):
+        #     logger.debug(
+        #         f"THREDDS dataset url ({possible_fragment}) is an "
+        #         f"fnmatch pattern, retrieving the actual URL from the server..."
+        #     )
+        #     ds_fragment = find_thredds_dataset_url_fragment(
+        #         possible_fragment, base_thredds_url
+        #     )
+        # else:
+        #     ds_fragment = coverage_configuration.get_thredds_url_fragment(
+        #         cov_identifier
+        #     )
         result.append(
             "/".join(
                 (

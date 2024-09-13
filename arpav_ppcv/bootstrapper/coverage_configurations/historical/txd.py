@@ -26,9 +26,9 @@ def generate_configurations(
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="{observation_year_period}_avg",
-            wms_main_layer_name="{observation_year_period}_avg",
-            thredds_url_pattern="cline_30yr/TXd_1991-2020.nc",
+            netcdf_main_dataset_name="{historical_year_period}_avg",
+            wms_main_layer_name="{historical_year_period}_avg",
+            thredds_url_pattern="cline_30yr/TXd_{climatological_standard_normal}.nc",
             unit=_UNIT,
             palette="default/seq-YlOrRd",
             color_scale_min=_COLOR_SCALE_MIN,
@@ -51,92 +51,97 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
+                        ("climatological_standard_normal", "1991_2020")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
                         ("measure", "absolute")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "A00")
+                        ("historical_year_period", "all_year")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "S01")
+                        ("historical_year_period", "winter")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "S02")
+                        ("historical_year_period", "spring")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "S03")
+                        ("historical_year_period", "summer")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "S04")
+                        ("historical_year_period", "autumn")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M01")
+                        ("historical_year_period", "january")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M02")
+                        ("historical_year_period", "february")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M03")
+                        ("historical_year_period", "march")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M04")
+                        ("historical_year_period", "april")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M05")
+                        ("historical_year_period", "may")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M06")
+                        ("historical_year_period", "june")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M07")
+                        ("historical_year_period", "july")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M08")
+                        ("historical_year_period", "august")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M09")
+                        ("historical_year_period", "september")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M10")
+                        ("historical_year_period", "october")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M11")
+                        ("historical_year_period", "november")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M12")
+                        ("historical_year_period", "december")
                     ].id
                 ),
             ],
@@ -149,7 +154,7 @@ def generate_configurations(
             description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="TXd",
             wms_main_layer_name="TXd",
-            thredds_url_pattern="cline_yr/TXd_{observation_year_period}_1992-2023_py85.nc",
+            thredds_url_pattern="cline_yr/TXd_{historical_year_period}_*.nc",
             unit=_UNIT,
             palette="default/seq-YlOrRd",
             color_scale_min=_COLOR_SCALE_MIN,
@@ -177,7 +182,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "A00")
+                        ("historical_year_period", "all_year")
                     ].id
                 ),
             ],
@@ -196,7 +201,7 @@ def generate_configurations(
             description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="TXd",
             wms_main_layer_name="TXd",
-            thredds_url_pattern="cline_yr/TXd_{observation_year_period}_1992-202[34]_py85.nc",
+            thredds_url_pattern="cline_yr/TXd_{historical_year_period}_*.nc",
             unit=_UNIT,
             palette="default/seq-YlOrRd",
             color_scale_min=_COLOR_SCALE_MIN,
@@ -224,22 +229,22 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "S01")
+                        ("historical_year_period", "winter")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "S02")
+                        ("historical_year_period", "spring")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "S03")
+                        ("historical_year_period", "summer")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "S04")
+                        ("historical_year_period", "autumn")
                     ].id
                 ),
             ],
@@ -258,7 +263,7 @@ def generate_configurations(
             description_italian=_DESCRIPTION_ITALIAN,
             netcdf_main_dataset_name="TXd",
             wms_main_layer_name="TXd",
-            thredds_url_pattern="cline_yr/TXd_{observation_year_period}_199[12]-202[34]_py85.nc",
+            thredds_url_pattern="cline_yr/TXd_{historical_year_period}_*.nc",
             unit=_UNIT,
             palette="default/seq-YlOrRd",
             color_scale_min=_COLOR_SCALE_MIN,
@@ -286,62 +291,62 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M01")
+                        ("historical_year_period", "january")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M02")
+                        ("historical_year_period", "february")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M03")
+                        ("historical_year_period", "march")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M04")
+                        ("historical_year_period", "april")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M05")
+                        ("historical_year_period", "may")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M06")
+                        ("historical_year_period", "june")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M07")
+                        ("historical_year_period", "july")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M08")
+                        ("historical_year_period", "august")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M09")
+                        ("historical_year_period", "september")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M10")
+                        ("historical_year_period", "october")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M11")
+                        ("historical_year_period", "november")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("observation_year_period", "M12")
+                        ("historical_year_period", "december")
                     ].id
                 ),
             ],
