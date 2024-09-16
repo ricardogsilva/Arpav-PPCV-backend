@@ -125,7 +125,8 @@ class CoverageConfigurationReadListItem(pydantic.BaseModel):
 
 class CoverageConfigurationReadDetail(CoverageConfigurationReadListItem):
     url: pydantic.AnyHttpUrl
-    unit: str
+    unit_english: str
+    unit_italian: str
     allowed_coverage_identifiers: list[str]
     description_english: str | None
     description_italian: str | None
