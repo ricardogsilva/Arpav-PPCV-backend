@@ -36,7 +36,7 @@ def _(environment, **kwargs):
         logging.error("Test failed due to average response time ratio > 1000 ms")
         environment.process_exit_code = 1
     elif environment.stats.total.get_response_time_percentile(0.95) > 2000:
-        logging.error("Test failed due to 95th percentile response time > 2000 ms")
+        logging.error("Test failed due to 95th percentile response time > 5000 ms")
         environment.process_exit_code = 1
     else:
         environment.process_exit_code = 0
