@@ -178,7 +178,8 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
     thredds_url_pattern: str
     wms_main_layer_name: Optional[str] = None
     wms_secondary_layer_name: Optional[str] = None
-    unit: str = ""
+    unit_english: str = ""
+    unit_italian: Optional[str] = None
     palette: str
     color_scale_min: float = 0.0
     color_scale_max: float = 1.0
@@ -434,7 +435,8 @@ class CoverageConfigurationCreate(sqlmodel.SQLModel):
     wms_main_layer_name: Optional[str] = None
     wms_secondary_layer_name: Optional[str] = None
     thredds_url_pattern: str
-    unit: str
+    unit_english: str
+    unit_italian: Optional[str] = None
     palette: str
     color_scale_min: float
     color_scale_max: float
@@ -468,7 +470,8 @@ class CoverageConfigurationUpdate(sqlmodel.SQLModel):
     wms_main_layer_name: Optional[str] = None
     wms_secondary_layer_name: Optional[str] = None
     thredds_url_pattern: Optional[str] = None
-    unit: Optional[str] = None
+    unit_english: Optional[str] = None
+    unit_italian: Optional[str] = None
     palette: Optional[str] = None
     color_scale_min: Optional[float] = None
     color_scale_max: Optional[float] = None

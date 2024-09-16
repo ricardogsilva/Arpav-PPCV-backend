@@ -1066,7 +1066,11 @@ def create_coverage_configuration(
         wms_main_layer_name=coverage_configuration_create.wms_main_layer_name,
         wms_secondary_layer_name=coverage_configuration_create.wms_secondary_layer_name,
         thredds_url_pattern=coverage_configuration_create.thredds_url_pattern,
-        unit=coverage_configuration_create.unit,
+        unit_english=coverage_configuration_create.unit_english,
+        unit_italian=(
+            coverage_configuration_create.unit_italian
+            or coverage_configuration_create.unit_english
+        ),
         palette=coverage_configuration_create.palette,
         color_scale_min=coverage_configuration_create.color_scale_min,
         color_scale_max=coverage_configuration_create.color_scale_max,
