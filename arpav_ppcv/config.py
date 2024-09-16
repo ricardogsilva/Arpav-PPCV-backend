@@ -93,6 +93,7 @@ class ArpavPpcvSettings(BaseSettings):  # noqa
     templates_dir: Optional[Path] = Path(__file__).parent / "webapp/templates"
     static_dir: Optional[Path] = Path(__file__).parent / "webapp/static"
     thredds_server: ThreddsServerSettings = ThreddsServerSettings()
+    palettes_dir: Path = Path(__file__).parents[1] / "data/palettes"
     prefect: PrefectSettings = PrefectSettings()
     martin_tile_server_base_url: str = "http://localhost:3000"
     nearest_station_radius_meters: int = 200

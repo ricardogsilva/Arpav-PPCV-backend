@@ -12,6 +12,15 @@ from ....schemas import coverages as app_models
 from .base import WebResourceList
 
 
+class ImageLegendColor(pydantic.BaseModel):
+    value: float
+    color: str
+
+
+class CoverageImageLegend(pydantic.BaseModel):
+    color_entries: list[ImageLegendColor]
+
+
 class ConfigurationParameterValueEmbeddedInConfigurationParameter(pydantic.BaseModel):
     name: str
     display_name_english: str
@@ -117,18 +126,17 @@ class CoverageConfigurationReadListItem(pydantic.BaseModel):
 class CoverageConfigurationReadDetail(CoverageConfigurationReadListItem):
     url: pydantic.AnyHttpUrl
     unit: str
-    palette: str
-    color_scale_min: float
-    color_scale_max: float
     allowed_coverage_identifiers: list[str]
     description_english: str | None
     description_italian: str | None
+    legend: CoverageImageLegend
 
     @classmethod
     def from_db_instance(
         cls,
         instance: app_models.CoverageConfiguration,
         allowed_coverage_identifiers: list[str],
+        legend_colors: list[tuple[float, str]],
         request: Request,
     ) -> "CoverageConfigurationReadDetail":
         url = request.url_for(
@@ -153,6 +161,11 @@ class CoverageConfigurationReadDetail(CoverageConfigurationReadListItem):
                 for pv in instance.possible_values
             ],
             allowed_coverage_identifiers=allowed_coverage_identifiers,
+            legend=CoverageImageLegend(
+                color_entries=[
+                    ImageLegendColor(value=v, color=c) for v, c in legend_colors
+                ]
+            ),
         )
 
 
