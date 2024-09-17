@@ -25,6 +25,7 @@ from .... import (
     database as db,
     exceptions,
     operations,
+    palette,
 )
 from ....config import ArpavPpcvSettings
 from ....thredds import (
@@ -171,6 +172,7 @@ def list_coverage_configurations(
 )
 def get_coverage_configuration(
     request: Request,
+    settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     coverage_configuration_id: pydantic.UUID4,
 ):
@@ -180,8 +182,19 @@ def get_coverage_configuration(
     allowed_coverage_identifiers = db.generate_coverage_identifiers(
         coverage_configuration=db_coverage_configuration
     )
+    palette_colors = palette.parse_palette(
+        db_coverage_configuration.palette, settings.palettes_dir
+    )
+    if palette_colors is not None:
+        applied_colors = palette.apply_palette(
+            palette_colors,
+            db_coverage_configuration.color_scale_min,
+            db_coverage_configuration.color_scale_max,
+        )
+    else:
+        applied_colors = []
     return coverage_schemas.CoverageConfigurationReadDetail.from_db_instance(
-        db_coverage_configuration, allowed_coverage_identifiers, request
+        db_coverage_configuration, allowed_coverage_identifiers, applied_colors, request
     )
 
 

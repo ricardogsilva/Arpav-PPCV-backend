@@ -3,7 +3,6 @@ import functools
 import logging
 import traceback
 import typing
-from itertools import islice
 from pathlib import Path
 from xml.etree import ElementTree as etree
 
@@ -12,8 +11,9 @@ import anyio.to_thread
 import exceptiongroup
 import httpx
 
-from ..schemas import coverages
 from .. import database
+from ..schemas import coverages
+from ..utils import batched
 
 logger = logging.getLogger(__name__)
 
@@ -154,7 +154,7 @@ async def download_datasets(
 ) -> None:
     client = httpx.AsyncClient()
     logger.debug(f"There are {len(dataset_urls)} URLS to process in total")
-    for batch in _batched(dataset_urls, 10):
+    for batch in batched(dataset_urls, 10):
         with exceptiongroup.catch({Exception: handle_thredds_download_exception}):
             async with anyio.create_task_group() as tg:
                 for dataset_url in batch:
@@ -201,20 +201,3 @@ async def download_individual_dataset(
                         fh.write(chunk)
     else:
         logger.info(f"dataset {output_path!r} already exists locally, skipping...")
-
-
-def _batched(iterable, n):
-    """Custom implementation of `itertools.batched()`.
-
-    This is a custom implementation of `itertools.batched()`, which is only available
-    on Python 3.12+. This is copied verbatim from the python docs at:
-
-    https://docs.python.org/3/library/itertools.html#itertools.batched
-
-    """
-    # batched('ABCDEFG', 3) --> ABC DEF G
-    if n < 1:
-        raise ValueError("n must be at least one")
-    it = iter(iterable)
-    while batch := tuple(islice(it, n)):
-        yield batch
