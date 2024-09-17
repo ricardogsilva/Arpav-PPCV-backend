@@ -6,6 +6,7 @@ import warnings
 from typing import Optional
 
 import anyio
+import anyio.to_thread
 import cftime
 import httpx
 import netCDF4
@@ -31,7 +32,10 @@ from .schemas import (
     coverages,
     observations,
 )
-from .thredds import ncss
+from .thredds import (
+    crawler,
+    ncss,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +94,9 @@ def _get_climate_barometer_data(
         )
     )
     ds = netCDF4.Dataset(opendap_url)
+    netcdf_variable_name = coverage.configuration.get_main_netcdf_variable_name(
+        coverage.identifier
+    )
     df = pd.DataFrame(
         {
             "time": pd.Series(
@@ -100,9 +107,7 @@ def _get_climate_barometer_data(
                 )
             ),
             coverage.identifier: pd.Series(
-                ds.variables[coverage.configuration.netcdf_main_dataset_name][
-                    :
-                ].ravel(),
+                ds.variables[netcdf_variable_name][:].ravel(),
             ),
         }
     )
@@ -374,17 +379,37 @@ async def async_retrieve_data_via_ncss(
     result_gatherer: dict,
 ) -> None:
     time_start, time_end = temporal_range
+    ds_fragment = crawler.get_thredds_url_fragment(
+        coverage, settings.thredds_server.base_url
+    )
+    # dataset_url_fragment = coverage.configuration.get_thredds_url_fragment(
+    #     coverage.identifier
+    # )
+    # if any(c in dataset_url_fragment for c in crawler.FNMATCH_SPECIAL_CHARS):
+    #     logger.debug(
+    #         f"THREDDS dataset url ({dataset_url_fragment}) is an "
+    #         f"fnmatch pattern, retrieving the actual URL from the server..."
+    #     )
+    #     ds_fragment = anyio.to_thread.run_sync(
+    #         crawler.find_thredds_dataset_url_fragment,
+    #         dataset_url_fragment,
+    #         settings.thredds_server.base_url,
+    #     )
+    # else:
+    #     ds_fragment = dataset_url_fragment
     ncss_url = "/".join(
         (
             settings.thredds_server.base_url,
             settings.thredds_server.netcdf_subset_service_url_fragment,
-            coverage.configuration.get_thredds_url_fragment(coverage.identifier),
+            ds_fragment,
         )
     )
     raw_coverage_data = await ncss.async_query_dataset(
         http_client,
         thredds_ncss_url=ncss_url,
-        netcdf_variable_name=coverage.configuration.netcdf_main_dataset_name,
+        netcdf_variable_name=coverage.configuration.get_main_netcdf_variable_name(
+            coverage.identifier
+        ),
         longitude=point_geom.x,
         latitude=point_geom.y,
         time_start=time_start,
@@ -630,9 +655,10 @@ def get_coverage_time_series(
     ]
 
     for cov, data_ in raw_data.items():
+        cov: coverages.CoverageInternal
         df = _parse_ncss_dataset(
             data_,
-            cov.configuration.netcdf_main_dataset_name,
+            cov.configuration.get_main_netcdf_variable_name(cov.identifier),
             start,
             end,
             cov.identifier,
@@ -895,12 +921,101 @@ def _get_spatial_buffer(
     return transform(inverse_coordinate_transformer, buffer_geom_projected)
 
 
+def get_historical_variable_parameters(
+    session: sqlmodel.Session,
+) -> dict[str, coverages.HistoricalVariableMenuTree]:
+    result = {}
+    historical_filter = database.get_configuration_parameter_value_by_names(
+        session, "archive", "historical"
+    )
+    relevant_cov_confs = database.collect_all_coverage_configurations(
+        session, configuration_parameter_values_filter=[historical_filter]
+    )
+    for cov_conf in relevant_cov_confs:
+        variable_pvs = [
+            pv
+            for pv in cov_conf.possible_values
+            if pv.configuration_parameter_value.configuration_parameter.name
+            == "historical_variable"
+        ]
+        if (num_pvs := len(variable_pvs)) >= 1:
+            variable_pv = variable_pvs[0]
+            if num_pvs > 1:
+                logger.info(
+                    f"coverage configuration {cov_conf.name!r} defines "
+                    f"{len(variable_pvs)} `historical_variable`s, keeping only the "
+                    f"first one..."
+                )
+        else:
+            logger.info(
+                f"coverage configuration {cov_conf.name!r} does not have a "
+                f"`historical_variable`, skipping..."
+            )
+            continue
+        aggreg_period_pvs = [
+            pv
+            for pv in cov_conf.possible_values
+            if pv.configuration_parameter_value.configuration_parameter.name
+            == "aggregation_period"
+        ]
+        if (num_aggreg_periods := len(aggreg_period_pvs)) >= 1:
+            aggreg_period_pv = aggreg_period_pvs[0]
+            if num_aggreg_periods > 1:
+                logger.info(
+                    f"coverage configuration {cov_conf.name!r} defines "
+                    f"{len(variable_pvs)} `aggregation_period`s, keeping only the "
+                    f"first one..."
+                )
+        else:
+            logger.info(
+                f"coverage configuration {cov_conf.name!r} does not have a "
+                f"`aggregation_period`, skipping..."
+            )
+            continue
+        result_key = "-".join(
+            (
+                variable_pv.configuration_parameter_value.name,
+                aggreg_period_pv.configuration_parameter_value.name,
+            )
+        )
+        aggregated_variable = result.setdefault(result_key, {})
+        aggregated_variable[
+            "historical_variable"
+        ] = variable_pv.configuration_parameter_value
+        aggregated_variable[
+            "aggregation_period"
+        ] = aggreg_period_pv.configuration_parameter_value
+        combinations = aggregated_variable.setdefault("combinations", {})
+        params_to_ignore = (
+            "climatological_variable",
+            "aggregation_period",
+            "uncertainty_type",
+        )
+        for pv in cov_conf.possible_values:
+            param_name = pv.configuration_parameter_value.configuration_parameter.name
+            if param_name not in params_to_ignore:
+                param_entry = combinations.setdefault(param_name, {})
+                param_entry[
+                    "configuration_parameter"
+                ] = pv.configuration_parameter_value.configuration_parameter
+                values = param_entry.setdefault("values", [])
+                existing_value_names = [cpv.name for cpv in values]
+                if pv.configuration_parameter_value.name not in existing_value_names:
+                    values.append(pv.configuration_parameter_value)
+    return result
+
+
 def get_forecast_variable_parameters(
     session: sqlmodel.Session,
 ) -> dict[str, coverages.ForecastVariableMenuTree]:
     result = {}
-    all_cov_confs = database.collect_all_coverage_configurations(session)
-    for cov_conf in all_cov_confs:
+    forecast_filter = database.get_configuration_parameter_value_by_names(
+        session, "archive", "forecast"
+    )
+    relevant_cov_confs = database.collect_all_coverage_configurations(
+        session, configuration_parameter_values_filter=[forecast_filter]
+    )
+    for cov_conf in relevant_cov_confs:
         variable_pvs = [
             pv
             for pv in cov_conf.possible_values

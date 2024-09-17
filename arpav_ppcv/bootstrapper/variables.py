@@ -35,7 +35,7 @@ def generate_variable_configurations() -> list[VariableCreate]:
         ),
         VariableCreate(
             name="PRCPTOT",
-            display_name_english="Rainfall (from observation station)",
+            display_name_english="Precipitation (from observation station)",
             display_name_italian="Precipitazione (dalla stazione di osservazione)",
             description_english="Daily precipitation near the ground",
             description_italian="Precipitazioni giornaliere in prossimità del suolo",
@@ -69,7 +69,7 @@ def generate_variable_configurations() -> list[VariableCreate]:
         ),
         VariableCreate(
             name="FD",
-            display_name_english="Cold days (from observation station)",
+            display_name_english="Frosty days (from observation station)",
             display_name_italian="Giorni di gelo (dalla stazione di osservazione)",
             description_english=(
                 "Number of days with minimum temperature less than 0 °C"

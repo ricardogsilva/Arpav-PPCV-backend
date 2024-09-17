@@ -5,7 +5,6 @@ import pydantic
 from fastapi import Request
 
 from ....config import (
-    ArpavPpcvSettings,
     LOCALE_EN,
     LOCALE_IT,
 )
@@ -175,24 +174,24 @@ class CoverageIdentifierReadListItem(pydantic.BaseModel):
     def from_db_instance(
         cls,
         instance: app_models.CoverageInternal,
-        settings: ArpavPpcvSettings,
         request: Request,
     ) -> "CoverageIdentifierReadListItem":
-        thredds_url_fragment = instance.configuration.get_thredds_url_fragment(
-            instance.identifier
-        )
-        wms_base_url = "/".join(
-            (
-                settings.thredds_server.base_url,
-                settings.thredds_server.wms_service_url_fragment,
-                thredds_url_fragment,
-            )
+        wms_base_url = request.url_for(
+            "wms_endpoint", coverage_identifier=instance.identifier
         )
         return cls(
             identifier=instance.identifier,
-            wms_base_url=wms_base_url,
-            wms_main_layer_name=instance.configuration.wms_main_layer_name,
-            wms_secondary_layer_name=instance.configuration.wms_secondary_layer_name,
+            wms_base_url=str(wms_base_url),
+            wms_main_layer_name=(
+                instance.configuration.get_wms_main_layer_name(instance.identifier)
+                if instance.configuration.wms_main_layer_name is not None
+                else None
+            ),
+            wms_secondary_layer_name=(
+                instance.configuration.get_wms_secondary_layer_name(instance.identifier)
+                if instance.configuration.wms_secondary_layer_name is not None
+                else None
+            ),
             related_coverage_configuration_url=str(
                 request.url_for(
                     "get_coverage_configuration",
@@ -229,7 +228,6 @@ class CoverageIdentifierList(WebResourceList):
         items: typing.Sequence[app_models.CoverageInternal],
         request: Request,
         *,
-        settings: ArpavPpcvSettings,
         limit: int,
         offset: int,
         filtered_total: int,
@@ -241,7 +239,7 @@ class CoverageIdentifierList(WebResourceList):
                 request, limit, offset, filtered_total, len(items)
             ),
             items=[
-                CoverageIdentifierReadListItem.from_db_instance(i, settings, request)
+                CoverageIdentifierReadListItem.from_db_instance(i, request)
                 for i in items
             ],
         )
@@ -331,7 +329,66 @@ class ForecastMenuTranslations(pydantic.BaseModel):
         )
 
 
-class VariableCombinations(pydantic.BaseModel):
+class HistoricalMenuTranslations(pydantic.BaseModel):
+    variable: dict[str, ConfigurationParameterMenuTranslation]
+    aggregation_period: dict[str, ConfigurationParameterMenuTranslation]
+    other_parameters: dict[str, dict[str, ConfigurationParameterMenuTranslation]]
+
+    @classmethod
+    def from_items(
+        cls, variable_menu_trees: typing.Sequence[app_models.HistoricalVariableMenuTree]
+    ):
+        result = {}
+        for variable_menu_tree in variable_menu_trees:
+            variable_cp = variable_menu_tree["historical_variable"]
+            aggregation_period_cp = variable_menu_tree["aggregation_period"]
+            vars = result.setdefault("variable", {})
+            vars[variable_cp.name] = ConfigurationParameterMenuTranslation(
+                name={
+                    LOCALE_EN.language: variable_cp.display_name_english,
+                    LOCALE_IT.language: variable_cp.display_name_english,
+                },
+                description={
+                    LOCALE_EN.language: variable_cp.description_english,
+                    LOCALE_IT.language: variable_cp.description_italian,
+                },
+            )
+            aggreg_periods = result.setdefault("aggregation_period", {})
+            aggreg_periods[
+                aggregation_period_cp.name
+            ] = ConfigurationParameterMenuTranslation(
+                name={
+                    LOCALE_EN.language: aggregation_period_cp.display_name_english,
+                    LOCALE_IT.language: aggregation_period_cp.display_name_english,
+                },
+                description={
+                    LOCALE_EN.language: aggregation_period_cp.description_english,
+                    LOCALE_IT.language: aggregation_period_cp.description_italian,
+                },
+            )
+            others = result.setdefault("other_parameters", {})
+            for combination_info in variable_menu_tree["combinations"].values():
+                cp = combination_info["configuration_parameter"]
+                param_ = others.setdefault(cp.name, {})
+                for cpv in cp.allowed_values:
+                    param_[cpv.name] = ConfigurationParameterMenuTranslation(
+                        name={
+                            LOCALE_EN.language: cpv.display_name_english,
+                            LOCALE_IT.language: cpv.display_name_english,
+                        },
+                        description={
+                            LOCALE_EN.language: cpv.description_english,
+                            LOCALE_IT.language: cpv.description_italian,
+                        },
+                    )
+        return cls(
+            variable=result["variable"],
+            aggregation_period=result["aggregation_period"],
+            other_parameters=result["other_parameters"],
+        )
+
+
+class ForecastVariableCombinations(pydantic.BaseModel):
     variable: str
     aggregation_period: str
     measure: str
@@ -353,6 +410,31 @@ class VariableCombinations(pydantic.BaseModel):
         )
 
 
+class HistoricalVariableCombinations(pydantic.BaseModel):
+    variable: str
+    aggregation_period: str
+    other_parameters: dict[str, list[str]]
+
+    @classmethod
+    def from_items(cls, menu_tree: app_models.HistoricalVariableMenuTree):
+        combinations = {}
+        for param_name, param_combinations in menu_tree["combinations"].items():
+            combinations[param_name] = []
+            for valid_value in param_combinations["values"]:
+                combinations[param_name].append(valid_value.name)
+
+        return cls(
+            variable=menu_tree["historical_variable"].name,
+            aggregation_period=menu_tree["aggregation_period"].name,
+            other_parameters=combinations,
+        )
+
+
 class ForecastVariableCombinationsList(pydantic.BaseModel):
-    combinations: list[VariableCombinations]
+    combinations: list[ForecastVariableCombinations]
     translations: ForecastMenuTranslations
+
+
+class HistoricalVariableCombinationsList(pydantic.BaseModel):
+    combinations: list[HistoricalVariableCombinations]
+    translations: HistoricalMenuTranslations

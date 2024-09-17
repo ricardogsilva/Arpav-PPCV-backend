@@ -17,20 +17,31 @@ from ..schemas.coverages import (
     CoverageConfigurationUpdate,
 )
 
-from .coverage_configurations import (
-    cdd,
-    cdds,
-    fd,
-    hdds,
-    hwdi,
-    pr,
-    r95ptot,
-    snwdays,
-    su30,
-    tas,
-    tasmax,
-    tasmin,
-    tr,
+from .coverage_configurations.forecast import (
+    cdd as cdd_forecast,
+    cdds as cdds_forecast,
+    fd as fd_forecast,
+    hdds as hdds_forecast,
+    hwdi as hwdi_forecast,
+    pr as pr_forecast,
+    r95ptot as r95ptot_forecast,
+    snwdays as snwdays_forecast,
+    su30 as su30_forecast,
+    tas as tas_forecast,
+    tasmax as tasmax_forecast,
+    tasmin as tasmin_forecast,
+    tr as tr_forecast,
+)
+from .coverage_configurations.historical import (
+    cdds as cdds_historical,
+    fd as fd_historical,
+    hdds as hdds_historical,
+    prcptot as prcptot_historical,
+    su30 as su30_historical,
+    tdd as tdd_historical,
+    tnd as tnd_historical,
+    tr as tr_historical,
+    txd as txd_historical,
 )
 from .variables import generate_variable_configurations
 from .configurationparameters import generate_configuration_parameters
@@ -190,32 +201,71 @@ def bootstrap_coverage_configurations(
             for pv in all_conf_param_values
         }
     coverage_configurations = []
-    coverage_configurations.extend(cdd.generate_configurations(conf_param_values))
-    coverage_configurations.extend(cdds.generate_configurations(conf_param_values))
     coverage_configurations.extend(
-        fd.generate_configurations(conf_param_values, variables)
-    )
-    coverage_configurations.extend(hdds.generate_configurations(conf_param_values))
-    coverage_configurations.extend(hwdi.generate_configurations(conf_param_values))
-    coverage_configurations.extend(
-        pr.generate_configurations(conf_param_values, variables)
-    )
-    coverage_configurations.extend(r95ptot.generate_configurations(conf_param_values))
-    coverage_configurations.extend(snwdays.generate_configurations(conf_param_values))
-    coverage_configurations.extend(
-        su30.generate_configurations(conf_param_values, variables)
+        cdd_forecast.generate_configurations(conf_param_values)
     )
     coverage_configurations.extend(
-        tas.generate_configurations(conf_param_values, variables)
+        cdds_forecast.generate_configurations(conf_param_values)
     )
     coverage_configurations.extend(
-        tasmax.generate_configurations(conf_param_values, variables)
+        fd_forecast.generate_configurations(conf_param_values, variables)
     )
     coverage_configurations.extend(
-        tasmin.generate_configurations(conf_param_values, variables)
+        hdds_forecast.generate_configurations(conf_param_values)
     )
     coverage_configurations.extend(
-        tr.generate_configurations(conf_param_values, variables)
+        hwdi_forecast.generate_configurations(conf_param_values)
+    )
+    coverage_configurations.extend(
+        pr_forecast.generate_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        r95ptot_forecast.generate_configurations(conf_param_values)
+    )
+    coverage_configurations.extend(
+        snwdays_forecast.generate_configurations(conf_param_values)
+    )
+    coverage_configurations.extend(
+        su30_forecast.generate_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        tas_forecast.generate_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        tasmax_forecast.generate_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        tasmin_forecast.generate_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        tr_forecast.generate_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        cdds_historical.generate_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        fd_historical.generate_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        hdds_historical.generate_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        prcptot_historical.generate_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        su30_historical.generate_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        tdd_historical.generate_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        tnd_historical.generate_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        tr_historical.generate_configurations(conf_param_values, variables)
+    )
+    coverage_configurations.extend(
+        txd_historical.generate_configurations(conf_param_values, variables)
     )
 
     for cov_conf_create in coverage_configurations:
@@ -238,38 +288,38 @@ def bootstrap_coverage_configurations(
 
     to_update = {}
     for name, related_names in {
-        **cdd.get_related_map(),
-        **cdds.get_related_map(),
-        **fd.get_related_map(),
-        **hdds.get_related_map(),
-        **hwdi.get_related_map(),
-        **pr.get_related_map(),
-        **r95ptot.get_related_map(),
-        **snwdays.get_related_map(),
-        **su30.get_related_map(),
-        **tas.get_related_map(),
-        **tasmax.get_related_map(),
-        **tasmin.get_related_map(),
-        **tr.get_related_map(),
+        **cdd_forecast.get_related_map(),
+        **cdds_forecast.get_related_map(),
+        **fd_forecast.get_related_map(),
+        **hdds_forecast.get_related_map(),
+        **hwdi_forecast.get_related_map(),
+        **pr_forecast.get_related_map(),
+        **r95ptot_forecast.get_related_map(),
+        **snwdays_forecast.get_related_map(),
+        **su30_forecast.get_related_map(),
+        **tas_forecast.get_related_map(),
+        **tasmax_forecast.get_related_map(),
+        **tasmin_forecast.get_related_map(),
+        **tr_forecast.get_related_map(),
     }.items():
         to_update[name] = {
             "related": related_names,
         }
 
     for name, uncertainties in {
-        **cdd.get_uncertainty_map(),
-        **cdds.get_uncertainty_map(),
-        **fd.get_uncertainty_map(),
-        **hdds.get_uncertainty_map(),
-        **hwdi.get_uncertainty_map(),
-        **pr.get_uncertainty_map(),
-        **r95ptot.get_uncertainty_map(),
-        **snwdays.get_uncertainty_map(),
-        **su30.get_uncertainty_map(),
-        **tas.get_uncertainty_map(),
-        **tasmax.get_uncertainty_map(),
-        **tasmin.get_uncertainty_map(),
-        **tr.get_uncertainty_map(),
+        **cdd_forecast.get_uncertainty_map(),
+        **cdds_forecast.get_uncertainty_map(),
+        **fd_forecast.get_uncertainty_map(),
+        **hdds_forecast.get_uncertainty_map(),
+        **hwdi_forecast.get_uncertainty_map(),
+        **pr_forecast.get_uncertainty_map(),
+        **r95ptot_forecast.get_uncertainty_map(),
+        **snwdays_forecast.get_uncertainty_map(),
+        **su30_forecast.get_uncertainty_map(),
+        **tas_forecast.get_uncertainty_map(),
+        **tasmax_forecast.get_uncertainty_map(),
+        **tasmin_forecast.get_uncertainty_map(),
+        **tr_forecast.get_uncertainty_map(),
     }.items():
         info = to_update.setdefault(name, {})
         info["uncertainties"] = uncertainties

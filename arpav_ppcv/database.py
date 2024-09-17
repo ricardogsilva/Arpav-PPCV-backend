@@ -805,8 +805,12 @@ def create_configuration_parameter_value(
     session: sqlmodel.Session,
     parameter_value: coverages.ConfigurationParameterValueCreate,
 ) -> coverages.ConfigurationParameterValue:
+    param_name = parameter_value.name or _slugify_internal_value(
+        parameter_value.internal_value
+    )
     db_param_value = coverages.ConfigurationParameterValue(
-        **parameter_value.model_dump()
+        **parameter_value.model_dump(exclude={"name"}),
+        name=param_name,
     )
     session.add(db_param_value)
     session.commit()
@@ -829,7 +833,8 @@ def create_configuration_parameter(
     to_refresh.append(db_configuration_parameter)
     for allowed in configuration_parameter_create.allowed_values:
         db_conf_param_value = coverages.ConfigurationParameterValue(
-            name=allowed.name,
+            internal_value=allowed.internal_value,
+            name=allowed.name or _slugify_internal_value(allowed.internal_value),
             display_name_english=allowed.display_name_english,
             display_name_italian=allowed.display_name_italian,
             description_english=allowed.description_english,
@@ -862,7 +867,8 @@ def update_configuration_parameter(
         if av.id is None:
             # this is a new allowed value, need to create it
             db_allowed_value = coverages.ConfigurationParameterValue(
-                name=av.name,
+                internal_value=av.internal_value,
+                name=av.name or _slugify_internal_value(av.internal_value),
                 display_name_english=av.display_name_english,
                 display_name_italian=av.display_name_italian,
                 description_english=av.description_english,
@@ -912,14 +918,19 @@ def get_coverage_configuration_by_name(
     ).first()
 
 
-def get_coverage_configuration_by_coverage_identifier(
+def get_coverage(
     session: sqlmodel.Session, coverage_identifier: str
-) -> Optional[coverages.CoverageConfiguration]:
-    """
-    Get a coverage configuration by the identifier of one of its possible coverages.
-    """
-    coverage_configuration_name = coverage_identifier.partition("-")[0]
-    return get_coverage_configuration_by_name(session, coverage_configuration_name)
+) -> Optional[coverages.CoverageInternal]:
+    cov_conf_name = coverage_identifier.partition("-")[0]
+    cov_conf = get_coverage_configuration_by_name(session, cov_conf_name)
+    result = None
+    if cov_conf is not None:
+        possible_cov_ids = generate_coverage_identifiers(cov_conf)
+        if coverage_identifier in possible_cov_ids:
+            result = coverages.CoverageInternal(
+                identifier=coverage_identifier, configuration=cov_conf
+            )
+    return result
 
 
 def list_coverage_configurations(
@@ -1112,6 +1123,8 @@ def update_coverage_configuration(
     """Update a coverage configuration."""
     to_refresh = []
     # account for possible values being: added/deleted
+    existing_possible_values_to_keep = []
+    existing_possible_values_discard = []
     for existing_possible_value in db_coverage_configuration.possible_values:
         has_been_requested_to_remove = (
             existing_possible_value.configuration_parameter_value_id
@@ -1120,8 +1133,13 @@ def update_coverage_configuration(
                 for i in coverage_configuration_update.possible_values
             ]
         )
-        if has_been_requested_to_remove:
-            session.delete(existing_possible_value)
+        if not has_been_requested_to_remove:
+            existing_possible_values_to_keep.append(existing_possible_value)
+        else:
+            existing_possible_values_discard.append(existing_possible_value)
+    db_coverage_configuration.possible_values = existing_possible_values_to_keep
+    for to_discard in existing_possible_values_discard:
+        session.delete(to_discard)
     for pvc in coverage_configuration_update.possible_values:
         already_possible = pvc.configuration_parameter_value_id in [
             i.configuration_parameter_value_id
@@ -1338,21 +1356,17 @@ def list_coverage_identifiers(
         list[coverages.ConfigurationParameterValue]
     ] = None,
 ) -> tuple[list[coverages.CoverageInternal], Optional[int]]:
-    all_cov_ids = collect_all_coverage_identifiers(
-        session, configuration_parameter_values_filter
-    )
+    all_covs = collect_all_coverages(session, configuration_parameter_values_filter)
     if name_filter is not None:
         for fragment in name_filter:
-            all_cov_ids = [
-                i for i in all_cov_ids if fragment.lower() in i.identifier.lower()
-            ]
+            all_covs = [c for c in all_covs if fragment.lower() in c.identifier.lower()]
     return (
-        all_cov_ids[offset : (offset + limit)],
-        len(all_cov_ids) if include_total else None,
+        all_covs[offset : (offset + limit)],
+        len(all_covs) if include_total else None,
     )
 
 
-def collect_all_coverage_identifiers(
+def collect_all_coverages(
     session: sqlmodel.Session,
     configuration_parameter_values_filter: Optional[
         list[coverages.ConfigurationParameterValue]
@@ -1452,3 +1466,9 @@ def _add_substring_filter(statement, value: str, *columns):
     else:
         raise RuntimeError("Invalid columns argument")
     return result
+
+
+def _slugify_internal_value(value: str) -> str:
+    """Replace characters in input string in to make it usable as a name."""
+    to_translate = "-\, '"
+    return value.translate(value.maketrans(to_translate, "_" * len(to_translate)))

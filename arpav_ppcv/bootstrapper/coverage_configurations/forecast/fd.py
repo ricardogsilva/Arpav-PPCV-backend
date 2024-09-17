@@ -1,13 +1,13 @@
-from ...schemas.base import ObservationAggregationType
-from ...schemas.coverages import (
+from ....schemas.base import ObservationAggregationType
+from ....schemas.coverages import (
     CoverageConfigurationCreate,
     ConfigurationParameterPossibleValueCreate,
 )
 
-_DISPLAY_NAME_ENGLISH = "Tropical nights"
-_DISPLAY_NAME_ITALIAN = "Notti tropicali"
-_DESCRIPTION_ENGLISH = "Number of days with minimum temperature greater than 20 °C"
-_DESCRIPTION_ITALIAN = "Numero di giorni con temperatura minima superiore a 20 °C"
+_DISPLAY_NAME_ENGLISH = "Frosty days"
+_DISPLAY_NAME_ITALIAN = "Giorni di gelo"
+_DESCRIPTION_ENGLISH = "Number of days with minimum temperature less than 0 °C"
+_DESCRIPTION_ITALIAN = "Numero di giorni con temperatura minima inferiore a 0 °C"
 
 
 def generate_configurations(
@@ -15,22 +15,27 @@ def generate_configurations(
 ) -> list[CoverageConfigurationCreate]:
     return [
         CoverageConfigurationCreate(
-            name="tr_annual_absolute_model_ensemble",
+            name="fd_annual_absolute_model_ensemble",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tr",
-            wms_main_layer_name="tr",
-            thredds_url_pattern="ensymbc/clipped/ecatr_20_avg_{scenario}_ts19762100_ls_VFVG.nc",
+            netcdf_main_dataset_name="fd",
+            wms_main_layer_name="fd",
+            thredds_url_pattern="ensymbc/clipped/ecafd_0_avg_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
-            palette="default/seq-YlOrRd",
+            palette="default/seq-Blues-inv",
             color_scale_min=0,
-            color_scale_max=120,
+            color_scale_max=200,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tr")
+                        ("archive", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "fd")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -65,32 +70,37 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TR")) is not None else None
+                v.id if (v := variables.get("FD")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.SEASONAL,
         ),
         CoverageConfigurationCreate(
-            name="tr_annual_absolute_model_ec_earth_cclm4_8_17",
+            name="fd_annual_absolute_model_ec_earth_cclm4_8_17",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tr",
-            wms_main_layer_name="tr",
-            thredds_url_pattern="EC-EARTH_CCLM4-8-17ymbc/clipped/ecatr_20_EC-EARTH_CCLM4-8-17_{scenario}_ts19762100_ls_VFVG.nc",
+            netcdf_main_dataset_name="fd",
+            wms_main_layer_name="fd",
+            thredds_url_pattern="EC-EARTH_CCLM4-8-17ymbc/clipped/ecafd_0_EC-EARTH_CCLM4-8-17_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
-            palette="default/seq-YlOrRd",
+            palette="default/seq-Blues-inv",
             color_scale_min=0,
-            color_scale_max=120,
+            color_scale_max=200,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tr")
+                        ("archive", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "fd")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -125,32 +135,37 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TR")) is not None else None
+                v.id if (v := variables.get("FD")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.SEASONAL,
         ),
         CoverageConfigurationCreate(
-            name="tr_annual_absolute_model_ec_earth_racmo22e",
+            name="fd_annual_absolute_model_ec_earth_racmo22e",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tr",
-            wms_main_layer_name="tr",
-            thredds_url_pattern="EC-EARTH_RACMO22Eymbc/clipped/ecatr_20_EC-EARTH_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
+            netcdf_main_dataset_name="fd",
+            wms_main_layer_name="fd",
+            thredds_url_pattern="EC-EARTH_RACMO22Eymbc/clipped/ecafd_0_EC-EARTH_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
-            palette="default/seq-YlOrRd",
+            palette="default/seq-Blues-inv",
             color_scale_min=0,
-            color_scale_max=120,
+            color_scale_max=200,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tr")
+                        ("archive", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "fd")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -185,32 +200,37 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TR")) is not None else None
+                v.id if (v := variables.get("FD")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.SEASONAL,
         ),
         CoverageConfigurationCreate(
-            name="tr_annual_absolute_model_ec_earth_rca4",
+            name="fd_annual_absolute_model_ec_earth_rca4",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tr",
-            wms_main_layer_name="tr",
-            thredds_url_pattern="EC-EARTH_RCA4ymbc/clipped/ecatr_20_EC-EARTH_RCA4_{scenario}_ts19762100_ls_VFVG.nc",
+            netcdf_main_dataset_name="fd",
+            wms_main_layer_name="fd",
+            thredds_url_pattern="EC-EARTH_RCA4ymbc/clipped/ecafd_0_EC-EARTH_RCA4_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
-            palette="default/seq-YlOrRd",
+            palette="default/seq-Blues-inv",
             color_scale_min=0,
-            color_scale_max=120,
+            color_scale_max=200,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tr")
+                        ("archive", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "fd")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -245,32 +265,37 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TR")) is not None else None
+                v.id if (v := variables.get("FD")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.SEASONAL,
         ),
         CoverageConfigurationCreate(
-            name="tr_annual_absolute_model_hadgem2_es_racmo22e",
+            name="fd_annual_absolute_model_hadgem2_es_racmo22e",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tr",
-            wms_main_layer_name="tr",
-            thredds_url_pattern="HadGEM2-ES_RACMO22Eymbc/clipped/ecatr_20_HadGEM2-ES_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
+            netcdf_main_dataset_name="fd",
+            wms_main_layer_name="fd",
+            thredds_url_pattern="HadGEM2-ES_RACMO22Eymbc/clipped/ecafd_0_HadGEM2-ES_RACMO22E_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
-            palette="default/seq-YlOrRd",
+            palette="default/seq-Blues-inv",
             color_scale_min=0,
-            color_scale_max=120,
+            color_scale_max=200,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tr")
+                        ("archive", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "fd")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -305,32 +330,37 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TR")) is not None else None
+                v.id if (v := variables.get("FD")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.SEASONAL,
         ),
         CoverageConfigurationCreate(
-            name="tr_annual_absolute_model_mpi_esm_lr_remo2009",
+            name="fd_annual_absolute_model_mpi_esm_lr_remo2009",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tr",
-            wms_main_layer_name="tr",
-            thredds_url_pattern="MPI-ESM-LR_REMO2009ymbc/clipped/ecatr_20_MPI-ESM-LR_REMO2009_{scenario}_ts19762100_ls_VFVG.nc",
+            netcdf_main_dataset_name="fd",
+            wms_main_layer_name="fd",
+            thredds_url_pattern="MPI-ESM-LR_REMO2009ymbc/clipped/ecafd_0_MPI-ESM-LR_REMO2009_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
-            palette="default/seq-YlOrRd",
+            palette="default/seq-Blues-inv",
             color_scale_min=0,
-            color_scale_max=120,
+            color_scale_max=200,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tr")
+                        ("archive", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "fd")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -365,32 +395,37 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
             observation_variable_id=(
-                v.id if (v := variables.get("TR")) is not None else None
+                v.id if (v := variables.get("FD")) is not None else None
             ),
             observation_variable_aggregation_type=ObservationAggregationType.SEASONAL,
         ),
         CoverageConfigurationCreate(
-            name="tr_annual_absolute_model_ensemble_upper_uncertainty",
+            name="fd_annual_absolute_model_ensemble_upper_uncertainty",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tr_stdup",
-            wms_main_layer_name="tr_stdup",
-            thredds_url_pattern="ensymbc/std/clipped/ecatr_20_stdup_{scenario}_ts19762100_ls_VFVG.nc",
+            netcdf_main_dataset_name="fd_stdup",
+            wms_main_layer_name="fd_stdup",
+            thredds_url_pattern="ensymbc/std/clipped/ecafd_0_stdup_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
-            palette="default/seq-YlOrRd",
+            palette="default/seq-Blues-inv",
             color_scale_min=0,
-            color_scale_max=100,
+            color_scale_max=200,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tr")
+                        ("archive", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "fd")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -430,28 +465,33 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
         ),
         CoverageConfigurationCreate(
-            name="tr_annual_absolute_model_ensemble_lower_uncertainty",
+            name="fd_annual_absolute_model_ensemble_lower_uncertainty",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tr_stddown",
-            wms_main_layer_name="tr_stddown",
-            thredds_url_pattern="ensymbc/std/clipped/ecatr_20_stddown_{scenario}_ts19762100_ls_VFVG.nc",
+            netcdf_main_dataset_name="fd_stddown",
+            wms_main_layer_name="fd_stddown",
+            thredds_url_pattern="ensymbc/std/clipped/ecafd_0_stddown_{scenario}_ts19762100_ls_VFVG.nc",
             unit="gg",
-            palette="default/seq-YlOrRd",
+            palette="default/seq-Blues-inv",
             color_scale_min=0,
-            color_scale_max=100,
+            color_scale_max=200,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tr")
+                        ("archive", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "fd")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -491,29 +531,34 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
         ),
         CoverageConfigurationCreate(
-            name="tr_30yr_anomaly_annual_agree_model_ensemble",
+            name="fd_30yr_anomaly_annual_agree_model_ensemble",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tr",
-            wms_main_layer_name="tr-uncertainty_group",
-            wms_secondary_layer_name="tr",
-            thredds_url_pattern="ensembletwbc/std/clipped/ecatran_20_avgagree_{time_window}_{scenario}_ls_VFVG.nc",
+            netcdf_main_dataset_name="fd",
+            wms_main_layer_name="fd_uncertainty_group",
+            wms_secondary_layer_name="fd",
+            thredds_url_pattern="ensembletwbc/std/clipped/ecafdan_0_avgagree_{time_window}_{scenario}_ls_VFVG.nc",
             unit="gg",
-            palette="uncert-stippled/seq-YlOrRd",
-            color_scale_min=-5,
-            color_scale_max=75,
+            palette="uncert-stippled/seq-YlOrRd-inv",
+            color_scale_min=-85,
+            color_scale_max=5,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tr")
+                        ("archive", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "fd")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -558,28 +603,33 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
         ),
         CoverageConfigurationCreate(
-            name="tr_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            name="fd_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tr",
-            wms_main_layer_name="tr",
-            thredds_url_pattern="indici5rcm/clipped/ecatran_20_EC-EARTH_CCLM4-8-17_{scenario}_{time_window}_ls_VFVG.nc",
+            netcdf_main_dataset_name="fd",
+            wms_main_layer_name="fd",
+            thredds_url_pattern="indici5rcm/clipped/ecafdan_0_EC-EARTH_CCLM4-8-17_{scenario}_{time_window}_ls_VFVG.nc",
             unit="gg",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-5,
-            color_scale_max=75,
+            palette="default/seq-YlOrRd-inv",
+            color_scale_min=-85,
+            color_scale_max=5,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tr")
+                        ("archive", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "fd")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -624,28 +674,33 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
         ),
         CoverageConfigurationCreate(
-            name="tr_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            name="fd_30yr_anomaly_annual_model_ec_earth_racmo22e",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tr",
-            wms_main_layer_name="tr",
-            thredds_url_pattern="indici5rcm/clipped/ecatran_20_EC-EARTH_RACMO22E_{scenario}_{time_window}_ls_VFVG.nc",
+            netcdf_main_dataset_name="fd",
+            wms_main_layer_name="fd",
+            thredds_url_pattern="indici5rcm/clipped/ecafdan_0_EC-EARTH_RACMO22E_{scenario}_{time_window}_ls_VFVG.nc",
             unit="gg",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-5,
-            color_scale_max=75,
+            palette="default/seq-YlOrRd-inv",
+            color_scale_min=-85,
+            color_scale_max=5,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tr")
+                        ("archive", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "fd")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -690,28 +745,33 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
         ),
         CoverageConfigurationCreate(
-            name="tr_30yr_anomaly_annual_model_ec_earth_rca4",
+            name="fd_30yr_anomaly_annual_model_ec_earth_rca4",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tr",
-            wms_main_layer_name="tr",
-            thredds_url_pattern="indici5rcm/clipped/ecatran_20_EC-EARTH_RCA4_{scenario}_{time_window}_ls_VFVG.nc",
+            netcdf_main_dataset_name="fd",
+            wms_main_layer_name="fd",
+            thredds_url_pattern="indici5rcm/clipped/ecafdan_0_EC-EARTH_RCA4_{scenario}_{time_window}_ls_VFVG.nc",
             unit="gg",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-5,
-            color_scale_max=75,
+            palette="default/seq-YlOrRd-inv",
+            color_scale_min=-85,
+            color_scale_max=5,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tr")
+                        ("archive", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "fd")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -756,28 +816,33 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
         ),
         CoverageConfigurationCreate(
-            name="tr_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+            name="fd_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tr",
-            wms_main_layer_name="tr",
-            thredds_url_pattern="indici5rcm/clipped/ecatran_20_HadGEM2-ES_RACMO22E_{scenario}_{time_window}_ls_VFVG.nc",
+            netcdf_main_dataset_name="fd",
+            wms_main_layer_name="fd",
+            thredds_url_pattern="indici5rcm/clipped/ecafdan_0_HadGEM2-ES_RACMO22E_{scenario}_{time_window}_ls_VFVG.nc",
             unit="gg",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-5,
-            color_scale_max=75,
+            palette="default/seq-YlOrRd-inv",
+            color_scale_min=-85,
+            color_scale_max=5,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tr")
+                        ("archive", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "fd")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -822,28 +887,33 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
         ),
         CoverageConfigurationCreate(
-            name="tr_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+            name="fd_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
             display_name_english=_DISPLAY_NAME_ENGLISH,
             display_name_italian=_DISPLAY_NAME_ITALIAN,
             description_english=_DESCRIPTION_ENGLISH,
             description_italian=_DESCRIPTION_ITALIAN,
-            netcdf_main_dataset_name="tr",
-            wms_main_layer_name="tr",
-            thredds_url_pattern="indici5rcm/clipped/ecatran_20_MPI-ESM-LR_REMO2009_{scenario}_{time_window}_ls_VFVG.nc",
+            netcdf_main_dataset_name="fd",
+            wms_main_layer_name="fd",
+            thredds_url_pattern="indici5rcm/clipped/ecafdan_0_MPI-ESM-LR_REMO2009_{scenario}_{time_window}_ls_VFVG.nc",
             unit="gg",
-            palette="default/seq-YlOrRd",
-            color_scale_min=-5,
-            color_scale_max=75,
+            palette="default/seq-YlOrRd-inv",
+            color_scale_min=-85,
+            color_scale_max=5,
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "tr")
+                        ("archive", "forecast")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("climatological_variable", "fd")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -888,7 +958,7 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "year")
+                        ("year_period", "all_year")
                     ].id
                 ),
             ],
@@ -898,97 +968,97 @@ def generate_configurations(
 
 def get_related_map() -> dict[str, list[str]]:
     return {
-        "tr_annual_absolute_model_ensemble": [
-            "tr_annual_absolute_model_ec_earth_cclm4_8_17",
-            "tr_annual_absolute_model_ec_earth_racmo22e",
-            "tr_annual_absolute_model_ec_earth_rca4",
-            "tr_annual_absolute_model_hadgem2_es_racmo22e",
-            "tr_annual_absolute_model_mpi_esm_lr_remo2009",
+        "fd_annual_absolute_model_ensemble": [
+            "fd_annual_absolute_model_ec_earth_cclm4_8_17",
+            "fd_annual_absolute_model_ec_earth_racmo22e",
+            "fd_annual_absolute_model_ec_earth_rca4",
+            "fd_annual_absolute_model_hadgem2_es_racmo22e",
+            "fd_annual_absolute_model_mpi_esm_lr_remo2009",
         ],
-        "tr_annual_absolute_model_ec_earth_cclm4_8_17": [
-            "tr_annual_absolute_model_ensemble",
-            "tr_annual_absolute_model_ec_earth_racmo22e",
-            "tr_annual_absolute_model_ec_earth_rca4",
-            "tr_annual_absolute_model_hadgem2_es_racmo22e",
-            "tr_annual_absolute_model_mpi_esm_lr_remo2009",
+        "fd_annual_absolute_model_ec_earth_cclm4_8_17": [
+            "fd_annual_absolute_model_ensemble",
+            "fd_annual_absolute_model_ec_earth_racmo22e",
+            "fd_annual_absolute_model_ec_earth_rca4",
+            "fd_annual_absolute_model_hadgem2_es_racmo22e",
+            "fd_annual_absolute_model_mpi_esm_lr_remo2009",
         ],
-        "tr_annual_absolute_model_ec_earth_racmo22e": [
-            "tr_annual_absolute_model_ensemble",
-            "tr_annual_absolute_model_ec_earth_cclm4_8_17",
-            "tr_annual_absolute_model_ec_earth_rca4",
-            "tr_annual_absolute_model_hadgem2_es_racmo22e",
-            "tr_annual_absolute_model_mpi_esm_lr_remo2009",
+        "fd_annual_absolute_model_ec_earth_racmo22e": [
+            "fd_annual_absolute_model_ensemble",
+            "fd_annual_absolute_model_ec_earth_cclm4_8_17",
+            "fd_annual_absolute_model_ec_earth_rca4",
+            "fd_annual_absolute_model_hadgem2_es_racmo22e",
+            "fd_annual_absolute_model_mpi_esm_lr_remo2009",
         ],
-        "tr_annual_absolute_model_ec_earth_rca4": [
-            "tr_annual_absolute_model_ensemble",
-            "tr_annual_absolute_model_ec_earth_cclm4_8_17",
-            "tr_annual_absolute_model_ec_earth_racmo22e",
-            "tr_annual_absolute_model_hadgem2_es_racmo22e",
-            "tr_annual_absolute_model_mpi_esm_lr_remo2009",
+        "fd_annual_absolute_model_ec_earth_rca4": [
+            "fd_annual_absolute_model_ensemble",
+            "fd_annual_absolute_model_ec_earth_cclm4_8_17",
+            "fd_annual_absolute_model_ec_earth_racmo22e",
+            "fd_annual_absolute_model_hadgem2_es_racmo22e",
+            "fd_annual_absolute_model_mpi_esm_lr_remo2009",
         ],
-        "tr_annual_absolute_model_hadgem2_es_racmo22e": [
-            "tr_annual_absolute_model_ensemble",
-            "tr_annual_absolute_model_ec_earth_cclm4_8_17",
-            "tr_annual_absolute_model_ec_earth_racmo22e",
-            "tr_annual_absolute_model_ec_earth_rca4",
-            "tr_annual_absolute_model_mpi_esm_lr_remo2009",
+        "fd_annual_absolute_model_hadgem2_es_racmo22e": [
+            "fd_annual_absolute_model_ensemble",
+            "fd_annual_absolute_model_ec_earth_cclm4_8_17",
+            "fd_annual_absolute_model_ec_earth_racmo22e",
+            "fd_annual_absolute_model_ec_earth_rca4",
+            "fd_annual_absolute_model_mpi_esm_lr_remo2009",
         ],
-        "tr_annual_absolute_model_mpi_esm_lr_remo2009": [
-            "tr_annual_absolute_model_ensemble",
-            "tr_annual_absolute_model_ec_earth_cclm4_8_17",
-            "tr_annual_absolute_model_ec_earth_racmo22e",
-            "tr_annual_absolute_model_ec_earth_rca4",
-            "tr_annual_absolute_model_hadgem2_es_racmo22e",
+        "fd_annual_absolute_model_mpi_esm_lr_remo2009": [
+            "fd_annual_absolute_model_ensemble",
+            "fd_annual_absolute_model_ec_earth_cclm4_8_17",
+            "fd_annual_absolute_model_ec_earth_racmo22e",
+            "fd_annual_absolute_model_ec_earth_rca4",
+            "fd_annual_absolute_model_hadgem2_es_racmo22e",
         ],
-        "tr_30yr_anomaly_annual_agree_model_ensemble": [
-            "tr_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
-            "tr_30yr_anomaly_annual_model_ec_earth_racmo22e",
-            "tr_30yr_anomaly_annual_model_ec_earth_rca4",
-            "tr_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
-            "tr_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+        "fd_30yr_anomaly_annual_agree_model_ensemble": [
+            "fd_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            "fd_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            "fd_30yr_anomaly_annual_model_ec_earth_rca4",
+            "fd_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+            "fd_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
         ],
-        "tr_30yr_anomaly_annual_model_ec_earth_cclm4_8_17": [
-            "tr_30yr_anomaly_annual_agree_model_ensemble",
-            "tr_30yr_anomaly_annual_model_ec_earth_racmo22e",
-            "tr_30yr_anomaly_annual_model_ec_earth_rca4",
-            "tr_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
-            "tr_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+        "fd_30yr_anomaly_annual_model_ec_earth_cclm4_8_17": [
+            "fd_30yr_anomaly_annual_agree_model_ensemble",
+            "fd_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            "fd_30yr_anomaly_annual_model_ec_earth_rca4",
+            "fd_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+            "fd_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
         ],
-        "tr_30yr_anomaly_annual_model_ec_earth_racmo22e": [
-            "tr_30yr_anomaly_annual_agree_model_ensemble",
-            "tr_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
-            "tr_30yr_anomaly_annual_model_ec_earth_rca4",
-            "tr_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
-            "tr_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+        "fd_30yr_anomaly_annual_model_ec_earth_racmo22e": [
+            "fd_30yr_anomaly_annual_agree_model_ensemble",
+            "fd_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            "fd_30yr_anomaly_annual_model_ec_earth_rca4",
+            "fd_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+            "fd_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
         ],
-        "tr_30yr_anomaly_annual_model_ec_earth_rca4": [
-            "tr_30yr_anomaly_annual_agree_model_ensemble",
-            "tr_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
-            "tr_30yr_anomaly_annual_model_ec_earth_racmo22e",
-            "tr_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
-            "tr_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+        "fd_30yr_anomaly_annual_model_ec_earth_rca4": [
+            "fd_30yr_anomaly_annual_agree_model_ensemble",
+            "fd_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            "fd_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            "fd_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+            "fd_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
         ],
-        "tr_30yr_anomaly_annual_model_hadgem2_es_racmo22e": [
-            "tr_30yr_anomaly_annual_agree_model_ensemble",
-            "tr_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
-            "tr_30yr_anomaly_annual_model_ec_earth_racmo22e",
-            "tr_30yr_anomaly_annual_model_ec_earth_rca4",
-            "tr_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
+        "fd_30yr_anomaly_annual_model_hadgem2_es_racmo22e": [
+            "fd_30yr_anomaly_annual_agree_model_ensemble",
+            "fd_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            "fd_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            "fd_30yr_anomaly_annual_model_ec_earth_rca4",
+            "fd_30yr_anomaly_annual_model_mpi_esm_lr_remo2009",
         ],
-        "tr_30yr_anomaly_annual_model_mpi_esm_lr_remo2009": [
-            "tr_30yr_anomaly_annual_agree_model_ensemble",
-            "tr_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
-            "tr_30yr_anomaly_annual_model_ec_earth_racmo22e",
-            "tr_30yr_anomaly_annual_model_ec_earth_rca4",
-            "tr_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
+        "fd_30yr_anomaly_annual_model_mpi_esm_lr_remo2009": [
+            "fd_30yr_anomaly_annual_agree_model_ensemble",
+            "fd_30yr_anomaly_annual_model_ec_earth_cclm4_8_17",
+            "fd_30yr_anomaly_annual_model_ec_earth_racmo22e",
+            "fd_30yr_anomaly_annual_model_ec_earth_rca4",
+            "fd_30yr_anomaly_annual_model_hadgem2_es_racmo22e",
         ],
     }
 
 
 def get_uncertainty_map() -> dict[str, tuple[str, str]]:
     return {
-        "tr_annual_absolute_model_ensemble": (
-            "tr_annual_absolute_model_ensemble_lower_uncertainty",
-            "tr_annual_absolute_model_ensemble_upper_uncertainty",
-        )
+        "fd_annual_absolute_model_ensemble": (
+            "fd_annual_absolute_model_ensemble_lower_uncertainty",
+            "fd_annual_absolute_model_ensemble_upper_uncertainty",
+        ),
     }

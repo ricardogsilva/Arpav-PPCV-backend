@@ -121,6 +121,9 @@ services:
         source: /home/arpav/docker/thredds/content-root/catalog_rcm.xml
         target: /usr/local/tomcat/content/thredds/catalog_rcm.xml
       - type: bind
+        source: $PWD/docker/thredds/content-root/catalog_clima.xml
+        target: /usr/local/tomcat/content/thredds/catalog_clima.xml
+      - type: bind
         source: /home/arpav/docker/thredds/content-root/threddsConfig.xml
         target: /usr/local/tomcat/content/thredds/threddsConfig.xml
       - type: bind
