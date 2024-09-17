@@ -38,8 +38,7 @@ def get_thredds_url_fragment(
             f"THREDDS dataset url ({dataset_url_fragment}) is an "
             f"fnmatch pattern, retrieving the actual URL from the server..."
         )
-        ds_fragment = anyio.to_thread.run_sync(
-            find_thredds_dataset_url_fragment,
+        ds_fragment = find_thredds_dataset_url_fragment(
             dataset_url_fragment,
             thredds_base_url,
         )
@@ -111,6 +110,9 @@ def get_coverage_configuration_urls(
     coverage_identifiers = database.generate_coverage_identifiers(
         coverage_configuration=coverage_configuration
     )
+    logger.debug(f"{base_thredds_url=}")
+    logger.debug(f"{coverage_configuration=}")
+    logger.debug(f"{coverage_identifiers=}")
     result = []
     for cov_identifier in coverage_identifiers:
         ds_fragment = get_thredds_url_fragment(
