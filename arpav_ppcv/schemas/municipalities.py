@@ -36,3 +36,13 @@ class MunicipalityCreate(sqlmodel.SQLModel):
     region_name: str
     centroid_epsg_4326_lon: float | None = None
     centroid_epsg_4326_lat: float | None = None
+
+
+class MunicipalityCentroid(sqlmodel.SQLModel):
+    # model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
+
+    id: pydantic.UUID4
+    geom: geojson_pydantic.Point
+    name: str
+    province_name: str
+    region_name: str

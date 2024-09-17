@@ -9,6 +9,7 @@ from typing import (
     Sequence,
 )
 
+import geojson_pydantic
 import shapely
 import shapely.io
 import sqlalchemy.exc
@@ -1254,6 +1255,63 @@ def generate_coverage_identifiers(
         dataset_id = "-".join((coverage_configuration.name, *combination))
         allowed_identifiers.append(dataset_id)
     return allowed_identifiers
+
+
+def list_municipality_centroids(
+    session: sqlmodel.Session,
+    *,
+    limit: int = 20,
+    offset: int = 0,
+    include_total: bool = False,
+    polygon_intersection_filter: shapely.Polygon = None,
+    name_filter: Optional[str] = None,
+    province_name_filter: Optional[str] = None,
+    region_name_filter: Optional[str] = None,
+) -> tuple[Sequence[municipalities.MunicipalityCentroid], Optional[int]]:
+    """List existing municipality centroids.
+
+    ``polygon_intersection_filter`` parameter is expected to be express a geometry in
+    the EPSG:4326 CRS.
+    """
+    statement = sqlmodel.select(municipalities.Municipality).order_by(
+        municipalities.Municipality.name
+    )
+    if name_filter is not None:
+        statement = _add_substring_filter(
+            statement, name_filter, municipalities.Municipality.name
+        )
+    if province_name_filter is not None:
+        statement = _add_substring_filter(
+            statement, province_name_filter, municipalities.Municipality.province_name
+        )
+    if region_name_filter is not None:
+        statement = _add_substring_filter(
+            statement, region_name_filter, municipalities.Municipality.region_name
+        )
+    if polygon_intersection_filter is not None:
+        statement = statement.where(
+            func.ST_Intersects(
+                municipalities.Municipality.geom,
+                func.ST_GeomFromWKB(
+                    shapely.io.to_wkb(polygon_intersection_filter), 4326
+                ),
+            )
+        )
+    items = session.exec(statement.offset(offset).limit(limit)).all()
+    num_items = _get_total_num_records(session, statement) if include_total else None
+    return [
+        municipalities.MunicipalityCentroid(
+            id=i.id,
+            name=i.name,
+            province_name=i.province_name,
+            region_name=i.region_name,
+            geom=geojson_pydantic.Point(
+                type="Point",
+                coordinates=(i.centroid_epsg_4326_lon, i.centroid_epsg_4326_lat),
+            ),
+        )
+        for i in items
+    ], num_items
 
 
 def list_municipalities(
