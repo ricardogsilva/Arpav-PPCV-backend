@@ -6,9 +6,11 @@ logger = logging.getLogger(__name__)
 
 
 def parse_palette(palette: str, palettes_dir: Path) -> Optional[list[str]]:
-    palette_name = palette.partition("/")[-1].lower()
-    name, to_invert = palette_name.rpartition("-inv")[:2]
-    is_inverted = to_invert != ""
+    palette_name = palette.split("/")[-1].lower()
+    if is_inverted := "-inv" in palette_name:
+        name = palette_name.replace("-inv", "")
+    else:
+        name = palette_name
     colors = []
     for file_path in [f for f in palettes_dir.iterdir() if f.is_file()]:
         if file_path.stem.lower() == name:
