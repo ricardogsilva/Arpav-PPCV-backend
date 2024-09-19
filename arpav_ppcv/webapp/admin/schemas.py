@@ -52,7 +52,8 @@ class CoverageConfigurationRead(sqlmodel.SQLModel):
     wms_secondary_layer_name: Optional[str]
     coverage_id_pattern: str
     thredds_url_pattern: str
-    unit: str
+    unit_english: str
+    unit_italian: str
     palette: str
     color_scale_min: float
     color_scale_max: float
