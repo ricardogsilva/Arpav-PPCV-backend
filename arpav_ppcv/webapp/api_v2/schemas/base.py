@@ -384,45 +384,16 @@ class WebResourceList(base_schemas.ResourceList):
         unfiltered_total: int,
     ):
         return cls(
-            meta=cls._get_meta(len(items), unfiltered_total, filtered_total),
-            links=cls._get_list_links(
-                request, limit, offset, filtered_total, len(items)
+            meta=get_meta(len(items), unfiltered_total, filtered_total),
+            links=get_list_links(
+                request,
+                cls.path_operation_name,
+                limit,
+                offset,
+                filtered_total,
+                len(items),
             ),
             items=[cls.list_item_type.from_db_instance(i, request) for i in items],
-        )
-
-    @classmethod
-    def _get_list_links(
-        cls,
-        request: Request,
-        limit: int,
-        offset: int,
-        filtered_total: int,
-        num_returned_records: int,
-    ) -> ListLinks:
-        filters = dict(request.query_params)
-        if "limit" in filters.keys():
-            del filters["limit"]
-        if "offset" in filters.keys():
-            del filters["offset"]
-        pagination_urls = get_pagination_urls(
-            request.url_for(cls.path_operation_name),
-            num_returned_records,
-            filtered_total,
-            limit,
-            offset,
-            **filters,
-        )
-        return ListLinks(**pagination_urls)
-
-    @staticmethod
-    def _get_meta(
-        num_returned_records: int, unfiltered_total: int, filtered_total: int
-    ) -> ListMeta:
-        return ListMeta(
-            returned_records=num_returned_records,
-            total_records=unfiltered_total,
-            total_filtered_records=filtered_total,
         )
 
 
@@ -471,3 +442,37 @@ def _get_pagination_offsets(
         "first": 0,
         "last": (total_records // limit) * limit,
     }
+
+
+def get_list_links(
+    request: Request,
+    path_operation_name: str,
+    limit: int,
+    offset: int,
+    filtered_total: int,
+    num_returned_records: int,
+) -> ListLinks:
+    filters = dict(request.query_params)
+    if "limit" in filters.keys():
+        del filters["limit"]
+    if "offset" in filters.keys():
+        del filters["offset"]
+    pagination_urls = get_pagination_urls(
+        request.url_for(path_operation_name),
+        num_returned_records,
+        filtered_total,
+        limit,
+        offset,
+        **filters,
+    )
+    return ListLinks(**pagination_urls)
+
+
+def get_meta(
+    num_returned_records: int, unfiltered_total: int, filtered_total: int
+) -> ListMeta:
+    return ListMeta(
+        returned_records=num_returned_records,
+        total_records=unfiltered_total,
+        total_filtered_records=filtered_total,
+    )

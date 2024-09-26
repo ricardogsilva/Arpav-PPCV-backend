@@ -1,4 +1,6 @@
+import decimal
 import logging
+from decimal import Decimal
 from pathlib import Path
 from typing import Optional
 
@@ -74,6 +76,23 @@ class AdminUserSettings(pydantic.BaseModel):
     )
 
 
+class CoverageDownloadSpatialGrid(pydantic.BaseModel):
+    min_lon: decimal.Decimal = Decimal("10.279")
+    min_lat: decimal.Decimal = Decimal("44.697")
+    max_lon: decimal.Decimal = Decimal("13.979")
+    max_lat: decimal.Decimal = Decimal("47.097")
+    num_rows: int = 24
+    num_cols: int = 37
+
+
+class CoverageDownloadSettings(pydantic.BaseModel):
+    spatial_grid: CoverageDownloadSpatialGrid = CoverageDownloadSpatialGrid()
+    temporal_snap: int = 5
+    cache_dir: Optional[Path] = (
+        Path(__file__).parents[1] / "arpav-cache/coverage-downloads"
+    )
+
+
 class ArpavPpcvSettings(BaseSettings):  # noqa
     model_config = SettingsConfigDict(
         env_prefix="ARPAV_PPCV__",  # noqa
@@ -104,6 +123,7 @@ class ArpavPpcvSettings(BaseSettings):  # noqa
     cors_origins: list[str] = []
     cors_methods: list[str] = []
     allow_cors_credentials: bool = False
+    coverage_download_settings: CoverageDownloadSettings = CoverageDownloadSettings()
 
     @pydantic.model_validator(mode="after")
     def ensure_test_db_dsn(self):

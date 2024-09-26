@@ -32,7 +32,7 @@ from arpav_ppcv.schemas import coverages
     ],
 )
 def test_parse_temporal_range(temporal_range, expected):
-    result = operations._parse_temporal_range(temporal_range)
+    result = operations.parse_temporal_range(temporal_range)
     assert result == expected
 
 
