@@ -115,7 +115,7 @@ class ArpavPpcvSettings(BaseSettings):  # noqa
     palettes_dir: Path = Path(__file__).parents[1] / "data/palettes"
     prefect: PrefectSettings = PrefectSettings()
     martin_tile_server_base_url: str = "http://localhost:3000"
-    nearest_station_radius_meters: int = 200
+    nearest_station_radius_meters: int = 1000
     v2_api_mount_prefix: str = "/api/v2"
     log_config_file: Path | None = None
     session_secret_key: str = "changeme"
