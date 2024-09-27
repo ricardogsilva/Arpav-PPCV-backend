@@ -114,12 +114,12 @@ class CoverageDownloadGrid:
             xx=np.linspace(
                 start=float(grid_conf.min_lon),
                 stop=float(grid_conf.max_lon),
-                num=grid_conf.num_rows,
+                num=grid_conf.num_rows + 1,
             ),
             yy=np.linspace(
                 start=float(grid_conf.min_lat),
                 stop=float(grid_conf.max_lat),
-                num=grid_conf.num_cols,
+                num=grid_conf.num_cols + 1,
             ),
         )
 
