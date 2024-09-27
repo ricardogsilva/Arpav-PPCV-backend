@@ -9,7 +9,7 @@ from ....config import (
     LOCALE_IT,
 )
 from ....schemas import coverages as app_models
-from .base import WebResourceList
+from . import base
 
 
 class ImageLegendColor(pydantic.BaseModel):
@@ -170,7 +170,7 @@ class CoverageConfigurationReadDetail(CoverageConfigurationReadListItem):
         )
 
 
-class CoverageConfigurationList(WebResourceList):
+class CoverageConfigurationList(base.WebResourceList):
     items: list[CoverageConfigurationReadListItem]
     list_item_type = CoverageConfigurationReadListItem
     path_operation_name = "list_coverage_configurations"
@@ -232,7 +232,7 @@ class CoverageIdentifierReadListItem(pydantic.BaseModel):
         )
 
 
-class CoverageIdentifierList(WebResourceList):
+class CoverageIdentifierList(base.WebResourceList):
     items: list[CoverageIdentifierReadListItem]
     path_operation_name = "list_coverage_identifiers"
 
@@ -248,9 +248,14 @@ class CoverageIdentifierList(WebResourceList):
         unfiltered_total: int,
     ):
         return cls(
-            meta=cls._get_meta(len(items), unfiltered_total, filtered_total),
-            links=cls._get_list_links(
-                request, limit, offset, filtered_total, len(items)
+            meta=base.get_meta(len(items), unfiltered_total, filtered_total),
+            links=base.get_list_links(
+                request,
+                cls.path_operation_name,
+                limit,
+                offset,
+                filtered_total,
+                len(items),
             ),
             items=[
                 CoverageIdentifierReadListItem.from_db_instance(i, request)
@@ -259,10 +264,50 @@ class CoverageIdentifierList(WebResourceList):
         )
 
 
-class ConfigurationParameterList(WebResourceList):
+class ConfigurationParameterList(base.WebResourceList):
     items: list[ConfigurationParameterReadListItem]
     list_item_type = ConfigurationParameterReadListItem
     path_operation_name = "list_configuration_parameters"
+
+
+class CoverageDataDownloadListMeta(pydantic.BaseModel):
+    returned_records: int
+    total_records: int
+
+
+class CoverageDownloadList(pydantic.BaseModel):
+    meta: CoverageDataDownloadListMeta
+    links: base.ListLinks
+    coverage_download_links: list[str]
+
+    @classmethod
+    def from_items(
+        cls,
+        coverage_identifiers: list[str],
+        request: Request,
+        *,
+        limit: int,
+        offset: int,
+        total: int,
+    ):
+        pagination_urls = base.get_pagination_urls(
+            request.url_for("list_forecast_data_download_links"),
+            len(coverage_identifiers),
+            total_records=total,
+            limit=limit,
+            offset=offset,
+        )
+        return cls(
+            meta=CoverageDataDownloadListMeta(
+                returned_records=len(coverage_identifiers),
+                total_records=total,
+            ),
+            links=base.ListLinks(**pagination_urls),
+            coverage_download_links=[
+                f"{request.url_for('get_forecast_data', coverage_identifier=c)}"
+                for c in coverage_identifiers
+            ],
+        )
 
 
 class ConfigurationParameterMenuTranslation(pydantic.BaseModel):

@@ -1,3 +1,4 @@
+import itertools
 import logging
 import urllib.parse
 from xml.etree import ElementTree as et
@@ -19,10 +20,12 @@ from fastapi import (
     Response,
     status,
 )
+from fastapi.responses import StreamingResponse
 from sqlmodel import Session
 
 from .... import (
     database as db,
+    datadownloads,
     exceptions,
     operations,
     palette,
@@ -355,6 +358,168 @@ async def wms_endpoint(
                 headers=dict(wms_response.headers),
             )
         return response
+    else:
+        raise HTTPException(
+            status_code=400, detail=_INVALID_COVERAGE_IDENTIFIER_ERROR_DETAIL
+        )
+
+
+@router.get("/forecast-data")
+def list_forecast_data_download_links(
+    request: Request,
+    db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+    list_params: Annotated[dependencies.CommonListFilterParameters, Depends()],
+    climatological_variable: Annotated[list[str], Query()] = None,
+    aggregation_period: Annotated[list[str], Query()] = None,
+    climatological_model: Annotated[list[str], Query()] = None,
+    scenario: Annotated[list[str], Query()] = None,
+) -> coverage_schemas.CoverageDownloadList:
+    """Get download links forecast data"""
+    valid_variables = []
+    for v in climatological_variable or []:
+        if (
+            conf_param_value := db.get_configuration_parameter_value_by_names(
+                db_session, "climatological_variable", v
+            )
+        ) is not None:
+            valid_variables.append(conf_param_value)
+        else:
+            logger.warning(f"Invalid climatological_variable: {v!r}, ignoring...")
+    else:
+        if len(valid_variables) == 0:
+            valid_variables = db.get_configuration_parameter_by_name(
+                db_session, "climatological_variable"
+            ).allowed_values
+    valid_aggregation_periods = []
+    for a in aggregation_period or []:
+        if (
+            conf_param_value := db.get_configuration_parameter_value_by_names(
+                db_session, "aggregation_period", a
+            )
+        ) is not None:
+            valid_aggregation_periods.append(conf_param_value)
+        else:
+            logger.warning(f"Invalid aggregation_period: {a!r}, ignoring...")
+    else:
+        if len(valid_aggregation_periods) == 0:
+            valid_aggregation_periods = db.get_configuration_parameter_by_name(
+                db_session, "aggregation_period"
+            ).allowed_values
+    valid_climatological_models = []
+    for m in climatological_model or []:
+        if (
+            conf_param_value := db.get_configuration_parameter_value_by_names(
+                db_session, "climatological_model", m
+            )
+        ) is not None:
+            valid_climatological_models.append(conf_param_value)
+        else:
+            logger.warning(f"Invalid climatological_model: {m!r}, ignoring...")
+    else:
+        if len(valid_climatological_models) == 0:
+            valid_climatological_models = db.get_configuration_parameter_by_name(
+                db_session, "climatological_model"
+            ).allowed_values
+    valid_scenarios = []
+    for s in scenario or []:
+        if (
+            conf_param_value := db.get_configuration_parameter_value_by_names(
+                db_session, "scenario", s
+            )
+        ) is not None:
+            valid_scenarios.append(conf_param_value)
+        else:
+            logger.warning(f"Invalid scenario: {s!r}, ignoring...")
+    else:
+        if len(valid_scenarios) == 0:
+            valid_scenarios = db.get_configuration_parameter_by_name(
+                db_session, "scenario"
+            ).allowed_values
+    coverage_identifiers = []
+    for combination in itertools.product(
+        valid_variables,
+        valid_aggregation_periods,
+        valid_climatological_models,
+        valid_scenarios,
+    ):
+        variable, aggregation_period, model, scenario = combination
+        logger.debug(
+            f"getting links for {variable.name!r}, {aggregation_period.name!r}, "
+            f"{model.name!r}, {scenario.name!r}..."
+        )
+        param_values_filter = [
+            db.get_configuration_parameter_value_by_names(
+                db_session, "archive", "forecast"
+            ),
+            variable,
+            aggregation_period,
+            model,
+            scenario,
+        ]
+        cov_confs = db.collect_all_coverage_configurations(
+            db_session, configuration_parameter_values_filter=param_values_filter
+        )
+        for cov_conf in cov_confs:
+            identifiers = db.generate_coverage_identifiers(
+                cov_conf, configuration_parameter_values_filter=param_values_filter
+            )
+            coverage_identifiers.extend(identifiers)
+    return coverage_schemas.CoverageDownloadList.from_items(
+        coverage_identifiers=(
+            coverage_identifiers[
+                list_params.offset : list_params.offset + list_params.limit
+            ]
+        ),
+        request=request,
+        limit=list_params.limit,
+        offset=list_params.offset,
+        total=len(coverage_identifiers),
+    )
+
+
+@router.get("/forecast-data/{coverage_identifier}")
+def get_forecast_data(
+    settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
+    http_client: Annotated[httpx.AsyncClient, Depends(dependencies.get_http_client)],
+    db_session: Annotated[Session, Depends(dependencies.get_db_session)],
+    coverage_identifier: str,
+    coords: Annotated[str, Query(description="A Well-Known-Text Polygon")] = None,
+    datetime: Optional[str] = "../..",
+):
+    if (coverage := db.get_coverage(db_session, coverage_identifier)) is not None:
+        if coords is not None:
+            # FIXME - deal with invalid WKT errors
+            geom = shapely.io.from_wkt(coords)
+            if geom.geom_type == "Polygon":
+                grid = datadownloads.CoverageDownloadGrid.from_config(
+                    settings.coverage_download_settings.spatial_grid
+                )
+                try:
+                    fitted_bbox = grid.fit_bbox(geom)
+                except exceptions.CoverageDataRetrievalError as exc:
+                    raise HTTPException(
+                        status_code=400, detail=f"Invalid coords - {exc}"
+                    )
+            else:
+                raise HTTPException(
+                    status_code=400, detail="Invalid coords - Must be a WKT Polygon"
+                )
+        else:
+            fitted_bbox = None
+
+        temporal_range = operations.parse_temporal_range(datetime)
+        cache_key = datadownloads.get_cache_key(coverage, fitted_bbox, temporal_range)
+        response_streamer = datadownloads.retrieve_coverage_data(
+            settings, http_client, cache_key, coverage, fitted_bbox, temporal_range
+        )
+        filename = cache_key.rpartition("/")[-1]
+        return StreamingResponse(
+            response_streamer,
+            media_type="application/netcdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+            },
+        )
     else:
         raise HTTPException(
             status_code=400, detail=_INVALID_COVERAGE_IDENTIFIER_ERROR_DETAIL

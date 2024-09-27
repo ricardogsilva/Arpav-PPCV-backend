@@ -65,6 +65,8 @@ optional = true
 jupyterlab = "^4.2.0"
 matplotlib = "^3.8.4"
 ipympl = "^0.9.4"
+ipyleaflet = "^0.19.2"
+sidecar = "^0.7.0"
 
 [tool.poetry.scripts]
 arpav-ppcv = "arpav_ppcv.main:app"

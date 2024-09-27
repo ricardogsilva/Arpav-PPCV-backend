@@ -25,8 +25,10 @@ from pandas.core.indexes.datetimes import DatetimeIndex
 from pyproj.enums import TransformDirection
 from shapely.ops import transform
 
-from . import database
-from .config import ArpavPpcvSettings
+from . import (
+    config,
+    database,
+)
 from .schemas import (
     base,
     coverages,
@@ -41,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_climate_barometer_time_series(
-    settings: ArpavPpcvSettings,
+    settings: config.ArpavPpcvSettings,
     session: sqlmodel.Session,
     coverage: coverages.CoverageInternal,
     smoothing_strategies: list[base.CoverageDataSmoothingStrategy] = [  # noqa
@@ -83,7 +85,7 @@ def get_climate_barometer_time_series(
 
 
 def _get_climate_barometer_data(
-    settings: ArpavPpcvSettings,
+    settings: config.ArpavPpcvSettings,
     coverage: coverages.CoverageInternal,
 ) -> pd.DataFrame:
     opendap_url = "/".join(
@@ -218,7 +220,7 @@ def get_observation_time_series(
     tuple[pd.Series, Optional[dict]],
 ]:
     """Get monthly observation measurements."""
-    start, end = _parse_temporal_range(temporal_range)
+    start, end = parse_temporal_range(temporal_range)
     df = get_station_data(session, variable, station, month, (start, end))
     if df is not None:
         result = {
@@ -278,7 +280,7 @@ def old_get_observation_time_series(
     Optional[pd.DataFrame],
     Optional[dict[str, str]],
 ]:
-    start, end = _parse_temporal_range(temporal_range)
+    start, end = parse_temporal_range(temporal_range)
     raw_measurements = database.collect_all_monthly_measurements(
         session=session,
         station_id_filter=station.id,
@@ -371,7 +373,7 @@ def old_get_observation_time_series(
 
 
 async def async_retrieve_data_via_ncss(
-    settings: ArpavPpcvSettings,
+    settings: config.ArpavPpcvSettings,
     coverage: coverages.CoverageInternal,
     point_geom: shapely.geometry.Point,
     temporal_range: tuple[dt.datetime | None, dt.datetime | None],
@@ -382,21 +384,6 @@ async def async_retrieve_data_via_ncss(
     ds_fragment = crawler.get_thredds_url_fragment(
         coverage, settings.thredds_server.base_url
     )
-    # dataset_url_fragment = coverage.configuration.get_thredds_url_fragment(
-    #     coverage.identifier
-    # )
-    # if any(c in dataset_url_fragment for c in crawler.FNMATCH_SPECIAL_CHARS):
-    #     logger.debug(
-    #         f"THREDDS dataset url ({dataset_url_fragment}) is an "
-    #         f"fnmatch pattern, retrieving the actual URL from the server..."
-    #     )
-    #     ds_fragment = anyio.to_thread.run_sync(
-    #         crawler.find_thredds_dataset_url_fragment,
-    #         dataset_url_fragment,
-    #         settings.thredds_server.base_url,
-    #     )
-    # else:
-    #     ds_fragment = dataset_url_fragment
     ncss_url = "/".join(
         (
             settings.thredds_server.base_url,
@@ -419,7 +406,7 @@ async def async_retrieve_data_via_ncss(
 
 
 async def retrieve_multiple_ncss_datasets(
-    settings: ArpavPpcvSettings,
+    settings: config.ArpavPpcvSettings,
     client: httpx.AsyncClient,
     datasets_to_retrieve: list[coverages.CoverageInternal],
     point_geom: shapely.Point,
@@ -602,7 +589,7 @@ def get_related_coverages(
 
 
 def get_coverage_time_series(
-    settings: ArpavPpcvSettings,
+    settings: config.ArpavPpcvSettings,
     session: sqlmodel.Session,
     http_client: httpx.AsyncClient,
     coverage: coverages.CoverageInternal,
@@ -625,7 +612,7 @@ def get_coverage_time_series(
         ]
     ],
 ]:
-    start, end = _parse_temporal_range(temporal_range)
+    start, end = parse_temporal_range(temporal_range)
     to_retrieve_from_ncss = [coverage]
     if include_coverage_uncertainty:
         lower_cov, upper_cov = get_related_uncertainty_coverage_configurations(
@@ -742,7 +729,7 @@ def get_coverage_time_series(
 
 def extract_nearby_station_data(
     session: sqlmodel.Session,
-    settings: ArpavPpcvSettings,
+    settings: config.ArpavPpcvSettings,
     point_geom: shapely.Point,
     coverage_configuration: coverages.CoverageConfiguration,
     coverage_identifier: str,
@@ -868,7 +855,7 @@ def _apply_loess_smoothing(
     return loess_smoothed[:, 1]
 
 
-def _parse_temporal_range(
+def parse_temporal_range(
     raw_temporal_range: str,
 ) -> tuple[dt.datetime | None, dt.datetime | None]:
     """Parse a temporal range string, converting time to UTC.
