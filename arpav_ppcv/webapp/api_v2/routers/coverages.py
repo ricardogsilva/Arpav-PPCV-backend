@@ -188,14 +188,22 @@ def get_coverage_configuration(
     palette_colors = palette.parse_palette(
         db_coverage_configuration.palette, settings.palettes_dir
     )
+    applied_colors = []
     if palette_colors is not None:
-        applied_colors = palette.apply_palette(
-            palette_colors,
-            db_coverage_configuration.color_scale_min,
-            db_coverage_configuration.color_scale_max,
-        )
+        minimum = db_coverage_configuration.color_scale_min
+        maximum = db_coverage_configuration.color_scale_max
+        if abs(maximum - minimum) > 0.001:
+            applied_colors = palette.apply_palette(
+                palette_colors, minimum, maximum, num_stops=settings.palette_num_stops
+            )
+        else:
+            logger.warning(
+                f"Cannot calculate applied colors for coverage "
+                f"configuration {db_coverage_configuration.name!r} - check the "
+                f"colorscale min and max values"
+            )
     else:
-        applied_colors = []
+        logger.warning(f"Unable to parse palette {db_coverage_configuration.palette!r}")
     return coverage_schemas.CoverageConfigurationReadDetail.from_db_instance(
         db_coverage_configuration, allowed_coverage_identifiers, applied_colors, request
     )

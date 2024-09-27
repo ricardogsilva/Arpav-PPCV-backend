@@ -90,18 +90,33 @@ def test_parse_palette(palette_name: str, expected: list[str]):
     "colors, minimum, maximum, expected",
     [
         pytest.param(
-            ["first", "second"], -10, 20, [(-10.0, "first"), (20.0, "second")]
-        ),
-        pytest.param(
-            ["first", "second", "third"],
-            -10,
-            20,
-            [(-10.0, "first"), (5.0, "second"), (20.0, "third")],
+            [
+                "#FF003c30",
+                "#FF01665e",
+                "#FF35978f",
+                "#FF80cdc1",
+                "#FFc7eae5",
+                "#FFf5f5f5",
+                "#FFf6e8c3",
+                "#FFdfc27d",
+                "#FFbf812d",
+                "#FF8c510a",
+                "#FF543005",
+            ],
+            -40,
+            40,
+            [
+                (-40.0, "#ff003c30"),
+                (-20.0, "#ff35978f"),
+                (0.0, "#fff5f5f5"),
+                (20.0, "#ffbf812d"),
+                (40.0, "#ff543005"),
+            ],
         ),
     ],
 )
 def test_apply_palette(
     colors: list[str], minimum: float, maximum: float, expected: list[tuple[float, str]]
 ):
-    result = palette.apply_palette(colors, minimum, maximum)
+    result = palette.apply_palette(colors, minimum, maximum, num_stops=5)
     assert result == expected
