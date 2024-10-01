@@ -38,7 +38,7 @@ services:
   # is another proxy running on top of this one, provided
   # by the staging env
   reverse-proxy:
-    command: --configFile /opt/traefik/traefik.toml
+    command: --configFile /traefik.toml
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.outside-router-arpav-backend.entrypoints=webSecure"
@@ -49,10 +49,9 @@ services:
     networks:
       - front
       - back
-    volumes:
-      - type: bind
-        source: /home/arpav/docker/traefik/staging-config.toml
-        target: /opt/traefik/traefik.toml
+    configs:
+      - source: traefik-conf
+        target: /traefik.toml
 
   frontend:
     env_file:
@@ -101,10 +100,6 @@ services:
       - "traefik.http.routers.martin-router.entrypoints=web"
       - "traefik.http.routers.martin-router.rule=Host(`arpav.geobeyond.dev`) && PathPrefix(`/vector-tiles`)"
       - "exposed.inside=true"
-    volumes:
-      - type: bind
-        source: /home/arpav/docker/martin/config.yaml
-        target: /martin-config.yaml
     restart: unless-stopped
 
   thredds:
@@ -188,3 +183,7 @@ volumes:
   db-data:
   prefect-db-data:
   tolgee-db-data:
+
+configs:
+  traefik-conf:
+    file: /home/arpav/docker/traefik/staging-config.toml

@@ -63,9 +63,8 @@ services:
       - type: bind
         source: /var/run/docker.sock
         target: /var/run/docker.sock
-      - type: bind
-        source: ${ARPAV_PPCV_TRAEFIK_BASIC_AUTH_USERS_FILE:-$PWD/docker/traefik/basicauth-users.txt}
-        target: /traefikauth/usersfile
+    secrets:
+      - traefik-users-file
 
   frontend:
     image: "ghcr.io/geobeyond/arpav-ppcv/arpav-ppcv:latest"
@@ -92,6 +91,9 @@ services:
 
   martin:
     image: 'ghcr.io/maplibre/martin:v0.13.0'
+    command: ["--config", "/martin-conf"]
+    configs:
+      - martin-conf
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.martin-router.rule=PathPrefix(`/vector-tiles`)"
@@ -112,7 +114,7 @@ services:
       - "traefik.http.middlewares.middleware-chain.chain.middlewares=prefect-auth,replace-prefect-path-middleware"
       - "traefik.http.middlewares.replace-prefect-path-middleware.replacepathregex.regex=/prefect/api"
       - "traefik.http.middlewares.replace-prefect-path-middleware.replacepathregex.replacement=/api"
-      - "traefik.http.middlewares.prefect-auth.basicauth.usersfile=/traefikauth/usersfile"
+      - "traefik.http.middlewares.prefect-auth.basicauth.usersfile=/run/secrets/traefik-users-file"
       - "traefik.http.routers.prefect-router.middlewares=middleware-chain"
     depends_on:
       prefect-db:
@@ -154,3 +156,15 @@ services:
     environment:
       PG_DATA: /var/lib/postgresql/data/pgdata
     healthcheck: *postgres-db-healthcheck
+
+
+configs:
+
+  martin-conf:
+    file: $PWD/docker/martin/config.yaml
+
+
+secrets:
+
+  traefik-users-file:
+    file: ${ARPAV_PPCV_TRAEFIK_BASIC_AUTH_USERS_FILE:-$PWD/docker/traefik/basicauth-users.txt}

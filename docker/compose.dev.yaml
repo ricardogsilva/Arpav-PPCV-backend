@@ -45,11 +45,10 @@ services:
         published: 8899
       - target: 8080
         published: 8878
-    command: --configFile /traefik.toml
-    volumes:
-      - type: bind
-        source: $PWD/docker/traefik/dev-config.toml
+    configs:
+      - source: traefik-conf
         target: /traefik.toml
+    command: --configFile /traefik.toml
 
   frontend:
     image: "ghcr.io/geobeyond/arpav-ppcv/arpav-ppcv:${FRONTEND_GIT_BRANCH:-latest}"
@@ -161,14 +160,9 @@ services:
     ports:
       - target: 3000
         published: 3000
-    command: ["--config", "/martin-config.yaml"]
     environment:
       DATABASE_URL: postgres://arpav:arpavpassword@db/arpav_ppcv
       RUST_LOG: actix_web=info,martin=debug,tokio_postgres=debug
-    volumes:
-      - type: bind
-        source: /$PWD/docker/martin/config.yaml
-        target: /martin-config.yaml
 
   prefect-server:
     labels:
@@ -262,3 +256,9 @@ volumes:
   prefect-db-data:
   tolgee-app-data:
   tolgee-db-data:
+
+
+configs:
+
+  traefik-conf:
+    file: $PWD/docker/traefik/dev-config.toml
