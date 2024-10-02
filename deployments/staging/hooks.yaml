@@ -23,6 +23,8 @@
     - source: string
       name: '--confirm'
     - source: string
+      name: '--auto-update'
+    - source: string
       name: '--send-discord-notification'
   command-working-directory: /home/arpav/webhooks/hook-scripts
   trigger-rule:
