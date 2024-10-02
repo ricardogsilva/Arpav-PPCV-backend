@@ -91,7 +91,6 @@ services:
     restart: unless-stopped
 
   martin:
-    command: ["--config", "/martin-config.yaml"]
     networks:
       - back
     env_file:
