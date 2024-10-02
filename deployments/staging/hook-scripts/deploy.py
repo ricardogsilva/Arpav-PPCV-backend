@@ -8,14 +8,17 @@
 
 import argparse
 import dataclasses
+import hashlib
 import json
 import logging
 import os
 import shlex
 import shutil
+import socket
 import urllib.request
 from pathlib import Path
 from subprocess import run
+import sys
 from typing import (
     Optional,
     Protocol,
@@ -95,6 +98,39 @@ class _CloneRepo:
             shlex.split(f"git clone {self.repo_url} {self.clone_destination}"),
             check=True,
         )
+
+
+@dataclasses.dataclass
+class _SelfUpdate:
+    repo_dir: Path
+    original_call_args: list[str]
+    name: str = "Update the deployment script"
+
+    def handle(self) -> None:
+        print("Updating the deployment script...")
+        current_deployment_script_path = Path(__file__)
+        digest_algorithm = hashlib.sha256
+
+        current_contents = current_deployment_script_path.read_bytes()
+        current_contents_hash = digest_algorithm(current_contents).hexdigest()
+
+        new_deployment_script_path = (
+            self.repo_dir / "deployments/staging/hook-scripts/deploy.py"
+        )
+
+        new_contents = new_deployment_script_path.read_bytes()
+        new_contents_hash = digest_algorithm(new_contents).hexdigest()
+        if current_contents_hash != new_contents_hash:
+            logger.debug("Deployment script changed, updating and relaunching...")
+            current_deployment_script_path.write_bytes(
+                new_deployment_script_path.read_bytes()
+            )
+            call_args = self.original_call_args[:]
+            if (update_flag_index := args.index("--auto-update")) != -1:
+                call_args.pop(update_flag_index)
+            os.execv(sys.executable, call_args)
+        else:
+            logger.debug("Deployment script did not change, skipping...")
 
 
 @dataclasses.dataclass
@@ -242,6 +278,7 @@ def perform_deployment(
     deployment_root: Path,
     discord_webhook_url: Optional[str] = None,
     confirmed: bool = False,
+    auto_update: bool = False,
 ):
     if not confirmed:
         print("Performing a dry-run")
@@ -273,43 +310,52 @@ def perform_deployment(
             ),
         ),
         _FindEnvFiles(env_files=deployment_env_files),
-        _FindDockerDir(docker_dir=docker_dir),
-        _StopCompose(docker_dir=docker_dir, compose_files_fragment=compose_files),
         _CloneRepo(
             clone_destination=clone_destination,
             repo_url="https://github.com/geobeyond/Arpav-PPCV-backend.git ",
         ),
-        _ReplaceDockerDir(repo_dir=clone_destination, docker_dir=docker_dir),
-        _PullImages(
-            images=(
-                "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend",
-                "ghcr.io/geobeyond/arpav-ppcv/arpav-ppcv",
-            )
-        ),
-        _StartCompose(
-            env_file_db_service=deployment_env_files["db_service"],
-            env_file_webapp_service=deployment_env_files["webapp_service"],
-            env_file_frontend_service=deployment_env_files["frontend_service"],
-            env_file_martin_service=deployment_env_files["martin_service"],
-            env_file_prefect_db_service=deployment_env_files["prefect_db_service"],
-            env_file_prefect_server_service=deployment_env_files[
-                "prefect_server_service"
-            ],
-            env_file_prefect_static_worker_service=deployment_env_files[
-                "prefect_static_worker_service"
-            ],
-            compose_files_fragment=compose_files,
-            working_dir=deployment_root,
-        ),
-        _RunMigrations(webapp_service_name=webapp_service_name),
-        _CompileTranslations(webapp_service_name=webapp_service_name),
     ]
+    if auto_update:
+        deployment_steps.append(
+            _SelfUpdate(repo_dir=clone_destination, original_call_args=sys.argv),
+        )
+    deployment_steps.extend(
+        [
+            _FindDockerDir(docker_dir=docker_dir),
+            _StopCompose(docker_dir=docker_dir, compose_files_fragment=compose_files),
+            _ReplaceDockerDir(repo_dir=clone_destination, docker_dir=docker_dir),
+            _PullImages(
+                images=(
+                    "ghcr.io/geobeyond/arpav-ppcv-backend/arpav-ppcv-backend",
+                    "ghcr.io/geobeyond/arpav-ppcv/arpav-ppcv",
+                )
+            ),
+            _StartCompose(
+                env_file_db_service=deployment_env_files["db_service"],
+                env_file_webapp_service=deployment_env_files["webapp_service"],
+                env_file_frontend_service=deployment_env_files["frontend_service"],
+                env_file_martin_service=deployment_env_files["martin_service"],
+                env_file_prefect_db_service=deployment_env_files["prefect_db_service"],
+                env_file_prefect_server_service=deployment_env_files[
+                    "prefect_server_service"
+                ],
+                env_file_prefect_static_worker_service=deployment_env_files[
+                    "prefect_static_worker_service"
+                ],
+                compose_files_fragment=compose_files,
+                working_dir=deployment_root,
+            ),
+            _RunMigrations(webapp_service_name=webapp_service_name),
+            _CompileTranslations(webapp_service_name=webapp_service_name),
+        ]
+    )
     if discord_webhook_url is not None:
         deployment_steps.append(
             _SendDiscordChannelNotification(
                 webhook_url=discord_webhook_url,
                 content=(
-                    "A new deployment of ARPAV-PPCV to staging environment has finished"
+                    f"A new deployment of ARPAV-PPCV to "
+                    f"{socket.gethostname()!r} has finished"
                 ),
             )
         )
@@ -334,6 +380,14 @@ if __name__ == "__main__":
         help=(
             "Perform the actual deployment. If this is not provided the script runs "
             "in dry-run mode, just showing what steps would be performed"
+        ),
+    )
+    parser.add_argument(
+        "--auto-update",
+        action="store_true",
+        help=(
+            "Auto-update this deployment script with the current version from the "
+            "repo and then relaunch"
         ),
     )
     parser.add_argument(
@@ -367,6 +421,7 @@ if __name__ == "__main__":
             deployment_root=args.deployment_root,
             discord_webhook_url=webhook_url,
             confirmed=args.confirm,
+            auto_update=args.auto_update,
         )
     except RuntimeError as err:
         raise SystemExit(err) from err
