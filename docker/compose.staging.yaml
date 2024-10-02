@@ -178,11 +178,17 @@ services:
       - tolgee-db-data:/var/lib/postgresql/data
     restart: unless-stopped
 
+
 volumes:
   db-data:
   prefect-db-data:
   tolgee-db-data:
 
+
 configs:
+
   traefik-conf:
     file: /home/arpav/docker/traefik/staging-config.toml
+
+  martin-conf:
+    file: /home/arpav/docker/martin/config.yaml
