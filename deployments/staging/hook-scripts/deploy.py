@@ -36,6 +36,7 @@ class DeployStepProtocol(Protocol):
 @dataclasses.dataclass
 class _ValidateRequestPayload:
     raw_payload: str
+    valid_repositories: Sequence[str]
     name: str = "validate request payload"
 
     def handle(self) -> bool:
@@ -48,11 +49,7 @@ class _ValidateRequestPayload:
                 (
                     payload.get("event") == "push",
                     payload.get("ref") == "refs/heads/main",
-                    payload.get("repository", "").lower()
-                    in (
-                        "geobeyond/arpav-ppcv",
-                        "geobeyond/arpav-ppcv-backend",
-                    ),
+                    payload.get("repository", "").lower() in self.valid_repositories,
                 )
             )
 
@@ -87,6 +84,7 @@ class _StopCompose:
 @dataclasses.dataclass
 class _CloneRepo:
     clone_destination: Path
+    repo_url: str
     name: str = "clone git repository"
 
     def handle(self) -> None:
@@ -94,10 +92,7 @@ class _CloneRepo:
         if self.clone_destination.exists():
             shutil.rmtree(self.clone_destination)
         run(
-            shlex.split(
-                f"git clone https://github.com/geobeyond/Arpav-PPCV-backend.git "
-                f"{self.clone_destination}"
-            ),
+            shlex.split(f"git clone {self.repo_url} {self.clone_destination}"),
             check=True,
         )
 
@@ -156,6 +151,7 @@ class _StartCompose:
     env_file_prefect_server_service: Path
     env_file_prefect_static_worker_service: Path
     compose_files_fragment: str
+    working_dir: Path
     name: str = "start docker compose"
 
     def handle(self) -> None:
@@ -165,6 +161,7 @@ class _StartCompose:
                 f"docker compose {self.compose_files_fragment} up --detach "
                 f"--force-recreate"
             ),
+            cwd=self.working_dir,
             env={
                 **os.environ,
                 "ARPAV_PPCV_DEPLOYMENT_ENV_FILE_DB_SERVICE": self.env_file_db_service,
@@ -268,11 +265,20 @@ def perform_deployment(
     }
     webapp_service_name = "arpav-ppcv-staging-webapp-1"
     deployment_steps = [
-        _ValidateRequestPayload(raw_payload=raw_request_payload),
+        _ValidateRequestPayload(
+            raw_payload=raw_request_payload,
+            valid_repositories=(
+                "geobeyond/arpav-ppcv",
+                "geobeyond/arpav-ppcv-backend",
+            ),
+        ),
         _FindEnvFiles(env_files=deployment_env_files),
         _FindDockerDir(docker_dir=docker_dir),
         _StopCompose(docker_dir=docker_dir, compose_files_fragment=compose_files),
-        _CloneRepo(clone_destination=clone_destination),
+        _CloneRepo(
+            clone_destination=clone_destination,
+            repo_url="https://github.com/geobeyond/Arpav-PPCV-backend.git ",
+        ),
         _ReplaceDockerDir(repo_dir=clone_destination, docker_dir=docker_dir),
         _PullImages(
             images=(
@@ -293,6 +299,7 @@ def perform_deployment(
                 "prefect_static_worker_service"
             ],
             compose_files_fragment=compose_files,
+            working_dir=deployment_root,
         ),
         _RunMigrations(webapp_service_name=webapp_service_name),
         _CompileTranslations(webapp_service_name=webapp_service_name),
