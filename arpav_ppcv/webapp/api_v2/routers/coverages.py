@@ -719,10 +719,10 @@ def get_time_series(
                 )
             if observations_series is not None:
                 for observation_info, pd_series in observations_series.items():
-                    variable, smoothing_strategy = observation_info
+                    station, variable, smoothing_strategy = observation_info
                     series.append(
                         TimeSeries.from_observation_series(
-                            pd_series, variable, smoothing_strategy
+                            pd_series, station, variable, smoothing_strategy
                         )
                     )
             return TimeSeriesList(series=series)

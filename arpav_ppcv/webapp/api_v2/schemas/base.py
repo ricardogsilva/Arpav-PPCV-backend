@@ -82,6 +82,7 @@ class TimeSeries(pydantic.BaseModel):
     def from_observation_series(
         cls,
         series: pd.Series,
+        station: observations_schemas.Station,
         variable: observations_schemas.Variable,
         smoothing_strategy: base_schemas.ObservationDataSmoothingStrategy,
         extra_info: typing.Optional[dict[str, str | int | float | dict]] = None,
@@ -120,6 +121,7 @@ class TimeSeries(pydantic.BaseModel):
             ],
             info={
                 "processing_method": smoothing_strategy.value,
+                "station": station.name,
                 "variable": variable.name,
                 "series_elaboration": series_elaboration.value,
                 "derived_series": (

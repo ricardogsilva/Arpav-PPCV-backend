@@ -121,6 +121,9 @@ class Station(StationBase, table=True):
         }
     )
 
+    def __hash__(self):
+        return hash(self.id)
+
 
 class StationCreate(sqlmodel.SQLModel):
     code: str
