@@ -155,6 +155,18 @@ class TimeSeries(pydantic.BaseModel):
                             )
                         ),
                     },
+                    "station": {
+                        LOCALE_EN.language: (
+                            StaticObservationSeriesParameter.STATION.get_display_name(
+                                LOCALE_EN
+                            )
+                        ),
+                        LOCALE_IT.language: (
+                            StaticObservationSeriesParameter.STATION.get_display_name(
+                                LOCALE_IT
+                            )
+                        ),
+                    },
                     "variable": {
                         LOCALE_EN.language: (
                             StaticObservationSeriesParameter.VARIABLE.get_display_name(
@@ -207,6 +219,10 @@ class TimeSeries(pydantic.BaseModel):
                         or variable.name,
                         LOCALE_IT.language: variable.display_name_italian
                         or variable.name,
+                    },
+                    "station": {
+                        LOCALE_EN.language: station.name,
+                        LOCALE_IT.language: station.name,
                     },
                     "series_elaboration": {
                         LOCALE_EN.language: series_elaboration.get_display_name(

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-07-05 15:50+0000\n"
+"POT-Creation-Date: 2024-10-04 16:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -63,11 +63,11 @@ msgstr "LOESS"
 msgid "centered 11-year moving average"
 msgstr "Centered 11-year moving average"
 
-#: schemas/base.py:91 schemas/base.py:109
+#: schemas/base.py:91 schemas/base.py:110
 msgid "series name"
 msgstr "Series name"
 
-#: schemas/base.py:92 schemas/base.py:110
+#: schemas/base.py:92 schemas/base.py:111
 msgid "processing method"
 msgstr "Processing method"
 
@@ -79,30 +79,34 @@ msgstr "Coverage identifier"
 msgid "coverage configuration"
 msgstr "Coverage configuration"
 
-#: schemas/base.py:111
+#: schemas/base.py:112
 msgid "variable"
 msgstr "Variable"
 
-#: schemas/base.py:112
+#: schemas/base.py:113
+msgid "station"
+msgstr "Station"
+
+#: schemas/base.py:114
 msgid "series elaboration"
 msgstr "Series elaboration"
 
-#: schemas/base.py:113
+#: schemas/base.py:115
 msgid "derived series"
 msgstr "Derived series"
 
-#: schemas/base.py:125
+#: schemas/base.py:127
 msgid "original"
 msgstr "Original"
 
-#: schemas/base.py:126
+#: schemas/base.py:128
 msgid "derived"
 msgstr "Derived"
 
-#: schemas/base.py:138
+#: schemas/base.py:140
 msgid "decade series"
 msgstr "Decade series"
 
-#: schemas/base.py:139
+#: schemas/base.py:141
 msgid "Mann-Kendall series"
 msgstr "Mann-Kendall series"
