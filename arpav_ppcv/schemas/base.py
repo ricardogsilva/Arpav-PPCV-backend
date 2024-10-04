@@ -99,6 +99,7 @@ class StaticObservationSeriesParameter(enum.Enum):
     SERIES_NAME = "SERIES_NAME"
     PROCESSING_METHOD = "PROCESSING_METHOD"
     VARIABLE = "VARIABLE"
+    STATION = "STATION"
     SERIES_ELABORATION = "SERIES_ELABORATION"
     DERIVED_SERIES = "DERIVED_SERIES"
 
@@ -109,6 +110,7 @@ class StaticObservationSeriesParameter(enum.Enum):
             self.SERIES_NAME.name: _("series name"),
             self.PROCESSING_METHOD.name: _("processing method"),
             self.VARIABLE.name: _("variable"),
+            self.STATION.name: _("station"),
             self.SERIES_ELABORATION.name: _("series elaboration"),
             self.DERIVED_SERIES.name: _("derived series"),
         }[self.name] or self.name

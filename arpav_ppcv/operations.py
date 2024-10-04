@@ -607,7 +607,11 @@ def get_coverage_time_series(
     ],
     Optional[
         dict[
-            tuple[observations.Variable, base.ObservationDataSmoothingStrategy],
+            tuple[
+                observations.Station,
+                observations.Variable,
+                base.ObservationDataSmoothingStrategy,
+            ],
             pd.Series,
         ]
     ],
@@ -705,7 +709,11 @@ def get_coverage_time_series(
                     ),
                 )
                 observation_result[
-                    (variable, base.ObservationDataSmoothingStrategy.NO_SMOOTHING)
+                    (
+                        station,
+                        variable,
+                        base.ObservationDataSmoothingStrategy.NO_SMOOTHING,
+                    )
                 ] = station_df[variable.name].squeeze()
                 for smoothing_strategy in additional_observation_smoothing_strategies:
                     (
@@ -714,9 +722,9 @@ def get_coverage_time_series(
                     ) = process_station_data_smoothing_strategy(
                         station_df, variable.name, smoothing_strategy
                     )
-                    observation_result[(variable, smoothing_strategy)] = station_df[
-                        smoothed_column
-                    ].squeeze()
+                    observation_result[
+                        (station, variable, smoothing_strategy)
+                    ] = station_df[smoothed_column].squeeze()
             else:
                 logger.info("No station data found, skipping...")
         else:
@@ -724,7 +732,7 @@ def get_coverage_time_series(
                 "Cannot include observation data - no observation variable is related "
                 "to this coverage configuration"
             )
-    return (coverage_result, observation_result)
+    return coverage_result, observation_result
 
 
 def extract_nearby_station_data(

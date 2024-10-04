@@ -82,6 +82,7 @@ class TimeSeries(pydantic.BaseModel):
     def from_observation_series(
         cls,
         series: pd.Series,
+        station: observations_schemas.Station,
         variable: observations_schemas.Variable,
         smoothing_strategy: base_schemas.ObservationDataSmoothingStrategy,
         extra_info: typing.Optional[dict[str, str | int | float | dict]] = None,
@@ -120,6 +121,7 @@ class TimeSeries(pydantic.BaseModel):
             ],
             info={
                 "processing_method": smoothing_strategy.value,
+                "station": station.name,
                 "variable": variable.name,
                 "series_elaboration": series_elaboration.value,
                 "derived_series": (
@@ -149,6 +151,18 @@ class TimeSeries(pydantic.BaseModel):
                         ),
                         LOCALE_IT.language: (
                             StaticObservationSeriesParameter.PROCESSING_METHOD.get_display_name(
+                                LOCALE_IT
+                            )
+                        ),
+                    },
+                    "station": {
+                        LOCALE_EN.language: (
+                            StaticObservationSeriesParameter.STATION.get_display_name(
+                                LOCALE_EN
+                            )
+                        ),
+                        LOCALE_IT.language: (
+                            StaticObservationSeriesParameter.STATION.get_display_name(
                                 LOCALE_IT
                             )
                         ),
@@ -205,6 +219,10 @@ class TimeSeries(pydantic.BaseModel):
                         or variable.name,
                         LOCALE_IT.language: variable.display_name_italian
                         or variable.name,
+                    },
+                    "station": {
+                        LOCALE_EN.language: station.name,
+                        LOCALE_IT.language: station.name,
                     },
                     "series_elaboration": {
                         LOCALE_EN.language: series_elaboration.get_display_name(
