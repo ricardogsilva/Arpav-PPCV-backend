@@ -16,7 +16,9 @@ def apply_palette(
     # this converts from the AARRGGBB format which is what the .pal files have
     # to RRGGBB
     rgb_colors = [f"#{c[3:]}" for c in colors]
-    cmap = mpl.colors.ListedColormap(rgb_colors)
+    cmap = mpl.colors.LinearSegmentedColormap.from_list(
+        "arpav-palette", rgb_colors, N=250
+    )
     result = []
     step = (maximum - minimum) / (num_stops - 1)
     for current_stop in range(num_stops):
