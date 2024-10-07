@@ -107,9 +107,9 @@ def test_parse_palette(palette_name: str, expected: list[str]):
             40,
             [
                 (-40.0, "#ff003c30"),
-                (-20.0, "#ff35978f"),
-                (0.0, "#fff5f5f5"),
-                (20.0, "#ffbf812d"),
+                (-20.0, "#ff5ab1a7"),
+                (0.0, "#fff5f5f4"),
+                (20.0, "#ffcfa154"),
                 (40.0, "#ff543005"),
             ],
         ),
