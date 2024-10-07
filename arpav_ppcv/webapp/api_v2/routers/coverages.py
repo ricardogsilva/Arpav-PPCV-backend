@@ -655,9 +655,9 @@ def get_time_series(
             )
         ),
     ] = False,
-    coverage_data_smoothing: Annotated[list[CoverageDataSmoothingStrategy], Query()] = [  # noqa
-        ObservationDataSmoothingStrategy.NO_SMOOTHING
-    ],
+    coverage_data_smoothing: Annotated[list[CoverageDataSmoothingStrategy], Query()] = [
+        CoverageDataSmoothingStrategy.NO_SMOOTHING
+    ],  # noqa
     observation_data_smoothing: Annotated[
         list[ObservationDataSmoothingStrategy], Query()
     ] = [ObservationDataSmoothingStrategy.NO_SMOOTHING],  # noqa
