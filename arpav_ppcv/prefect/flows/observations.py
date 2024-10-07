@@ -175,7 +175,7 @@ def harvest_monthly_measurements(
     )
     existing = {}
     for db_measurement in existing_measurements:
-        measurement_id = operations.build_monthly_measurement_id(db_measurement)
+        measurement_id = build_monthly_measurement_id(db_measurement)
         existing[measurement_id] = db_measurement
     response = client.get(
         "https://api.arpa.veneto.it/REST/v1/clima_indicatori",
@@ -195,7 +195,7 @@ def harvest_monthly_measurements(
             value=raw_measurement["valore"],
             date=dt.date(raw_measurement["anno"], month, 1),
         )
-        measurement_id = operations.build_monthly_measurement_id(measurement_create)
+        measurement_id = build_monthly_measurement_id(measurement_create)
         if measurement_id not in existing:
             to_create.append(measurement_create)
     return to_create
@@ -272,7 +272,7 @@ def harvest_seasonal_measurements(
     )
     existing = {}
     for db_measurement in existing_measurements:
-        measurement_id = operations.build_seasonal_measurement_id(db_measurement)
+        measurement_id = build_seasonal_measurement_id(db_measurement)
         existing[measurement_id] = db_measurement
 
     season_query_param = {
@@ -300,7 +300,7 @@ def harvest_seasonal_measurements(
             year=int(raw_measurement["anno"]),
             season=season,
         )
-        measurement_id = operations.build_seasonal_measurement_id(measurement_create)
+        measurement_id = build_seasonal_measurement_id(measurement_create)
         if measurement_id not in existing:
             to_create.append(measurement_create)
     return to_create
@@ -372,7 +372,7 @@ def harvest_yearly_measurements(
     )
     existing = {}
     for db_measurement in existing_measurements:
-        measurement_id = operations.build_yearly_measurement_id(db_measurement)
+        measurement_id = build_yearly_measurement_id(db_measurement)
         existing[measurement_id] = db_measurement
     response = client.get(
         "https://api.arpa.veneto.it/REST/v1/clima_indicatori",
@@ -391,9 +391,7 @@ def harvest_yearly_measurements(
             value=raw_measurement["valore"],
             year=int(raw_measurement["anno"]),
         )
-        measurement_id = operations.build_yearly_measurement_id(
-            yearly_measurement_create
-        )
+        measurement_id = build_yearly_measurement_id(yearly_measurement_create)
         if measurement_id not in existing:
             to_create.append(yearly_measurement_create)
     return to_create
@@ -509,3 +507,42 @@ def _build_created_measurements_table(
                 }
             )
     return table_contents
+
+
+def build_monthly_measurement_id(
+    measurement: observations.MonthlyMeasurement
+    | observations.MonthlyMeasurementCreate,
+) -> str:
+    return "-".join(
+        (
+            str(measurement.station_id),
+            str(measurement.variable_id),
+            measurement.date.strftime("%Y%m"),
+        )
+    )
+
+
+def build_seasonal_measurement_id(
+    measurement: observations.SeasonalMeasurement
+    | observations.SeasonalMeasurementCreate,
+) -> str:
+    return "-".join(
+        (
+            str(measurement.station_id),
+            str(measurement.variable_id),
+            str(measurement.year),
+            measurement.season.value,
+        )
+    )
+
+
+def build_yearly_measurement_id(
+    measurement: observations.YearlyMeasurement | observations.YearlyMeasurementCreate,
+) -> str:
+    return "-".join(
+        (
+            str(measurement.station_id),
+            str(measurement.variable_id),
+            str(measurement.year),
+        )
+    )
