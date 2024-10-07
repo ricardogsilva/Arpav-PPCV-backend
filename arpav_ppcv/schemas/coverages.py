@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from . import observations
 
 logger = logging.getLogger(__name__)
-_NAME_PATTERN: Final[str] = r"^[a-z][a-z0-9_]+$"
+_NAME_PATTERN: Final[str] = r"^[a-z0-9_]+$"
 
 
 class ConfigurationParameterValue(sqlmodel.SQLModel, table=True):
