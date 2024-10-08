@@ -14,6 +14,16 @@ class Translatable(typing.Protocol):
         ...
 
 
+class CoreConfParamName(enum.Enum):
+    AGGREGATION_PERIOD = "aggregation_period"
+    ARCHIVE = "archive"
+    CLIMATOLOGICAL_MODEL = "climatological_model"
+    CLIMATOLOGICAL_VARIABLE = "climatological_variable"
+    HISTORICAL_VARIABLE = "historical_variable"
+    MEASURE = "measure"
+    SCENARIO = "scenario"
+
+
 class Season(enum.Enum):
     WINTER = "WINTER"
     SPRING = "SPRING"
