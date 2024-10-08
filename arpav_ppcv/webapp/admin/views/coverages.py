@@ -21,6 +21,7 @@ from typing import Dict, Any, Union, Optional, List, Sequence
 import anyio.to_thread
 import starlette_admin
 from starlette.requests import Request
+from starlette_admin import exceptions as starlette_admin_exceptions
 from starlette_admin.contrib.sqlmodel import ModelView
 
 from .... import database
@@ -179,10 +180,33 @@ class ConfigurationParameterView(ModelView):
         except Exception as e:
             return self.handle_exception(e)
 
+    async def check_modifications_to_core_configuration_parameters(
+        self,
+        request: Request,
+        pk: uuid.UUID,
+        data: Dict[str, Any],
+    ):
+        conf_param = await anyio.to_thread.run_sync(
+            database.get_configuration_parameter, request.state.session, pk
+        )
+        if conf_param.name in [p.value for p in base.CoreConfParamName]:
+            if data.get("name") != conf_param.name:
+                raise starlette_admin_exceptions.FormValidationError(
+                    errors={
+                        "name": (
+                            f"Cannot change parameter {conf_param.name!r}'s name - it "
+                            f"is a core system parameter"
+                        )
+                    }
+                )
+
     async def edit(self, request: Request, pk: Any, data: Dict[str, Any]) -> Any:
         try:
             data = await self._arrange_data(request, data, True)
             await self.validate(request, data)
+            await self.check_modifications_to_core_configuration_parameters(
+                request, pk, data
+            )
             config_param_update = coverages.ConfigurationParameterUpdate(
                 name=data.get("name"),
                 display_name_english=data["display_name_english"],
@@ -267,6 +291,19 @@ class ConfigurationParameterView(ModelView):
                 )
             )
         return result
+
+    async def delete(self, request: Request, pks: List[Any]) -> Optional[int]:
+        for pk in pks:
+            conf_param = await anyio.to_thread.run_sync(
+                database.get_configuration_parameter, request.state.session, pk
+            )
+            if conf_param.name in (p.value for p in base.CoreConfParamName):
+                raise starlette_admin_exceptions.ActionFailed(
+                    f"Cannot delete configuration parameter {conf_param.name!r} - it "
+                    f"is a core system parameter"
+                )
+        else:
+            return await super().delete(request, pks)
 
 
 class CoverageConfigurationView(ModelView):

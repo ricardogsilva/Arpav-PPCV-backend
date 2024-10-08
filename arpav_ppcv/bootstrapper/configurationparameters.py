@@ -1,3 +1,4 @@
+from ..schemas.base import CoreConfParamName
 from ..schemas.coverages import (
     ConfigurationParameterCreate,
     ConfigurationParameterValueCreateEmbeddedInConfigurationParameter,
@@ -7,7 +8,7 @@ from ..schemas.coverages import (
 def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
     return [
         ConfigurationParameterCreate(
-            name="historical_variable",
+            name=CoreConfParamName.HISTORICAL_VARIABLE.value,
             display_name_english="Variable",
             display_name_italian="Variabile",
             description_english="Historical variable",
@@ -103,7 +104,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
             ],
         ),
         ConfigurationParameterCreate(
-            name="climatological_variable",
+            name=CoreConfParamName.CLIMATOLOGICAL_VARIABLE.value,
             display_name_english="Variable",
             display_name_italian="Variabile",
             description_english="Climatological variable",
@@ -203,7 +204,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
             ],
         ),
         ConfigurationParameterCreate(
-            name="scenario",
+            name=CoreConfParamName.SCENARIO.value,
             display_name_english="Scenario",
             display_name_italian="Scenario",
             description_english="Climate model scenario",
@@ -498,7 +499,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
             ],
         ),
         ConfigurationParameterCreate(
-            name="measure",
+            name=CoreConfParamName.MEASURE.value,
             display_name_english="Measurement type",
             display_name_italian="Tipo di misurazione",
             description_english="Type of climatological measurement",
@@ -529,7 +530,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
             ],
         ),
         ConfigurationParameterCreate(
-            name="climatological_model",
+            name=CoreConfParamName.CLIMATOLOGICAL_MODEL.value,
             display_name_english="Forecast model",
             display_name_italian="Modello di previsione",
             description_english=(
@@ -600,7 +601,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
             ],
         ),
         ConfigurationParameterCreate(
-            name="aggregation_period",
+            name=CoreConfParamName.AGGREGATION_PERIOD.value,
             display_name_english="Temporal aggregation period",
             display_name_italian="Periodo di aggregazione temporale",
             description_english="Aggregation period for climatological datasets",
@@ -662,7 +663,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
             ],
         ),
         ConfigurationParameterCreate(
-            name="archive",
+            name=CoreConfParamName.ARCHIVE.value,
             display_name_english="Dataset archive",
             display_name_italian="archivio di dataset",
             description_english="The archive that the dataset belongs to",
