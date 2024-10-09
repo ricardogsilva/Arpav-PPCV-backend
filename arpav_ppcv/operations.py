@@ -19,6 +19,7 @@ import shapely
 import shapely.io
 import sqlmodel
 from anyio.from_thread import start_blocking_portal
+from arpav_ppcv.schemas.base import CoreConfParamName
 from dateutil.parser import isoparse
 from geoalchemy2.shape import to_shape
 from pandas.core.indexes.datetimes import DatetimeIndex
@@ -45,32 +46,47 @@ logger = logging.getLogger(__name__)
 def get_climate_barometer_time_series(
     settings: config.ArpavPpcvSettings,
     session: sqlmodel.Session,
-    coverage: coverages.CoverageInternal,
-    smoothing_strategies: list[base.CoverageDataSmoothingStrategy] = [  # noqa
-        base.CoverageDataSmoothingStrategy.NO_SMOOTHING
-    ],
-    include_uncertainty: bool = False,
+    smoothing_strategies: list[base.CoverageDataSmoothingStrategy],
+    include_uncertainty: bool,
 ) -> dict[
     tuple[coverages.CoverageInternal, base.CoverageDataSmoothingStrategy], pd.Series
 ]:
-    dfs = []
-    df = _get_climate_barometer_data(settings, coverage)
-    dfs.append((coverage, df))
-    if include_uncertainty:
-        lower_cov, upper_cov = get_related_uncertainty_coverage_configurations(
-            session, coverage
-        )
-        if lower_cov is not None:
-            lower_df = _get_climate_barometer_data(settings, lower_cov)
-            dfs.append((lower_cov, lower_df))
-        if upper_cov is not None:
-            upper_df = _get_climate_barometer_data(settings, upper_cov)
-            dfs.append((upper_cov, upper_df))
+    covs = database.collect_all_coverages(
+        session,
+        configuration_parameter_values_filter=[
+            database.get_configuration_parameter_value_by_names(
+                session, base.CoreConfParamName.ARCHIVE.value, "barometro_climatico"
+            )
+        ],
+    )
     additional_smoothing_strategies = [
         ss
         for ss in smoothing_strategies
         if ss != base.CoverageDataSmoothingStrategy.NO_SMOOTHING
     ]
+    dfs = []
+    for cov in covs:
+        is_uncertainty_cov = False
+        for used_value in cov.configuration.possible_values:
+            if (
+                used_value.configuration_parameter_value.configuration_parameter.name
+                == CoreConfParamName.UNCERTAINTY_TYPE.value
+            ):
+                is_uncertainty_cov = True
+        if not is_uncertainty_cov:
+            df = _get_climate_barometer_data(settings, cov)
+            dfs.append((cov, df))
+
+        if include_uncertainty:
+            lower_cov, upper_cov = get_related_uncertainty_coverage_configurations(
+                session, cov
+            )
+            if lower_cov is not None:
+                lower_df = _get_climate_barometer_data(settings, lower_cov)
+                dfs.append((lower_cov, lower_df))
+            if upper_cov is not None:
+                upper_df = _get_climate_barometer_data(settings, upper_cov)
+                dfs.append((upper_cov, upper_df))
     result = {}
     for cov, df in dfs:
         result[(cov, base.CoverageDataSmoothingStrategy.NO_SMOOTHING)] = df[
@@ -92,7 +108,9 @@ def _get_climate_barometer_data(
         (
             settings.thredds_server.base_url,
             settings.thredds_server.opendap_service_url_fragment,
-            coverage.configuration.get_thredds_url_fragment(coverage.identifier),
+            crawler.get_thredds_url_fragment(
+                coverage, settings.thredds_server.base_url
+            ),
         )
     )
     ds = netCDF4.Dataset(opendap_url)
