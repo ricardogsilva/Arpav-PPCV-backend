@@ -22,6 +22,7 @@ class CoreConfParamName(enum.Enum):
     HISTORICAL_VARIABLE = "historical_variable"
     MEASURE = "measure"
     SCENARIO = "scenario"
+    UNCERTAINTY_TYPE = "uncertainty_type"
 
 
 class Season(enum.Enum):
