@@ -2329,17 +2329,12 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("archive", "barometro_climatico")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tas")
-                    ].id
-                ),
-                ConfigurationParameterPossibleValueCreate(
-                    configuration_parameter_value_id=conf_param_values[
-                        ("climatological_model", "barometro_climatico")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -2375,17 +2370,12 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("archive", "barometro_climatico")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tas")
-                    ].id
-                ),
-                ConfigurationParameterPossibleValueCreate(
-                    configuration_parameter_value_id=conf_param_values[
-                        ("climatological_model", "barometro_climatico")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -2426,17 +2416,12 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        ("archive", "barometro_climatico")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
                         ("climatological_variable", "tas")
-                    ].id
-                ),
-                ConfigurationParameterPossibleValueCreate(
-                    configuration_parameter_value_id=conf_param_values[
-                        ("climatological_model", "barometro_climatico")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(

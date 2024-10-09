@@ -357,4 +357,36 @@ def generate_configurations(
             ),
             observation_variable_aggregation_type=ObservationAggregationType.MONTHLY,
         ),
+        CoverageConfigurationCreate(
+            name="tdd_barometro_climatico",
+            display_name_english=_DISPLAY_NAME_ENGLISH,
+            display_name_italian=_DISPLAY_NAME_ITALIAN,
+            description_english=_DESCRIPTION_ENGLISH,
+            description_italian=_DESCRIPTION_ITALIAN,
+            netcdf_main_dataset_name="TDd",
+            wms_main_layer_name="TDd",
+            thredds_url_pattern="cline_yr/fldmean/TDd_A00_*.nc",
+            unit_english=_UNIT,
+            palette="default/seq-YlOrRd",
+            color_scale_min=_COLOR_SCALE_MIN,
+            color_scale_max=_COLOR_SCALE_MAX,
+            possible_values=[
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("archive", "barometro_climatico")
+                    ].id
+                ),
+                ConfigurationParameterPossibleValueCreate(
+                    configuration_parameter_value_id=conf_param_values[
+                        ("historical_variable", _VARIABLE)
+                    ].id
+                ),
+            ],
+            observation_variable_id=(
+                v.id
+                if (v := variables.get(_RELATED_OBSERVATION_VARIABLE_NAME)) is not None
+                else None
+            ),
+            observation_variable_aggregation_type=ObservationAggregationType.MONTHLY,
+        ),
     ]
