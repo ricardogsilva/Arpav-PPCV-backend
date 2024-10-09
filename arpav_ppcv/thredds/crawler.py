@@ -121,21 +121,6 @@ def get_coverage_configuration_urls(
             ),
             base_thredds_url,
         )
-        # possible_fragment = coverage_configuration.get_thredds_url_fragment(
-        #     cov_identifier
-        # )
-        # if any(c in possible_fragment for c in FNMATCH_SPECIAL_CHARS):
-        #     logger.debug(
-        #         f"THREDDS dataset url ({possible_fragment}) is an "
-        #         f"fnmatch pattern, retrieving the actual URL from the server..."
-        #     )
-        #     ds_fragment = find_thredds_dataset_url_fragment(
-        #         possible_fragment, base_thredds_url
-        #     )
-        # else:
-        #     ds_fragment = coverage_configuration.get_thredds_url_fragment(
-        #         cov_identifier
-        #     )
         result.append(
             "/".join(
                 (
@@ -155,7 +140,6 @@ async def download_datasets(
     force_download: bool = False,
 ) -> None:
     client = httpx.AsyncClient()
-    logger.debug(f"There are {len(dataset_urls)} URLS to process in total")
     for batch in batched(dataset_urls, 10):
         with exceptiongroup.catch({Exception: handle_thredds_download_exception}):
             async with anyio.create_task_group() as tg:
@@ -192,7 +176,7 @@ async def download_individual_dataset(
                 # we catch the exception here because anyio task groups seem
                 # to cancel all tasks as soon as one of them raises an exception
                 response.raise_for_status()
-            except httpx.HTTPStatusError:
+            except (httpx.HTTPStatusError, httpx.ReadTimeout):
                 logger.exception(f"Could not download dataset: {dataset_url}")
             else:
                 logger.info(f"Downloading {dataset_url!r}...")
