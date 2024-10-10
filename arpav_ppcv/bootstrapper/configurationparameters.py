@@ -683,6 +683,17 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_english=("Datasets obtained from forecasts"),
                     description_italian=("Set di dati ottenuti dalle previsioni"),
                 ),
+                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
+                    internal_value="barometro_climatico",
+                    display_name_english="Climate barometer",
+                    display_name_italian="Barometro climatico",
+                    description_english=(
+                        "Datasets providing an overview of the whole region"
+                    ),
+                    description_italian=(
+                        "Set di dati che forniscono una panoramica dell'intera regione"
+                    ),
+                ),
             ],
         ),
         ConfigurationParameterCreate(

@@ -596,45 +596,38 @@ def _modify_capabilities_response(
 
 
 @router.get(
-    "/time-series/climate-barometer/{coverage_identifier}",
+    "/time-series/climate-barometer",
     response_model=TimeSeriesList,
 )
 def get_climate_barometer_time_series(
     db_session: Annotated[Session, Depends(dependencies.get_db_session)],
     settings: Annotated[ArpavPpcvSettings, Depends(dependencies.get_settings)],
-    coverage_identifier: str,
-    data_smoothing: Annotated[list[CoverageDataSmoothingStrategy], Query()] = [  # noqa
-        ObservationDataSmoothingStrategy.NO_SMOOTHING
+    data_smoothing: Annotated[list[CoverageDataSmoothingStrategy], Query()] = [
+        CoverageDataSmoothingStrategy.NO_SMOOTHING
     ],
     include_uncertainty: bool = False,
 ):
     """Get climate barometer time series."""
-    if (coverage := db.get_coverage(db_session, coverage_identifier)) is not None:
-        try:
-            time_series = operations.get_climate_barometer_time_series(
-                settings,
-                db_session,
-                coverage,
-                smoothing_strategies=data_smoothing,
-                include_uncertainty=include_uncertainty,
-            )
-        except exceptions.CoverageDataRetrievalError as err:
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="Could not retrieve data",
-            ) from err
-        else:
-            series = []
-            for coverage_info, pd_series in time_series.items():
-                cov, smoothing_strategy = coverage_info
-                series.append(
-                    TimeSeries.from_coverage_series(pd_series, cov, smoothing_strategy)
-                )
-            return TimeSeriesList(series=series)
-    else:
-        raise HTTPException(
-            status_code=400, detail=_INVALID_COVERAGE_IDENTIFIER_ERROR_DETAIL
+    try:
+        relevant_series = operations.get_climate_barometer_time_series(
+            settings,
+            db_session,
+            smoothing_strategies=data_smoothing,
+            include_uncertainty=include_uncertainty,
         )
+    except exceptions.CoverageDataRetrievalError as err:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Could not retrieve data",
+        ) from err
+    else:
+        series = []
+        for coverage_info, pd_series in relevant_series.items():
+            cov, smoothing_strategy = coverage_info
+            series.append(
+                TimeSeries.from_coverage_series(pd_series, cov, smoothing_strategy)
+            )
+        return TimeSeriesList(series=series)
 
 
 @router.get("/time-series/{coverage_identifier}", response_model=TimeSeriesList)
