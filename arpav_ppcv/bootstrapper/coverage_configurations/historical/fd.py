@@ -1,4 +1,7 @@
-from ....schemas.base import ObservationAggregationType
+from ....schemas.base import (
+    CoreConfParamName,
+    ObservationAggregationType,
+)
 from ....schemas.coverages import (
     CoverageConfigurationCreate,
     ConfigurationParameterPossibleValueCreate,
@@ -38,17 +41,17 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", _ARCHIVE)
+                        (CoreConfParamName.ARCHIVE.value, _ARCHIVE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_variable", _VARIABLE)
+                        (CoreConfParamName.HISTORICAL_VARIABLE.value, _VARIABLE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("aggregation_period", "30yr")
+                        (CoreConfParamName.AGGREGATION_PERIOD.value, "30yr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -58,12 +61,12 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("measure", "absolute")
+                        (CoreConfParamName.MEASURE.value, "absolute")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "all_year")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "all_year")
                     ].id
                 ),
             ],
@@ -85,27 +88,27 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", _ARCHIVE)
+                        (CoreConfParamName.ARCHIVE.value, _ARCHIVE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_variable", _VARIABLE)
+                        (CoreConfParamName.HISTORICAL_VARIABLE.value, _VARIABLE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("aggregation_period", "annual")
+                        (CoreConfParamName.AGGREGATION_PERIOD.value, "annual")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("measure", "absolute")
+                        (CoreConfParamName.MEASURE.value, "absolute")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "all_year")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "all_year")
                     ].id
                 ),
             ],

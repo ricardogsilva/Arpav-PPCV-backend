@@ -1,3 +1,4 @@
+from ....schemas.base import CoreConfParamName
 from ....schemas.coverages import (
     CoverageConfigurationCreate,
     ConfigurationParameterPossibleValueCreate,
@@ -35,27 +36,27 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        (CoreConfParamName.ARCHIVE.value, "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "r95ptot")
+                        (CoreConfParamName.CLIMATOLOGICAL_VARIABLE.value, "r95ptot")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("aggregation_period", "30yr")
+                        (CoreConfParamName.AGGREGATION_PERIOD.value, "30yr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("measure", "anomaly")
+                        (CoreConfParamName.MEASURE.value, "anomaly")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_model", "model_ensemble")
+                        (CoreConfParamName.CLIMATOLOGICAL_MODEL.value, "model_ensemble")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -70,37 +71,37 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp26")
+                        (CoreConfParamName.SCENARIO.value, "rcp26")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp45")
+                        (CoreConfParamName.SCENARIO.value, "rcp45")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp85")
+                        (CoreConfParamName.SCENARIO.value, "rcp85")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        (CoreConfParamName.YEAR_PERIOD.value, "winter")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        (CoreConfParamName.YEAR_PERIOD.value, "spring")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "summer")
+                        (CoreConfParamName.YEAR_PERIOD.value, "summer")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "autumn")
+                        (CoreConfParamName.YEAR_PERIOD.value, "autumn")
                     ].id
                 ),
             ],
@@ -121,27 +122,30 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        (CoreConfParamName.ARCHIVE.value, "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "r95ptot")
+                        (CoreConfParamName.CLIMATOLOGICAL_VARIABLE.value, "r95ptot")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("aggregation_period", "30yr")
+                        (CoreConfParamName.AGGREGATION_PERIOD.value, "30yr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("measure", "anomaly")
+                        (CoreConfParamName.MEASURE.value, "anomaly")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_model", "ec_earth_cclm_4_8_17")
+                        (
+                            CoreConfParamName.CLIMATOLOGICAL_MODEL.value,
+                            "ec_earth_cclm_4_8_17",
+                        )
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -156,27 +160,27 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp26")
+                        (CoreConfParamName.SCENARIO.value, "rcp26")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp45")
+                        (CoreConfParamName.SCENARIO.value, "rcp45")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp85")
+                        (CoreConfParamName.SCENARIO.value, "rcp85")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "winter")
+                        (CoreConfParamName.YEAR_PERIOD.value, "winter")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("year_period", "spring")
+                        (CoreConfParamName.YEAR_PERIOD.value, "spring")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -207,27 +211,30 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        (CoreConfParamName.ARCHIVE.value, "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "r95ptot")
+                        (CoreConfParamName.CLIMATOLOGICAL_VARIABLE.value, "r95ptot")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("aggregation_period", "30yr")
+                        (CoreConfParamName.AGGREGATION_PERIOD.value, "30yr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("measure", "anomaly")
+                        (CoreConfParamName.MEASURE.value, "anomaly")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_model", "ec_earth_racmo22e")
+                        (
+                            CoreConfParamName.CLIMATOLOGICAL_MODEL.value,
+                            "ec_earth_racmo22e",
+                        )
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -242,17 +249,17 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp26")
+                        (CoreConfParamName.SCENARIO.value, "rcp26")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp45")
+                        (CoreConfParamName.SCENARIO.value, "rcp45")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp85")
+                        (CoreConfParamName.SCENARIO.value, "rcp85")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -293,27 +300,27 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        (CoreConfParamName.ARCHIVE.value, "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "r95ptot")
+                        (CoreConfParamName.CLIMATOLOGICAL_VARIABLE.value, "r95ptot")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("aggregation_period", "30yr")
+                        (CoreConfParamName.AGGREGATION_PERIOD.value, "30yr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("measure", "anomaly")
+                        (CoreConfParamName.MEASURE.value, "anomaly")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_model", "ec_earth_rca4")
+                        (CoreConfParamName.CLIMATOLOGICAL_MODEL.value, "ec_earth_rca4")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -328,17 +335,17 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp26")
+                        (CoreConfParamName.SCENARIO.value, "rcp26")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp45")
+                        (CoreConfParamName.SCENARIO.value, "rcp45")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp85")
+                        (CoreConfParamName.SCENARIO.value, "rcp85")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -379,27 +386,30 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        (CoreConfParamName.ARCHIVE.value, "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "r95ptot")
+                        (CoreConfParamName.CLIMATOLOGICAL_VARIABLE.value, "r95ptot")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("aggregation_period", "30yr")
+                        (CoreConfParamName.AGGREGATION_PERIOD.value, "30yr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("measure", "anomaly")
+                        (CoreConfParamName.MEASURE.value, "anomaly")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_model", "hadgem2_racmo22e")
+                        (
+                            CoreConfParamName.CLIMATOLOGICAL_MODEL.value,
+                            "hadgem2_racmo22e",
+                        )
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -414,17 +424,17 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp26")
+                        (CoreConfParamName.SCENARIO.value, "rcp26")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp45")
+                        (CoreConfParamName.SCENARIO.value, "rcp45")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp85")
+                        (CoreConfParamName.SCENARIO.value, "rcp85")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -465,27 +475,30 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "forecast")
+                        (CoreConfParamName.ARCHIVE.value, "forecast")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_variable", "r95ptot")
+                        (CoreConfParamName.CLIMATOLOGICAL_VARIABLE.value, "r95ptot")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("aggregation_period", "30yr")
+                        (CoreConfParamName.AGGREGATION_PERIOD.value, "30yr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("measure", "anomaly")
+                        (CoreConfParamName.MEASURE.value, "anomaly")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("climatological_model", "mpi_esm_lr_remo2009")
+                        (
+                            CoreConfParamName.CLIMATOLOGICAL_MODEL.value,
+                            "mpi_esm_lr_remo2009",
+                        )
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -500,17 +513,17 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp26")
+                        (CoreConfParamName.SCENARIO.value, "rcp26")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp45")
+                        (CoreConfParamName.SCENARIO.value, "rcp45")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("scenario", "rcp85")
+                        (CoreConfParamName.SCENARIO.value, "rcp85")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(

@@ -36,6 +36,7 @@ from ....thredds import (
     utils as thredds_utils,
 )
 from ....schemas.base import (
+    CoreConfParamName,
     CoverageDataSmoothingStrategy,
     ObservationDataSmoothingStrategy,
 )
@@ -387,7 +388,7 @@ def list_forecast_data_download_links(
     for v in climatological_variable or []:
         if (
             conf_param_value := db.get_configuration_parameter_value_by_names(
-                db_session, "climatological_variable", v
+                db_session, CoreConfParamName.CLIMATOLOGICAL_VARIABLE.value, v
             )
         ) is not None:
             valid_variables.append(conf_param_value)
@@ -396,13 +397,13 @@ def list_forecast_data_download_links(
     else:
         if len(valid_variables) == 0:
             valid_variables = db.get_configuration_parameter_by_name(
-                db_session, "climatological_variable"
+                db_session, CoreConfParamName.CLIMATOLOGICAL_VARIABLE.value
             ).allowed_values
     valid_aggregation_periods = []
     for a in aggregation_period or []:
         if (
             conf_param_value := db.get_configuration_parameter_value_by_names(
-                db_session, "aggregation_period", a
+                db_session, CoreConfParamName.AGGREGATION_PERIOD.value, a
             )
         ) is not None:
             valid_aggregation_periods.append(conf_param_value)
@@ -411,13 +412,13 @@ def list_forecast_data_download_links(
     else:
         if len(valid_aggregation_periods) == 0:
             valid_aggregation_periods = db.get_configuration_parameter_by_name(
-                db_session, "aggregation_period"
+                db_session, CoreConfParamName.AGGREGATION_PERIOD.value
             ).allowed_values
     valid_climatological_models = []
     for m in climatological_model or []:
         if (
             conf_param_value := db.get_configuration_parameter_value_by_names(
-                db_session, "climatological_model", m
+                db_session, CoreConfParamName.CLIMATOLOGICAL_MODEL.value, m
             )
         ) is not None:
             valid_climatological_models.append(conf_param_value)
@@ -426,13 +427,13 @@ def list_forecast_data_download_links(
     else:
         if len(valid_climatological_models) == 0:
             valid_climatological_models = db.get_configuration_parameter_by_name(
-                db_session, "climatological_model"
+                db_session, CoreConfParamName.CLIMATOLOGICAL_MODEL.value
             ).allowed_values
     valid_scenarios = []
     for s in scenario or []:
         if (
             conf_param_value := db.get_configuration_parameter_value_by_names(
-                db_session, "scenario", s
+                db_session, CoreConfParamName.SCENARIO.value, s
             )
         ) is not None:
             valid_scenarios.append(conf_param_value)
@@ -441,7 +442,7 @@ def list_forecast_data_download_links(
     else:
         if len(valid_scenarios) == 0:
             valid_scenarios = db.get_configuration_parameter_by_name(
-                db_session, "scenario"
+                db_session, CoreConfParamName.SCENARIO.value
             ).allowed_values
     coverage_identifiers = []
     for combination in itertools.product(
@@ -457,7 +458,7 @@ def list_forecast_data_download_links(
         )
         param_values_filter = [
             db.get_configuration_parameter_value_by_names(
-                db_session, "archive", "forecast"
+                db_session, CoreConfParamName.ARCHIVE.value, "forecast"
             ),
             variable,
             aggregation_period,

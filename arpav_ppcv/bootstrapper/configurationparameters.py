@@ -287,7 +287,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
             ],
         ),
         ConfigurationParameterCreate(
-            name="year_period",
+            name=CoreConfParamName.YEAR_PERIOD.value,
             display_name_english="Year period",
             display_name_italian="Periodo dell'anno",
             description_english="Yearly temporal aggregation period",
@@ -352,7 +352,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
             ],
         ),
         ConfigurationParameterCreate(
-            name="historical_year_period",
+            name=CoreConfParamName.HISTORICAL_YEAR_PERIOD.value,
             display_name_english="year period - historical data",
             display_name_italian="periodo dell'anno - dati storici",
             description_english="Yearly temporal aggregation period for historical data",
@@ -591,13 +591,6 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_english="MPI-ESM-LR-REMO2009 model",
                     description_italian="Modello MPI-ESM-LR-REMO2009",
                 ),
-                ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
-                    internal_value="barometro_climatico",
-                    display_name_english="Climate barometer",
-                    display_name_italian="Barometro climatico",
-                    description_english="Regional overview",
-                    description_italian="Panoramica regionale",
-                ),
             ],
         ),
         ConfigurationParameterCreate(
@@ -630,7 +623,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
             ],
         ),
         ConfigurationParameterCreate(
-            name="uncertainty_type",
+            name=CoreConfParamName.UNCERTAINTY_TYPE.value,
             display_name_english="Uncertainty type",
             display_name_italian="Tipologia dei limiti di incertezza",
             description_english="Type of uncertainty that this configuration represents",

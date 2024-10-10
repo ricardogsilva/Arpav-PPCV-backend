@@ -20,9 +20,11 @@ class CoreConfParamName(enum.Enum):
     CLIMATOLOGICAL_MODEL = "climatological_model"
     CLIMATOLOGICAL_VARIABLE = "climatological_variable"
     HISTORICAL_VARIABLE = "historical_variable"
+    HISTORICAL_YEAR_PERIOD = "historical_year_period"
     MEASURE = "measure"
     SCENARIO = "scenario"
     UNCERTAINTY_TYPE = "uncertainty_type"
+    YEAR_PERIOD = "year_period"
 
 
 class Season(enum.Enum):

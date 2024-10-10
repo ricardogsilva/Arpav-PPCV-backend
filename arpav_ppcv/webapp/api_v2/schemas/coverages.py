@@ -9,6 +9,7 @@ from ....config import (
     LOCALE_IT,
 )
 from ....schemas import coverages as app_models
+from ....schemas.base import CoreConfParamName
 from . import base
 
 
@@ -327,9 +328,13 @@ class ForecastMenuTranslations(pydantic.BaseModel):
     ):
         result = {}
         for variable_menu_tree in variable_menu_trees:
-            variable_cp = variable_menu_tree["climatological_variable"]
-            aggregation_period_cp = variable_menu_tree["aggregation_period"]
-            measure_cp = variable_menu_tree["measure"]
+            variable_cp = variable_menu_tree[
+                CoreConfParamName.CLIMATOLOGICAL_VARIABLE.value
+            ]
+            aggregation_period_cp = variable_menu_tree[
+                CoreConfParamName.AGGREGATION_PERIOD.value
+            ]
+            measure_cp = variable_menu_tree[CoreConfParamName.MEASURE.value]
             vars = result.setdefault("variable", {})
             vars[variable_cp.name] = ConfigurationParameterMenuTranslation(
                 name={
@@ -341,7 +346,9 @@ class ForecastMenuTranslations(pydantic.BaseModel):
                     LOCALE_IT.language: variable_cp.description_italian,
                 },
             )
-            aggreg_periods = result.setdefault("aggregation_period", {})
+            aggreg_periods = result.setdefault(
+                CoreConfParamName.AGGREGATION_PERIOD.value, {}
+            )
             aggreg_periods[
                 aggregation_period_cp.name
             ] = ConfigurationParameterMenuTranslation(
@@ -354,7 +361,7 @@ class ForecastMenuTranslations(pydantic.BaseModel):
                     LOCALE_IT.language: aggregation_period_cp.description_italian,
                 },
             )
-            measures = result.setdefault("measure", {})
+            measures = result.setdefault(CoreConfParamName.MEASURE.value, {})
             measures[measure_cp.name] = ConfigurationParameterMenuTranslation(
                 name={
                     LOCALE_EN.language: measure_cp.display_name_english,
@@ -382,8 +389,8 @@ class ForecastMenuTranslations(pydantic.BaseModel):
                     )
         return cls(
             variable=result["variable"],
-            aggregation_period=result["aggregation_period"],
-            measure=result["measure"],
+            aggregation_period=result[CoreConfParamName.AGGREGATION_PERIOD.value],
+            measure=result[CoreConfParamName.MEASURE.value],
             other_parameters=result["other_parameters"],
         )
 
@@ -399,8 +406,12 @@ class HistoricalMenuTranslations(pydantic.BaseModel):
     ):
         result = {}
         for variable_menu_tree in variable_menu_trees:
-            variable_cp = variable_menu_tree["historical_variable"]
-            aggregation_period_cp = variable_menu_tree["aggregation_period"]
+            variable_cp = variable_menu_tree[
+                CoreConfParamName.HISTORICAL_VARIABLE.value
+            ]
+            aggregation_period_cp = variable_menu_tree[
+                CoreConfParamName.AGGREGATION_PERIOD.value
+            ]
             vars = result.setdefault("variable", {})
             vars[variable_cp.name] = ConfigurationParameterMenuTranslation(
                 name={
@@ -412,7 +423,9 @@ class HistoricalMenuTranslations(pydantic.BaseModel):
                     LOCALE_IT.language: variable_cp.description_italian,
                 },
             )
-            aggreg_periods = result.setdefault("aggregation_period", {})
+            aggreg_periods = result.setdefault(
+                CoreConfParamName.AGGREGATION_PERIOD.value, {}
+            )
             aggreg_periods[
                 aggregation_period_cp.name
             ] = ConfigurationParameterMenuTranslation(
@@ -442,7 +455,7 @@ class HistoricalMenuTranslations(pydantic.BaseModel):
                     )
         return cls(
             variable=result["variable"],
-            aggregation_period=result["aggregation_period"],
+            aggregation_period=result[CoreConfParamName.AGGREGATION_PERIOD.value],
             other_parameters=result["other_parameters"],
         )
 
@@ -462,9 +475,11 @@ class ForecastVariableCombinations(pydantic.BaseModel):
                 combinations[param_name].append(valid_value.name)
 
         return cls(
-            variable=menu_tree["climatological_variable"].name,
-            aggregation_period=menu_tree["aggregation_period"].name,
-            measure=menu_tree["measure"].name,
+            variable=menu_tree[CoreConfParamName.CLIMATOLOGICAL_VARIABLE.value].name,
+            aggregation_period=menu_tree[
+                CoreConfParamName.AGGREGATION_PERIOD.value
+            ].name,
+            measure=menu_tree[CoreConfParamName.MEASURE.value].name,
             other_parameters=combinations,
         )
 
@@ -483,8 +498,10 @@ class HistoricalVariableCombinations(pydantic.BaseModel):
                 combinations[param_name].append(valid_value.name)
 
         return cls(
-            variable=menu_tree["historical_variable"].name,
-            aggregation_period=menu_tree["aggregation_period"].name,
+            variable=menu_tree[CoreConfParamName.HISTORICAL_VARIABLE.value].name,
+            aggregation_period=menu_tree[
+                CoreConfParamName.AGGREGATION_PERIOD.value
+            ].name,
             other_parameters=combinations,
         )
 
