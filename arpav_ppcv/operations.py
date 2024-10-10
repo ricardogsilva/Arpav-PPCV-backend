@@ -939,7 +939,7 @@ def get_historical_variable_parameters(
 ) -> dict[str, coverages.HistoricalVariableMenuTree]:
     result = {}
     historical_filter = database.get_configuration_parameter_value_by_names(
-        session, "archive", "historical"
+        session, base.CoreConfParamName.ARCHIVE.value, "historical"
     )
     relevant_cov_confs = database.collect_all_coverage_configurations(
         session, configuration_parameter_values_filter=[historical_filter]
@@ -949,7 +949,7 @@ def get_historical_variable_parameters(
             pv
             for pv in cov_conf.possible_values
             if pv.configuration_parameter_value.configuration_parameter.name
-            == "historical_variable"
+            == base.CoreConfParamName.HISTORICAL_VARIABLE.value
         ]
         if (num_pvs := len(variable_pvs)) >= 1:
             variable_pv = variable_pvs[0]
@@ -969,7 +969,7 @@ def get_historical_variable_parameters(
             pv
             for pv in cov_conf.possible_values
             if pv.configuration_parameter_value.configuration_parameter.name
-            == "aggregation_period"
+            == base.CoreConfParamName.AGGREGATION_PERIOD.value
         ]
         if (num_aggreg_periods := len(aggreg_period_pvs)) >= 1:
             aggreg_period_pv = aggreg_period_pvs[0]
@@ -993,16 +993,16 @@ def get_historical_variable_parameters(
         )
         aggregated_variable = result.setdefault(result_key, {})
         aggregated_variable[
-            "historical_variable"
+            base.CoreConfParamName.HISTORICAL_VARIABLE.value
         ] = variable_pv.configuration_parameter_value
         aggregated_variable[
-            "aggregation_period"
+            base.CoreConfParamName.AGGREGATION_PERIOD.value
         ] = aggreg_period_pv.configuration_parameter_value
         combinations = aggregated_variable.setdefault("combinations", {})
         params_to_ignore = (
-            "climatological_variable",
-            "aggregation_period",
-            "uncertainty_type",
+            base.CoreConfParamName.CLIMATOLOGICAL_VARIABLE.value,
+            base.CoreConfParamName.AGGREGATION_PERIOD.value,
+            base.CoreConfParamName.UNCERTAINTY_TYPE.value,
         )
         for pv in cov_conf.possible_values:
             param_name = pv.configuration_parameter_value.configuration_parameter.name
@@ -1023,7 +1023,7 @@ def get_forecast_variable_parameters(
 ) -> dict[str, coverages.ForecastVariableMenuTree]:
     result = {}
     forecast_filter = database.get_configuration_parameter_value_by_names(
-        session, "archive", "forecast"
+        session, base.CoreConfParamName.ARCHIVE.value, "forecast"
     )
     relevant_cov_confs = database.collect_all_coverage_configurations(
         session, configuration_parameter_values_filter=[forecast_filter]
@@ -1033,7 +1033,7 @@ def get_forecast_variable_parameters(
             pv
             for pv in cov_conf.possible_values
             if pv.configuration_parameter_value.configuration_parameter.name
-            == "climatological_variable"
+            == base.CoreConfParamName.CLIMATOLOGICAL_VARIABLE.value
         ]
         if (num_pvs := len(variable_pvs)) >= 1:
             variable_pv = variable_pvs[0]
@@ -1054,7 +1054,7 @@ def get_forecast_variable_parameters(
             pv
             for pv in cov_conf.possible_values
             if pv.configuration_parameter_value.configuration_parameter.name
-            == "aggregation_period"
+            == base.CoreConfParamName.AGGREGATION_PERIOD.value
         ]
         if (num_aggreg_periods := len(aggreg_period_pvs)) >= 1:
             aggreg_period_pv = aggreg_period_pvs[0]
@@ -1075,7 +1075,7 @@ def get_forecast_variable_parameters(
             pv
             for pv in cov_conf.possible_values
             if pv.configuration_parameter_value.configuration_parameter.name
-            == "measure"
+            == base.CoreConfParamName.MEASURE.value
         ]
         if (num_measures := len(measure_pvs)) >= 1:
             measure_pv = measure_pvs[0]
@@ -1101,18 +1101,20 @@ def get_forecast_variable_parameters(
         )
         aggregated_variable = result.setdefault(result_key, {})
         aggregated_variable[
-            "climatological_variable"
+            base.CoreConfParamName.CLIMATOLOGICAL_VARIABLE.value
         ] = variable_pv.configuration_parameter_value
         aggregated_variable[
-            "aggregation_period"
+            base.CoreConfParamName.AGGREGATION_PERIOD.value
         ] = aggreg_period_pv.configuration_parameter_value
-        aggregated_variable["measure"] = measure_pv.configuration_parameter_value
+        aggregated_variable[
+            base.CoreConfParamName.MEASURE.value
+        ] = measure_pv.configuration_parameter_value
         combinations = aggregated_variable.setdefault("combinations", {})
         params_to_ignore = (
-            "climatological_variable",
-            "aggregation_period",
-            "measure",
-            "uncertainty_type",
+            base.CoreConfParamName.CLIMATOLOGICAL_VARIABLE.value,
+            base.CoreConfParamName.AGGREGATION_PERIOD.value,
+            base.CoreConfParamName.MEASURE.value,
+            base.CoreConfParamName.UNCERTAINTY_TYPE.value,
         )
         for pv in cov_conf.possible_values:
             param_name = pv.configuration_parameter_value.configuration_parameter.name

@@ -286,7 +286,7 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
         for pv in self.possible_values:
             if (
                 pv.configuration_parameter_value.configuration_parameter.name
-                == "archive"
+                == base.CoreConfParamName.ARCHIVE.value
             ):
                 result = pv.configuration_parameter_value.name
                 break
@@ -391,8 +391,8 @@ class CoverageConfiguration(sqlmodel.SQLModel, table=True):
             is_temporal_aggregation = (
                 used_value.configuration_parameter_value.configuration_parameter.name
                 in (
-                    "year_period",
-                    "historical_year_period",
+                    base.CoreConfParamName.YEAR_PERIOD.value,
+                    base.CoreConfParamName.HISTORICAL_YEAR_PERIOD.value,
                 )
             )
             if is_temporal_aggregation:

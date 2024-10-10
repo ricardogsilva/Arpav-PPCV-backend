@@ -1461,7 +1461,7 @@ def ensure_uncertainty_type_configuration_parameters_exist(
     we must ensure it and its respective values exist. This can happen if an admin
     user deletes them by accident.
     """
-    param_name = "uncertainty_type"
+    param_name = base.CoreConfParamName.UNCERTAINTY_TYPE.value
     lower_bound_name = "lower_bound"
     upper_bound_name = "upper_bound"
     param = get_configuration_parameter_by_name(session, param_name)

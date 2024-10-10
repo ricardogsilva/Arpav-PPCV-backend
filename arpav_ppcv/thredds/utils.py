@@ -3,6 +3,7 @@ import logging
 import httpx
 
 from . import models
+from ..schemas.base import CoreConfParamName
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +23,9 @@ def build_dataset_service_url(
 
 
 def get_parameter_internal_value(name: str, value: str) -> str:
-    if name == "scenario":
+    if name == CoreConfParamName.SCENARIO.value:
         parsed_value = models.ForecastScenario[value.upper()].value.code
-    elif name == "year_period":
+    elif name == CoreConfParamName.YEAR_PERIOD.value:
         parsed_value = models.ForecastYearPeriod[value.upper()].value.code
     else:
         parsed_value = value

@@ -1,4 +1,7 @@
-from ....schemas.base import ObservationAggregationType
+from ....schemas.base import (
+    CoreConfParamName,
+    ObservationAggregationType,
+)
 from ....schemas.coverages import (
     CoverageConfigurationCreate,
     ConfigurationParameterPossibleValueCreate,
@@ -36,17 +39,17 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", _ARCHIVE)
+                        (CoreConfParamName.ARCHIVE.value, _ARCHIVE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_variable", _VARIABLE)
+                        (CoreConfParamName.HISTORICAL_VARIABLE.value, _VARIABLE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("aggregation_period", "30yr")
+                        (CoreConfParamName.AGGREGATION_PERIOD.value, "30yr")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
@@ -56,92 +59,92 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("measure", "absolute")
+                        (CoreConfParamName.MEASURE.value, "absolute")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "all_year")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "all_year")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "winter")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "winter")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "spring")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "spring")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "summer")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "summer")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "autumn")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "autumn")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "january")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "january")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "february")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "february")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "march")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "march")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "april")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "april")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "may")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "may")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "june")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "june")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "july")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "july")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "august")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "august")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "september")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "september")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "october")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "october")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "november")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "november")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "december")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "december")
                     ].id
                 ),
             ],
@@ -162,27 +165,27 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", _ARCHIVE)
+                        (CoreConfParamName.ARCHIVE.value, _ARCHIVE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_variable", _VARIABLE)
+                        (CoreConfParamName.HISTORICAL_VARIABLE.value, _VARIABLE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("aggregation_period", "annual")
+                        (CoreConfParamName.AGGREGATION_PERIOD.value, "annual")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("measure", "absolute")
+                        (CoreConfParamName.MEASURE.value, "absolute")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "all_year")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "all_year")
                     ].id
                 ),
             ],
@@ -209,42 +212,42 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", _ARCHIVE)
+                        (CoreConfParamName.ARCHIVE.value, _ARCHIVE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_variable", _VARIABLE)
+                        (CoreConfParamName.HISTORICAL_VARIABLE.value, _VARIABLE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("aggregation_period", "annual")
+                        (CoreConfParamName.AGGREGATION_PERIOD.value, "annual")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("measure", "absolute")
+                        (CoreConfParamName.MEASURE.value, "absolute")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "winter")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "winter")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "spring")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "spring")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "summer")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "summer")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "autumn")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "autumn")
                     ].id
                 ),
             ],
@@ -271,82 +274,82 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", _ARCHIVE)
+                        (CoreConfParamName.ARCHIVE.value, _ARCHIVE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_variable", _VARIABLE)
+                        (CoreConfParamName.HISTORICAL_VARIABLE.value, _VARIABLE)
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("aggregation_period", "annual")
+                        (CoreConfParamName.AGGREGATION_PERIOD.value, "annual")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("measure", "absolute")
+                        (CoreConfParamName.MEASURE.value, "absolute")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "january")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "january")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "february")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "february")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "march")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "march")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "april")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "april")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "may")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "may")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "june")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "june")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "july")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "july")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "august")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "august")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "september")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "september")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "october")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "october")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "november")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "november")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_year_period", "december")
+                        (CoreConfParamName.HISTORICAL_YEAR_PERIOD.value, "december")
                     ].id
                 ),
             ],
@@ -373,12 +376,12 @@ def generate_configurations(
             possible_values=[
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("archive", "barometro_climatico")
+                        (CoreConfParamName.ARCHIVE.value, "barometro_climatico")
                     ].id
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        ("historical_variable", _VARIABLE)
+                        (CoreConfParamName.HISTORICAL_VARIABLE.value, _VARIABLE)
                     ].id
                 ),
             ],
