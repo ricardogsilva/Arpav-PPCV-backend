@@ -44,6 +44,7 @@ class ConfigurationParameterValue(sqlmodel.SQLModel, table=True):
     display_name_italian: Optional[str] = None
     description_english: Optional[str] = None
     description_italian: Optional[str] = None
+    sort_order: Optional[int] = 0
     configuration_parameter_id: uuid.UUID
 
     configuration_parameter: "ConfigurationParameter" = sqlmodel.Relationship(
@@ -76,6 +77,7 @@ class ConfigurationParameterValueCreate(sqlmodel.SQLModel):
     display_name_italian: Optional[str] = None
     description_english: Optional[str] = None
     description_italian: Optional[str] = None
+    sort_order: Optional[int] = 0
 
 
 class ConfigurationParameter(sqlmodel.SQLModel, table=True):
@@ -91,7 +93,7 @@ class ConfigurationParameter(sqlmodel.SQLModel, table=True):
         sa_relationship_kwargs={
             "cascade": "all, delete, delete-orphan",
             "passive_deletes": True,
-            "order_by": "ConfigurationParameterValue.name",
+            "order_by": "ConfigurationParameterValue.sort_order",
         },
     )
 
@@ -114,6 +116,7 @@ class ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
     display_name_italian: Optional[str] = None
     description_english: Optional[str] = None
     description_italian: Optional[str] = None
+    sort_order: int
 
 
 class ConfigurationParameterCreate(sqlmodel.SQLModel):
@@ -147,6 +150,7 @@ class ConfigurationParameterValueUpdateEmbeddedInConfigurationParameterEdit(
     display_name_italian: Optional[str] = None
     description_english: Optional[str] = None
     description_italian: Optional[str] = None
+    sort_order: Optional[int] = None
 
 
 class ConfigurationParameterUpdate(sqlmodel.SQLModel):

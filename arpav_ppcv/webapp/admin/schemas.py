@@ -18,6 +18,7 @@ class ConfigurationParameterValueRead(sqlmodel.SQLModel):
     display_name_italian: Optional[str]
     description_english: Optional[str]
     description_italian: Optional[str]
+    sort_order: int
 
 
 class ConfigurationParameterRead(sqlmodel.SQLModel):

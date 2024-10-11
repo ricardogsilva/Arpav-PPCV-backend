@@ -123,6 +123,7 @@ class ConfigurationParameterView(ModelView):
                     starlette_admin.StringField("display_name_italian", required=True),
                     starlette_admin.StringField("description_english"),
                     starlette_admin.StringField("description_italian"),
+                    starlette_admin.StringField("sort_order"),
                 ),
             )
         ),
@@ -158,6 +159,7 @@ class ConfigurationParameterView(ModelView):
                         display_name_italian=av["display_name_italian"],
                         description_english=av.get("description_english"),
                         description_italian=av.get("description_italian"),
+                        sort_order=av.get("sort_order", 0),
                     )
                     for av in data["allowed_values"]
                 ],
@@ -222,6 +224,7 @@ class ConfigurationParameterView(ModelView):
                         display_name_italian=av["display_name_italian"],
                         description_english=av.get("description_english"),
                         description_italian=av.get("description_italian"),
+                        sort_order=av.get("sort_order"),
                     )
                     for av in data["allowed_values"]
                 ],
@@ -253,12 +256,14 @@ class ConfigurationParameterView(ModelView):
         db_conf_param = await anyio.to_thread.run_sync(
             database.get_configuration_parameter, request.state.session, pk
         )
+        allowed = []
+        for av in db_conf_param.allowed_values:
+            cpv_kwargs = av.model_dump()
+            cpv_kwargs["sort_order"] = cpv_kwargs["sort_order"] or 0
+            allowed.append(read_schemas.ConfigurationParameterValueRead(**cpv_kwargs))
         return read_schemas.ConfigurationParameterRead(
             **db_conf_param.model_dump(),
-            allowed_values=[
-                read_schemas.ConfigurationParameterValueRead(**av.model_dump())
-                for av in db_conf_param.allowed_values
-            ],
+            allowed_values=allowed,
         )
 
     async def find_all(
@@ -281,13 +286,17 @@ class ConfigurationParameterView(ModelView):
         )
         result = []
         for db_conf_param in db_conf_params:
+            allowed = []
+            for av in db_conf_param.allowed_values:
+                cpv_kwargs = av.model_dump()
+                cpv_kwargs["sort_order"] = cpv_kwargs["sort_order"] or 0
+                allowed.append(
+                    read_schemas.ConfigurationParameterValueRead(**cpv_kwargs)
+                )
             result.append(
                 read_schemas.ConfigurationParameterRead(
                     **db_conf_param.model_dump(),
-                    allowed_values=[
-                        read_schemas.ConfigurationParameterValueRead(**av.model_dump())
-                        for av in db_conf_param.allowed_values
-                    ],
+                    allowed_values=allowed,
                 )
             )
         return result
