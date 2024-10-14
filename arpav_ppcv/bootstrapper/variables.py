@@ -4,6 +4,28 @@ from ..schemas.observations import VariableCreate
 def generate_variable_configurations() -> list[VariableCreate]:
     return [
         VariableCreate(
+            name="HDD_it",
+            display_name_english="Heating degree days",
+            display_name_italian="Gradi giorno di riscaldamento",
+            description_english=("Heating degree days, with Tbase 20 °C for Tavg"),
+            description_italian=(
+                "Gradi giorno di riscaldamento, con Tbase 20 °C per Tavg"
+            ),
+            unit_english="ºC",
+        ),
+        VariableCreate(
+            name="CDD_jrc",
+            display_name_english="Cooling degree days",
+            display_name_italian="Gradi giorno di raffrescamento",
+            description_english=(
+                "Cooling degree days, with Tbase 21 °C and threshold 24 °C for Tavg"
+            ),
+            description_italian=(
+                "Gradi giorno di raffrescamento, con Tbase 21 °C e soglia 24 °C per Tavg"
+            ),
+            unit_english="ºC",
+        ),
+        VariableCreate(
             name="TDd",
             display_name_english="Mean temperature (from observation station)",
             display_name_italian="Temperatura media (dalla stazione di osservazione)",
