@@ -1247,11 +1247,6 @@ def generate_configurations(
                 ),
                 ConfigurationParameterPossibleValueCreate(
                     configuration_parameter_value_id=conf_param_values[
-                        (CoreConfParamName.UNCERTAINTY_TYPE.value, "lower_bound")
-                    ].id
-                ),
-                ConfigurationParameterPossibleValueCreate(
-                    configuration_parameter_value_id=conf_param_values[
                         ("time_window", "tw1")
                     ].id
                 ),
