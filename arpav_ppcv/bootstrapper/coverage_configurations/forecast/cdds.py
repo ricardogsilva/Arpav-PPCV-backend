@@ -1,4 +1,7 @@
-from ....schemas.base import CoreConfParamName
+from ....schemas.base import (
+    CoreConfParamName,
+    ObservationAggregationType,
+)
 from ....schemas.coverages import (
     CoverageConfigurationCreate,
     ConfigurationParameterPossibleValueCreate,
@@ -18,6 +21,7 @@ _DESCRIPTION_ITALIAN = (
 
 def generate_configurations(
     conf_param_values,
+    variables,
 ) -> list[CoverageConfigurationCreate]:
     return [
         CoverageConfigurationCreate(
@@ -80,6 +84,10 @@ def generate_configurations(
                     ].id
                 ),
             ],
+            observation_variable_id=(
+                v.id if (v := variables.get("CDD_jrc")) is not None else None
+            ),
+            observation_variable_aggregation_type=ObservationAggregationType.YEARLY,
         ),
         CoverageConfigurationCreate(
             name="cdds_annual_absolute_model_ec_earth_cclm4_8_17",
@@ -530,7 +538,6 @@ def generate_configurations(
                 ),
             ],
         ),
-        # ---
         CoverageConfigurationCreate(
             name="cdds_30yr_anomaly_annual_agree_model_ensemble",
             display_name_english=_DISPLAY_NAME_ENGLISH,

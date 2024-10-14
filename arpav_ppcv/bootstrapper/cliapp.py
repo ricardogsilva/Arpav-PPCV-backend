@@ -205,13 +205,13 @@ def bootstrap_coverage_configurations(
         cdd_forecast.generate_configurations(conf_param_values)
     )
     coverage_configurations.extend(
-        cdds_forecast.generate_configurations(conf_param_values)
+        cdds_forecast.generate_configurations(conf_param_values, variables)
     )
     coverage_configurations.extend(
         fd_forecast.generate_configurations(conf_param_values, variables)
     )
     coverage_configurations.extend(
-        hdds_forecast.generate_configurations(conf_param_values)
+        hdds_forecast.generate_configurations(conf_param_values, variables)
     )
     coverage_configurations.extend(
         hwdi_forecast.generate_configurations(conf_param_values)
