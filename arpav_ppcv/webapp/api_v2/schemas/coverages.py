@@ -1,5 +1,6 @@
 import uuid
 import typing
+from operator import itemgetter
 
 import pydantic
 from fastapi import Request
@@ -28,6 +29,7 @@ class ConfigurationParameterValueEmbeddedInConfigurationParameter(pydantic.BaseM
     display_name_italian: str
     description_english: str | None
     description_italian: str | None
+    sort_order: int
 
 
 class ConfigurationParameterReadListItem(pydantic.BaseModel):
@@ -59,10 +61,12 @@ class ConfigurationParameterReadListItem(pydantic.BaseModel):
                         exclude={
                             "display_name_english",
                             "display_name_italian",
+                            "sort_order",
                         }
                     ),
                     display_name_english=pv.display_name_english or pv.name,
                     display_name_italian=pv.display_name_italian or pv.name,
+                    sort_order=pv.sort_order or 0,
                 )
                 for pv in instance.allowed_values
             ],
@@ -472,7 +476,13 @@ class ForecastVariableCombinations(pydantic.BaseModel):
         for param_name, param_combinations in menu_tree["combinations"].items():
             combinations[param_name] = []
             for valid_value in param_combinations["values"]:
-                combinations[param_name].append(valid_value.name)
+                combinations[param_name].append(
+                    (valid_value.name, valid_value.sort_order or 0)
+                )
+
+        for param_name, param_combinations in combinations.items():
+            param_combinations.sort(key=itemgetter(1))
+            combinations[param_name] = [name for name, sort_order in param_combinations]
 
         return cls(
             variable=menu_tree[CoreConfParamName.CLIMATOLOGICAL_VARIABLE.value].name,

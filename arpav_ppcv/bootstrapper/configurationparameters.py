@@ -20,6 +20,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Temperatura media",
                     description_english="Average of average temperatures",
                     description_italian="Media delle temperature medie",
+                    sort_order=1,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="tnd",
@@ -27,6 +28,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Temperatura minima",
                     description_english="Average of minimum temperatures",
                     description_italian="Media delle temperature minime",
+                    sort_order=2,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="txd",
@@ -34,6 +36,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Temperatura massima",
                     description_english="Average of maximum temperatures",
                     description_italian="Media delle temperature massime",
+                    sort_order=3,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="tr",
@@ -45,6 +48,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_italian=(
                         "Numero di giorni con temperatura minima maggiore di 20°C"
                     ),
+                    sort_order=4,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="su30",
@@ -56,6 +60,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_italian=(
                         "Numero di giorni con temperatura massima maggiore di 30°C"
                     ),
+                    sort_order=5,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="fd",
@@ -67,6 +72,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_italian=(
                         "Numero di giorni con temperatura minima minore di 0°C"
                     ),
+                    sort_order=6,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="hdds",
@@ -80,6 +86,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                         "Somma di 20°C meno la temperatura media giornaliera se la "
                         "temperatura media giornaliera è minore di 20°C."
                     ),
+                    sort_order=7,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="cdds",
@@ -93,6 +100,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                         "Somma della temperatura media giornaliera meno 21°C se la "
                         "temperatura media giornaliera è maggiore di 24°C."
                     ),
+                    sort_order=8,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="prcptot",
@@ -100,6 +108,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Precipitazione",
                     description_english="Daily precipitation near the ground",
                     description_italian="Precipitazione giornaliera vicino al suolo",
+                    sort_order=9,
                 ),
             ],
         ),
@@ -116,6 +125,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="CDD",
                     description_english="Consecutive Dry Days",
                     description_italian="Giorni secchi",
+                    sort_order=4,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="cdds",
@@ -123,6 +133,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="CDDs",
                     description_english="Cooling degree days",
                     description_italian="Gradi giorno di raffrescamento",
+                    sort_order=5,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="fd",
@@ -130,6 +141,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="FD",
                     description_english="Frozen Days",
                     description_italian="Giorni di gelo",
+                    sort_order=6,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="hdds",
@@ -137,6 +149,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="HDDs",
                     description_english="Heating degree days",
                     description_italian="Gradi giorno di riscaldamento",
+                    sort_order=7,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="hwdi",
@@ -144,6 +157,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="HWDI",
                     description_english="Duration of heat waves",
                     description_italian="Durata delle ondate di calore",
+                    sort_order=8,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="pr",
@@ -151,6 +165,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="PR",
                     description_english="Rainfall",
                     description_italian="Precipitazione",
+                    sort_order=9,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="r95ptot",
@@ -158,6 +173,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="R95pTOT",
                     description_english="Extreme rainfall",
                     description_italian="Precipitazione estrema",
+                    sort_order=10,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="snwdays",
@@ -165,6 +181,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="SNWDAYS",
                     description_english="Days with new snow",
                     description_italian="Giorni con neve nuova",
+                    sort_order=11,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="su30",
@@ -172,6 +189,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="SU30",
                     description_english="Hot days",
                     description_italian="Giorni caldi",
+                    sort_order=12,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="tas",
@@ -179,6 +197,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="TAS",
                     description_english="Mean temperature",
                     description_italian="Temperatura media",
+                    sort_order=1,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="tasmax",
@@ -186,6 +205,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="TASMAX",
                     description_english="Maximum temperature",
                     description_italian="Temperatura massima",
+                    sort_order=2,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="tasmin",
@@ -193,6 +213,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="TASMIN",
                     description_english="Minimum temperature",
                     description_italian="Temperatura minima",
+                    sort_order=3,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="tr",
@@ -200,6 +221,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="TR",
                     description_english="Tropical nights",
                     description_italian="Notti tropicali",
+                    sort_order=13,
                 ),
             ],
         ),
@@ -222,6 +244,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                         "Scenario Representation Concentration Pathway (RCP) che "
                         "presuppone valori di forzante climatica di 2,6 W/m2"
                     ),
+                    sort_order=3,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="rcp45",
@@ -235,6 +258,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                         "Scenario Representation Concentration Pathway (RCP) che "
                         "presuppone valori di forzante climatica di 4,5 W/m2"
                     ),
+                    sort_order=2,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="rcp85",
@@ -248,6 +272,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                         "Scenario Representation Concentration Pathway (RCP) che "
                         "presuppone valori di forzante climatica di 8,5 W/m2"
                     ),
+                    sort_order=1,
                 ),
             ],
         ),
@@ -270,6 +295,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                         "Rappresenta la prima finestra temporale di anomalia, che "
                         "abbraccia il periodo 2021-2050, rispetto al periodo 1976-2005"
                     ),
+                    sort_order=1,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="tw2",
@@ -283,6 +309,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                         "Rappresenta la seconda finestra temporale di anomalia, che "
                         "abbraccia il periodo 2071-2100, rispetto al periodo 1976-2005"
                     ),
+                    sort_order=2,
                 ),
             ],
         ),
@@ -304,6 +331,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_italian=(
                         "Stagione climatologica invernale (dicembre, gennaio, febbraio)"
                     ),
+                    sort_order=1,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     name="spring",
@@ -316,6 +344,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_italian=(
                         "Stagione climatologica primaverile (marzo, aprile, maggio)"
                     ),
+                    sort_order=2,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     name="summer",
@@ -328,6 +357,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_italian=(
                         "Stagione climatologica estiva (giugno, luglio, agosto)"
                     ),
+                    sort_order=3,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     name="autumn",
@@ -340,6 +370,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_italian=(
                         "Stagione climatologica autunnale (settembre, ottobre, novembre)"
                     ),
+                    sort_order=4,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="year",
@@ -348,6 +379,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Anno",
                     description_english="Whole year",
                     description_italian="L'intero anno",
+                    sort_order=5,
                 ),
             ],
         ),
@@ -367,6 +399,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Inverno",
                     description_english="Winter season",
                     description_italian="Stagione invernale",
+                    sort_order=1,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="S02",
@@ -375,6 +408,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Primavera",
                     description_english="Spring season",
                     description_italian="Stagione primaverile",
+                    sort_order=2,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="S03",
@@ -383,6 +417,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Estate",
                     description_english="Summer season",
                     description_italian="Stagione estiva",
+                    sort_order=3,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="S04",
@@ -391,6 +426,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Autunno",
                     description_english="Autumn season",
                     description_italian="Stagione autunnale",
+                    sort_order=4,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="A00",
@@ -399,6 +435,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Anno",
                     description_english="Whole year",
                     description_italian="L'intero anno",
+                    sort_order=5,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="M01",
@@ -407,6 +444,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Gennaio",
                     description_english="Month of January",
                     description_italian="mese di gennaio",
+                    sort_order=6,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="M02",
@@ -415,6 +453,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Febbraio",
                     description_english="Month of february",
                     description_italian="mese di febbraio",
+                    sort_order=7,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="M03",
@@ -423,6 +462,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Marzo",
                     description_english="Month of march",
                     description_italian="mese di marzo",
+                    sort_order=8,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="M04",
@@ -431,6 +471,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Aprile",
                     description_english="Month of april",
                     description_italian="mese di aprile",
+                    sort_order=9,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="M05",
@@ -439,6 +480,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Maggio",
                     description_english="Month of may",
                     description_italian="mese di maggio",
+                    sort_order=10,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="M06",
@@ -447,6 +489,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Giugno",
                     description_english="Month of sune",
                     description_italian="mese di giugno",
+                    sort_order=11,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="M07",
@@ -455,6 +498,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Luglio",
                     description_english="Month of july",
                     description_italian="mese di luglio",
+                    sort_order=12,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="M08",
@@ -463,6 +507,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Agosto",
                     description_english="Month of august",
                     description_italian="mese di agosto",
+                    sort_order=13,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="M09",
@@ -471,6 +516,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Settembre",
                     description_english="Month of september",
                     description_italian="mese di settembre",
+                    sort_order=14,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="M10",
@@ -479,6 +525,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Ottobre",
                     description_english="Month of october",
                     description_italian="mese di ottobre",
+                    sort_order=15,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="M11",
@@ -487,6 +534,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Novembre",
                     description_english="Month of november",
                     description_italian="mese di novembre",
+                    sort_order=16,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="M12",
@@ -495,6 +543,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Dicembre",
                     description_english="Month of december",
                     description_italian="mese di dicembre",
+                    sort_order=17,
                 ),
             ],
         ),
@@ -515,6 +564,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_italian=(
                         "Rappresenta il valore assoluto della variabile climatologica"
                     ),
+                    sort_order=1,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="anomaly",
@@ -526,6 +576,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_italian=(
                         "Rappresenta i valori di anomalia climatologica per la variabile"
                     ),
+                    sort_order=2,
                 ),
             ],
         ),
@@ -555,6 +606,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                         "EC-EARTH RACMO22E, EC-EARTH RCA4, HadGEM RACMO22E, "
                         "MPI-ESM-LR-REMO2009"
                     ),
+                    sort_order=1,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="ec_earth_cclm_4_8_17",
@@ -562,6 +614,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="EC-EARTH CCLM4-8-17",
                     description_english="EC-Earth CCLM4-8-17 model",
                     description_italian="Modello EC-Earth CCLM4-8-17",
+                    sort_order=2,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="ec_earth_racmo22e",
@@ -569,6 +622,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="EC-EARTH RACMO22E",
                     description_english="EC-Earth RACMO22E model",
                     description_italian="Modello EC-Earth RACMO22E",
+                    sort_order=3,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="ec_earth_rca4",
@@ -576,6 +630,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="EC-EARTH RCA4",
                     description_english="EC-Earth RCA4 model",
                     description_italian="Modello EC-Earth RCA4",
+                    sort_order=4,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="hadgem2_racmo22e",
@@ -583,6 +638,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="HadGEM RACMO22E",
                     description_english="HadGEM RACMO22E model",
                     description_italian="Modello HadGEM RACMO22E",
+                    sort_order=5,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="mpi_esm_lr_remo2009",
@@ -590,6 +646,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="MPI-ESM-LR-REMO2009",
                     description_english="MPI-ESM-LR-REMO2009 model",
                     description_italian="Modello MPI-ESM-LR-REMO2009",
+                    sort_order=6,
                 ),
             ],
         ),
@@ -608,6 +665,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_italian=(
                         "I set di dati contengono un'aggregazione di 30 anni"
                     ),
+                    sort_order=2,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="annual",
@@ -619,6 +677,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_italian=(
                         "I set di dati contengono aggregazioni di valori annuali"
                     ),
+                    sort_order=1,
                 ),
             ],
         ),
@@ -640,6 +699,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                         "Il set di dati contiene valori relativi all'incertezza del "
                         "limite superiore"
                     ),
+                    sort_order=0,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="lower_bound",
@@ -652,6 +712,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                         "Il set di dati contiene valori relativi all'incertezza del "
                         "limite inferiore"
                     ),
+                    sort_order=0,
                 ),
             ],
         ),
@@ -668,6 +729,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Dati storici",
                     description_english=("Datasets obtained from historical data"),
                     description_italian=("Set di dati ottenuti da dati storici"),
+                    sort_order=1,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="forecast",
@@ -675,6 +737,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     display_name_italian="Dati di previsione",
                     description_english=("Datasets obtained from forecasts"),
                     description_italian=("Set di dati ottenuti dalle previsioni"),
+                    sort_order=2,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="barometro_climatico",
@@ -686,6 +749,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_italian=(
                         "Set di dati che forniscono una panoramica dell'intera regione"
                     ),
+                    sort_order=3,
                 ),
             ],
         ),
@@ -706,6 +770,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_italian=(
                         "Normale standard climatologica per il periodo 1981-2010"
                     ),
+                    sort_order=0,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="1991-2020",
@@ -717,6 +782,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_italian=(
                         "Normale standard climatologica per il periodo 1991-2020"
                     ),
+                    sort_order=0,
                 ),
                 ConfigurationParameterValueCreateEmbeddedInConfigurationParameter(
                     internal_value="2001-2030",
@@ -728,6 +794,7 @@ def generate_configuration_parameters() -> list[ConfigurationParameterCreate]:
                     description_italian=(
                         "Normale standard climatologica per il periodo 2001-2030"
                     ),
+                    sort_order=0,
                 ),
             ],
         ),

@@ -840,6 +840,7 @@ def create_configuration_parameter(
             display_name_italian=allowed.display_name_italian,
             description_english=allowed.description_english,
             description_italian=allowed.description_italian,
+            sort_order=allowed.sort_order,
         )
         db_configuration_parameter.allowed_values.append(db_conf_param_value)
         to_refresh.append(db_conf_param_value)
@@ -874,6 +875,7 @@ def update_configuration_parameter(
                 display_name_italian=av.display_name_italian,
                 description_english=av.description_english,
                 description_italian=av.description_italian,
+                sort_order=av.sort_order or 0,
             )
             db_configuration_parameter.allowed_values.append(db_allowed_value)
         else:
