@@ -754,7 +754,7 @@ def get_forecast_variable_combinations(
                 coverage_schemas.ForecastVariableCombinations.from_items(var_menu),
             )
         )
-    var_combinations.sort(key=itemgetter(0, 1, 2, 3))
+    var_combinations.sort(key=itemgetter(0, 1, 2))
     var_combinations = [vc[3] for vc in var_combinations]
     return coverage_schemas.ForecastVariableCombinationsList(
         combinations=var_combinations,
@@ -787,7 +787,7 @@ def get_historical_variable_combinations(
                 coverage_schemas.HistoricalVariableCombinations.from_items(var_menu),
             )
         )
-    var_combinations.sort(key=itemgetter(0, 1, 2))
+    var_combinations.sort(key=itemgetter(0, 1))
     var_combinations = [vc[2] for vc in var_combinations]
     return coverage_schemas.HistoricalVariableCombinationsList(
         combinations=var_combinations,
