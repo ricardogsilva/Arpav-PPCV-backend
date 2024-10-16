@@ -1140,7 +1140,7 @@ def refresh_station_variable_database_view(
     variable: observations.Variable,
     db_schema_name: Optional[str] = "public",
 ):
-    sanitized_name = _sanitize_variable_name(variable.name)
+    sanitized_name = sanitize_observation_variable_name(variable.name)
     view_name = f"{db_schema_name}.stations_{sanitized_name}"
     index_name = f"idx_{sanitized_name}"
     drop_view_statement = sqlmodel.text(f"DROP MATERIALIZED VIEW IF EXISTS {view_name}")
@@ -1176,5 +1176,5 @@ def refresh_station_variable_database_view(
     session.commit()
 
 
-def _sanitize_variable_name(name: str) -> str:
+def sanitize_observation_variable_name(name: str) -> str:
     return name.lower().replace(" ", "_").replace("-", "_")
