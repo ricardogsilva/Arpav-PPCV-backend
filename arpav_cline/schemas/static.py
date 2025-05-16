@@ -181,8 +181,6 @@ class AggregationPeriod(str, enum.Enum):
 
 
 class ObservationYearPeriod(str, enum.Enum):
-    # This does not have any translations or internal value because it is only meant
-    # for internal usage and is not intended for exposing outside the system
     ALL_YEAR = "all_year"
     WINTER = "winter"
     SPRING = "spring"
@@ -221,6 +219,85 @@ class ObservationYearPeriod(str, enum.Enum):
             ObservationYearPeriod.NOVEMBER: (11,),
             ObservationYearPeriod.DECEMBER: (12,),
         }[self]
+
+    @staticmethod
+    def get_param_display_name(locale: babel.Locale) -> str:
+        translations = get_translations(locale)
+        _ = translations.gettext
+        return _("year period")
+
+    @staticmethod
+    def get_param_description(locale: babel.Locale) -> str:
+        translations = get_translations(locale)
+        _ = translations.gettext
+        return _("year period description")
+
+    def get_value_display_name(self, locale: babel.Locale) -> str:
+        translations = get_translations(locale)
+        _ = translations.gettext
+        return {
+            self.ALL_YEAR: _("all year"),
+            self.WINTER: _("winter"),
+            self.SPRING: _("spring"),
+            self.SUMMER: _("summer"),
+            self.AUTUMN: _("autumn"),
+            self.JANUARY: _("january"),
+            self.FEBRUARY: _("february"),
+            self.MARCH: _("march"),
+            self.APRIL: _("april"),
+            self.MAY: _("may"),
+            self.JUNE: _("june"),
+            self.JULY: _("july"),
+            self.AUGUST: _("august"),
+            self.SEPTEMBER: _("september"),
+            self.OCTOBER: _("october"),
+            self.NOVEMBER: _("november"),
+            self.DECEMBER: _("december"),
+        }.get(self, self.value)
+
+    def get_value_description(self, locale: babel.Locale) -> str:
+        translations = get_translations(locale)
+        _ = translations.gettext
+        return {
+            self.ALL_YEAR: _("all year description"),
+            self.WINTER: _("winter description"),
+            self.SPRING: _("spring description"),
+            self.SUMMER: _("summer description"),
+            self.AUTUMN: _("autumn description"),
+            self.JANUARY: _("january description"),
+            self.FEBRUARY: _("february description"),
+            self.MARCH: _("march description"),
+            self.APRIL: _("april description"),
+            self.MAY: _("may description"),
+            self.JUNE: _("june description"),
+            self.JULY: _("july description"),
+            self.AUGUST: _("august description"),
+            self.SEPTEMBER: _("september description"),
+            self.OCTOBER: _("october description"),
+            self.NOVEMBER: _("november description"),
+            self.DECEMBER: _("december description"),
+        }.get(self, self.value)
+
+    def get_sort_order(self) -> int:
+        return {
+            self.ALL_YEAR: 0,
+            self.WINTER: 1,
+            self.SPRING: 2,
+            self.SUMMER: 3,
+            self.AUTUMN: 4,
+            self.JANUARY: 5,
+            self.FEBRUARY: 6,
+            self.MARCH: 7,
+            self.APRIL: 8,
+            self.MAY: 9,
+            self.JUNE: 10,
+            self.JULY: 11,
+            self.AUGUST: 12,
+            self.SEPTEMBER: 13,
+            self.OCTOBER: 14,
+            self.NOVEMBER: 15,
+            self.DECEMBER: 16,
+        }.get(self, 0)
 
 
 class HistoricalYearPeriod(str, enum.Enum):

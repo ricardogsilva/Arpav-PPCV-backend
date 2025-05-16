@@ -375,6 +375,8 @@ class LegacyTimeSeriesTranslations(pydantic.BaseModel):
             "variable",
             "series_elaboration",
             "derived_series",
+            "year_period",
+            "measure",
         ):
             names[key_name] = {}
             values[key_name] = {}
@@ -422,6 +424,14 @@ class LegacyTimeSeriesTranslations(pydantic.BaseModel):
             values["derived_series"][locale.language] = values["processing_method"][
                 locale.language
             ]
+
+            names["year_period"][
+                locale.language
+            ] = static.ObservationYearPeriod.get_param_display_name(locale.language)
+            values["year_period"][locale.language] = series.get_value_display_name(
+                locale.language
+            )
+
         return cls(parameter_names=names, parameter_values=values)
 
     @classmethod
